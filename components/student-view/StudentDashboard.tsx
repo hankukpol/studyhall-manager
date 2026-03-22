@@ -119,6 +119,17 @@ export function StudentDashboard({ data }: StudentDashboardProps) {
                 </p>
                 <p className="mt-2 text-sm text-white/72">관리자 설정 기준 자동 반영</p>
               </article>
+              <article className="col-span-2 rounded-[24px] border border-slate-200-white/10 bg-white/10 p-4 backdrop-blur">
+                <p className="text-xs uppercase tracking-[0.2em] text-white/60">이번 달 학습 시간</p>
+                <p className="mt-3 text-2xl font-extrabold">
+                  {data.summary.monthlyStudyMinutes === 0
+                    ? "0분"
+                    : data.summary.monthlyStudyHours > 0
+                      ? `${data.summary.monthlyStudyHours}시간 ${data.summary.monthlyStudyMinutesRemainder}분`
+                      : `${data.summary.monthlyStudyMinutesRemainder}분`}
+                </p>
+                <p className="mt-2 text-sm text-white/72">입실 기록 기반 누적 학습 시간</p>
+              </article>
             </div>
           </div>
         </section>

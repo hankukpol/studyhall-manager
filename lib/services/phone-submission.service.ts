@@ -1,4 +1,4 @@
-import { getMockAdminSession, getMockDivisionBySlug, isMockMode } from "@/lib/mock-data";
+import { getMockDivisionBySlug, isMockMode } from "@/lib/mock-data";
 import { notFound } from "@/lib/errors";
 import {
   readMockState,

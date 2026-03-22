@@ -1,6 +1,17 @@
 "use client";
 
-import { LoaderCircle, Save } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronDown,
+  ChevronUp,
+  Clock3,
+  Eye,
+  EyeOff,
+  LoaderCircle,
+  RefreshCcw,
+  Save,
+  Users,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { toast } from "sonner";
 
@@ -74,17 +85,36 @@ const QUICK_STATUS_BUTTONS: Array<{
 
 function buildInitialState(students: StudentItem[], records: AttendanceRecordItem[]): FormState {
   const recordMap = new Map(records.map((record) => [record.studentId, record]));
-  const state: FormState = {};
+  const nextState: FormState = {};
 
   for (const student of students) {
     const record = recordMap.get(student.id);
-    state[student.id] = {
+    nextState[student.id] = {
       status: record?.status ?? "",
       reason: record?.reason ?? "",
     };
   }
 
-  return state;
+  return nextState;
+}
+
+function getStudentCardClasses(status: AttendanceOptionValue) {
+  switch (status) {
+    case "PRESENT":
+      return "border-emerald-100";
+    case "TARDY":
+      return "border-amber-100";
+    case "ABSENT":
+      return "border-rose-100";
+    case "EXCUSED":
+      return "border-sky-100";
+    case "HOLIDAY":
+    case "HALF_HOLIDAY":
+    case "NOT_APPLICABLE":
+      return "border-slate-200 bg-slate-50/70";
+    default:
+      return "border-indigo-100";
+  }
 }
 
 export function MobileCheckForm({
@@ -103,6 +133,7 @@ export function MobileCheckForm({
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showOnlyUnchecked, setShowOnlyUnchecked] = useState(false);
+  const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(false);
   const [swipeOffsets, setSwipeOffsets] = useState<Record<string, number>>({});
   const swipeRef = useRef<SwipeContext | null>(null);
 
@@ -148,6 +179,8 @@ export function MobileCheckForm({
     return students.filter((student) => !formState[student.id]?.status);
   }, [formState, showOnlyUnchecked, students]);
 
+  const progressPercentage = students.length > 0 ? Math.round((summary.checkedCount / students.length) * 100) : 0;
+
   useEffect(() => {
     if (!selectedPeriodId) {
       return;
@@ -166,7 +199,7 @@ export function MobileCheckForm({
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error ?? "출결 데이터를 불러오지 못했습니다.");
+          throw new Error(data.error ?? "출석 데이터를 불러오지 못했습니다.");
         }
 
         if (!isMounted) {
@@ -179,7 +212,7 @@ export function MobileCheckForm({
         setSwipeOffsets({});
       } catch (error) {
         if (isMounted) {
-          toast.error(error instanceof Error ? error.message : "출결 데이터를 불러오지 못했습니다.");
+          toast.error(error instanceof Error ? error.message : "출석 데이터를 불러오지 못했습니다.");
         }
       } finally {
         if (isMounted) {
@@ -218,11 +251,13 @@ export function MobileCheckForm({
 
   function markAllPresent() {
     setFormState((current) => {
-      const next: FormState = { ...current };
+      const nextState: FormState = { ...current };
+
       for (const student of students) {
-        next[student.id] = { status: "PRESENT", reason: "" };
+        nextState[student.id] = { status: "PRESENT", reason: "" };
       }
-      return next;
+
+      return nextState;
     });
   }
 
@@ -239,7 +274,7 @@ export function MobileCheckForm({
         setSelectedPeriodId(data.period.id);
         toast.success(`현재 교시를 ${data.period.name}로 맞췄습니다.`);
       } else {
-        toast.message("현재 시간대에는 해당하는 활성 교시가 없습니다.");
+        toast.message("현재 시간에는 해당하는 활성 교시가 없습니다.");
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "현재 교시를 조회하지 못했습니다.");
@@ -279,14 +314,14 @@ export function MobileCheckForm({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error ?? "출결 저장에 실패했습니다.");
+        throw new Error(data.error ?? "출석 저장에 실패했습니다.");
       }
 
       setFormState(buildInitialState(data.students, data.records));
       setSwipeOffsets({});
-      toast.success("출결 기록을 저장했습니다.");
+      toast.success("출석 기록을 저장했습니다.");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "출결 저장에 실패했습니다.");
+      toast.error(error instanceof Error ? error.message : "출석 저장에 실패했습니다.");
     } finally {
       setIsSaving(false);
     }
@@ -344,120 +379,191 @@ export function MobileCheckForm({
 
   return (
     <div className="space-y-4">
-      <section className="sticky top-[72px] z-20 rounded-[28px] border border-black/5 bg-white/95 p-4 shadow-[0_16px_36px_rgba(18,32,56,0.08)] backdrop-blur">
-        <div className="space-y-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Mobile Attendance</p>
-              <h1 className="mt-2 text-2xl font-bold text-slate-950">
-                {selectedPeriod ? selectedPeriod.name : "교시 선택"}
-              </h1>
-              <p className="mt-1 text-sm text-slate-600">
-                {selectedPeriod
-                  ? `${selectedPeriod.startTime} - ${selectedPeriod.endTime} · 오른쪽 스와이프는 출석, 왼쪽 스와이프는 결석`
-                  : "교시를 먼저 선택해 주세요."}
-              </p>
+      <div className="sticky top-[88px] z-30 -mx-1 bg-[linear-gradient(180deg,#eef3f8_0%,#eef3f8_82%,rgba(238,243,248,0)_100%)] px-1 pb-4">
+        <section className="overflow-hidden rounded-[28px] border border-black/5 bg-white">
+          <div className="border-b border-slate-100 bg-[linear-gradient(135deg,var(--division-color-light)_0%,#ffffff_76%)] px-4 py-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--division-color)]">
+                  Mobile Attendance
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <h1 className="text-2xl font-bold text-slate-950">
+                    {selectedPeriod ? selectedPeriod.name : "교시 선택"}
+                  </h1>
+                  <span className="rounded-full border border-white bg-white px-3 py-1 text-xs font-semibold text-slate-600">
+                    {selectedDate}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-slate-600">
+                  {selectedPeriod
+                    ? `${selectedPeriod.startTime} - ${selectedPeriod.endTime} · 오른쪽 스와이프 출석, 왼쪽 스와이프 결석`
+                    : "날짜와 교시를 먼저 선택해 주세요."}
+                </p>
+              </div>
+
+              <div className="shrink-0 rounded-[22px] border border-white bg-white px-3 py-2 text-right">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">진행률</p>
+                <p className="mt-1 text-lg font-bold text-slate-950">
+                  {summary.checkedCount}/{students.length}
+                </p>
+              </div>
             </div>
 
-            <div className="shrink-0 rounded-[22px] bg-slate-50 px-3 py-2 text-right">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">진행률</p>
-              <p className="mt-1 text-lg font-bold text-slate-950">
-                {summary.checkedCount}/{students.length}
-              </p>
+            <div className="mt-4">
+              <div className="h-2 rounded-full bg-white">
+                <div
+                  className="h-full rounded-full bg-[var(--division-color)] transition-[width] duration-200"
+                  style={{ width: `${progressPercentage}%` }}
+                />
+              </div>
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1">
+                  <Users className="h-3.5 w-3.5" />
+                  대상 {students.length}명
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1">
+                  <Clock3 className="h-3.5 w-3.5" />
+                  미처리 {summary.uncheckedCount}명
+                </span>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">미처리</p>
-              <p className="mt-1 text-lg font-bold text-slate-950">{summary.uncheckedCount}</p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">출석</p>
-              <p className="mt-1 text-lg font-bold text-emerald-600">{summary.presentCount}</p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">결석</p>
-              <p className="mt-1 text-lg font-bold text-rose-600">{summary.absentCount}</p>
+          <div
+            className={`grid overflow-hidden transition-[grid-template-rows,opacity] duration-300 ${
+              isSummaryCollapsed ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr] opacity-100"
+            }`}
+          >
+            <div className="min-h-0 overflow-hidden">
+              <div className="grid gap-4 px-4 py-4">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-3 py-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">대상</p>
+                    <p className="mt-1 text-lg font-bold text-slate-950">{students.length}</p>
+                  </div>
+                  <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-3 py-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">미처리</p>
+                    <p className="mt-1 text-lg font-bold text-slate-950">{summary.uncheckedCount}</p>
+                  </div>
+                  <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-3 py-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">출석</p>
+                    <p className="mt-1 text-lg font-bold text-emerald-600">{summary.presentCount}</p>
+                  </div>
+                  <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-3 py-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">결석</p>
+                    <p className="mt-1 text-lg font-bold text-rose-600">{summary.absentCount}</p>
+                  </div>
+                </div>
+
+                <div className="grid gap-3">
+                  <label className="block">
+                    <span className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-600">
+                      <CalendarDays className="h-4 w-4" />
+                      날짜
+                    </span>
+                    <input
+                      type="date"
+                      value={selectedDate}
+                      onChange={(event) => setSelectedDate(event.target.value)}
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-600">
+                      <Clock3 className="h-4 w-4" />
+                      교시
+                    </span>
+                    <select
+                      value={selectedPeriodId}
+                      onChange={(event) => setSelectedPeriodId(event.target.value)}
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
+                    >
+                      {periods.map((period) => (
+                        <option key={period.id} value={period.id}>
+                          {period.name} ({period.startTime}-{period.endTime})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={refreshCurrentPeriod}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700"
+                  >
+                    <RefreshCcw className="h-4 w-4" />
+                    현재 교시 맞추기
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowOnlyUnchecked((current) => !current)}
+                    className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+                      showOnlyUnchecked
+                        ? "border-indigo-200 bg-indigo-50 text-indigo-700"
+                        : "border-slate-200 bg-white text-slate-700"
+                    }`}
+                  >
+                    {showOnlyUnchecked ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                    {showOnlyUnchecked ? "전체 보기" : "미처리만 보기"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={markAllPresent}
+                    className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"
+                  >
+                    전원 출석 처리
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={isSaving || isLoading}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--division-color)] px-4 py-3 text-sm font-semibold text-white disabled:opacity-70"
+                  >
+                    {isSaving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    저장
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="grid gap-3">
-            <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-600">날짜</span>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(event) => setSelectedDate(event.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none"
-              />
-            </label>
-
-            <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-600">교시</span>
-              <select
-                value={selectedPeriodId}
-                onChange={(event) => setSelectedPeriodId(event.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none"
-              >
-                {periods.map((period) => (
-                  <option key={period.id} value={period.id}>
-                    {period.name} ({period.startTime}-{period.endTime})
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
+          <div className="border-t border-slate-100 px-4 py-3">
             <button
               type="button"
-              onClick={refreshCurrentPeriod}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700"
+              onClick={() => setIsSummaryCollapsed((current) => !current)}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100"
             >
-              현재 교시 맞추기
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowOnlyUnchecked((current) => !current)}
-              className={`rounded-2xl border px-4 py-3 text-sm font-medium transition ${
-                showOnlyUnchecked
-                  ? "border-indigo-200 bg-indigo-50 text-indigo-700"
-                  : "border-slate-200 bg-white text-slate-700"
-              }`}
-            >
-              미처리만 보기
-            </button>
-            <button
-              type="button"
-              onClick={markAllPresent}
-              className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700"
-            >
-              전원 출석 처리
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={isSaving || isLoading}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--division-color)] px-4 py-3 text-sm font-semibold text-white disabled:opacity-70"
-            >
-              {isSaving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              저장
+              {isSummaryCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+              {isSummaryCollapsed ? "상단 요약 펼치기" : "상단 요약 숨기기"}
             </button>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       <section className="space-y-3 pb-24">
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Student List</p>
+            <h2 className="mt-1 text-lg font-bold text-slate-950">학생 출결 체크</h2>
+          </div>
+          <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
+            {visibleStudents.length}명 표시
+          </span>
+        </div>
+
         {isLoading ? (
           <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
-            출결 정보를 불러오는 중입니다.
+            출석 정보를 불러오는 중입니다.
           </div>
         ) : null}
 
         {!isLoading && visibleStudents.length === 0 ? (
           <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
-            {showOnlyUnchecked ? "미처리 학생이 없습니다." : "출결 대상 학생이 없습니다."}
+            {showOnlyUnchecked ? "미처리 학생이 없습니다." : "출석 대상 학생이 없습니다."}
           </div>
         ) : null}
 
@@ -465,38 +571,45 @@ export function MobileCheckForm({
           const state = formState[student.id] ?? { status: "", reason: "" };
           const needsReason = state.status === "ABSENT" || state.status === "EXCUSED";
           const swipeOffset = swipeOffsets[student.id] ?? 0;
+          const locationLabel = [student.studyRoomName, student.seatDisplay].filter(Boolean).join(" / ");
 
           return (
             <div
               key={student.id}
-              className="relative overflow-hidden rounded-[26px] bg-slate-50"
+              className="relative overflow-hidden rounded-[26px] border border-black/5 bg-[linear-gradient(135deg,#eef4ff_0%,#f8fafc_48%,#ffffff_100%)]"
               onTouchStart={(event) => handleSwipeStart(student.id, event)}
               onTouchMove={(event) => handleSwipeMove(student.id, event)}
               onTouchEnd={() => handleSwipeEnd(student.id)}
               onTouchCancel={() => handleSwipeEnd(student.id)}
             >
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-xs font-semibold text-emerald-500">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-xs font-semibold text-emerald-600">
                 오른쪽 밀기 · 출석
               </div>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-xs font-semibold text-rose-500">
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-xs font-semibold text-rose-600">
                 왼쪽 밀기 · 결석
               </div>
 
               <article
-                className={`relative rounded-[26px] border p-4 transition-transform duration-150 ${getAttendanceStatusClasses(state.status)}`}
+                className={`relative rounded-[26px] border bg-white p-4 transition-transform duration-150 ${getStudentCardClasses(
+                  state.status,
+                )}`}
                 style={{ transform: `translateX(${swipeOffset}px)` }}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] opacity-70">
-                      {student.seatDisplay || "좌석 미배정"}
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      {locationLabel || "좌석 미배정"}
                     </p>
-                    <h2 className="mt-2 text-lg font-bold">{student.name}</h2>
-                    <p className="mt-1 text-sm opacity-75">{student.studentNumber}</p>
-                    <p className="mt-1 text-xs opacity-75">{student.studyTrack || "직렬 미지정"}</p>
+                    <h3 className="mt-2 text-lg font-bold text-slate-950">{student.name}</h3>
+                    <p className="mt-1 text-sm text-slate-500">{student.studentNumber}</p>
+                    <p className="mt-1 text-xs text-slate-500">{student.studyTrack || "직렬 미지정"}</p>
                   </div>
 
-                  <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-slate-700">
+                  <span
+                    className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold ${getAttendanceStatusClasses(
+                      state.status,
+                    )}`}
+                  >
                     {getAttendanceStatusLabel(state.status)}
                   </span>
                 </div>
@@ -513,7 +626,7 @@ export function MobileCheckForm({
                         className={`rounded-2xl border px-3 py-2.5 text-sm font-semibold transition ${
                           isActive
                             ? button.activeClassName
-                            : "border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-50"
+                            : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                         }`}
                       >
                         {button.label}
@@ -529,7 +642,7 @@ export function MobileCheckForm({
                   <select
                     value={state.status}
                     onChange={(event) => applyStudentStatus(student.id, event.target.value as AttendanceOptionValue)}
-                    className="w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm text-slate-900 outline-none"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
                   >
                     {ATTENDANCE_STATUS_OPTIONS.map((option) => (
                       <option key={option.value || "empty"} value={option.value}>
@@ -544,8 +657,8 @@ export function MobileCheckForm({
                     <input
                       value={state.reason}
                       onChange={(event) => updateStudentState(student.id, { reason: event.target.value })}
-                      placeholder="사유를 입력해 주세요"
-                      className="w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm text-slate-900 outline-none"
+                      placeholder="사유를 입력해 주세요."
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
                     />
                   </div>
                 ) : null}

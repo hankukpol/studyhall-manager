@@ -7,6 +7,7 @@ import {
   detectRepeatedAbsent,
   detectRepeatedTardy,
 } from "@/lib/services/attendance-pattern.service";
+import { getNextExamSchedule, type ExamScheduleItem } from "@/lib/services/exam-schedule.service";
 
 export type AdminDashboardData = {
   division: {
@@ -96,6 +97,7 @@ export type AdminDashboardData = {
     courseEndDate: string;
     daysRemaining: number;
   }>;
+  upcomingExamSchedule: ExamScheduleItem | null;
   newStudents: Array<{
     id: string;
     name: string;
@@ -468,5 +470,6 @@ export async function getAdminDashboardData(divisionSlug: string): Promise<Admin
     paymentStats,
     expiringStudents,
     newStudents,
+    upcomingExamSchedule: await getNextExamSchedule(divisionSlug),
   };
 }

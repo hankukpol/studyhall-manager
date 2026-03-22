@@ -52,6 +52,7 @@ export type AttendanceSnapshot = {
     date: string;
     status: AttendanceStatus;
     reason: string | null;
+    checkInTime: string | null;
   }>;
 };
 
@@ -127,6 +128,29 @@ function statusKey(status: AttendanceStatus) {
 
 function buildRecordId(record: Pick<MockAttendanceRecord, "studentId" | "periodId" | "date">) {
   return `mock-attendance-${record.studentId}-${record.periodId}-${record.date}`;
+}
+
+/**
+ * PRESENT → period start time on the given date (KST, as UTC)
+ * TARDY   → now (server time)
+ * Others  → null
+ */
+function resolveCheckInTime(
+  status: AttendanceStatus,
+  date: string,
+  periodStartTime: string,
+  now: Date,
+): Date | null {
+  if (status === "PRESENT") {
+    const [hh, mm] = periodStartTime.split(":").map(Number);
+    const [y, m, d] = date.split("-").map(Number);
+    // KST = UTC+9, store as UTC
+    return new Date(Date.UTC(y, m - 1, d, hh - 9, mm, 0, 0));
+  }
+  if (status === "TARDY") {
+    return now;
+  }
+  return null;
 }
 
 function serializePeriods(
@@ -308,6 +332,7 @@ export async function getAttendanceSnapshots(
       date: true,
       status: true,
       reason: true,
+      checkInTime: true,
     },
   });
 
@@ -325,6 +350,7 @@ export async function getAttendanceSnapshots(
       date: dateKey,
       status: record.status,
       reason: record.reason,
+      checkInTime: record.checkInTime ? record.checkInTime.toISOString() : null,
     });
   }
 
@@ -448,6 +474,7 @@ export async function upsertAttendanceBatch(
     return updateMockState(async (state) => {
       const current = state.attendanceByDivision[divisionSlug] ?? [];
       const touchedMap = new Map(current.map((record) => [buildRecordId(record), record]));
+      const now = new Date();
 
       for (const record of input.records) {
         const id = buildRecordId({
@@ -456,6 +483,13 @@ export async function upsertAttendanceBatch(
           date: normalizedDate,
         });
 
+        const checkInTime = resolveCheckInTime(
+          record.status,
+          normalizedDate,
+          period.startTime,
+          now,
+        );
+
         touchedMap.set(id, {
           id,
           studentId: record.studentId,
@@ -463,9 +497,10 @@ export async function upsertAttendanceBatch(
           date: normalizedDate,
           status: record.status as MockAttendanceStatus,
           reason: record.reason?.trim() ? record.reason.trim() : null,
+          checkInTime: checkInTime ? checkInTime.toISOString() : null,
           recordedById: actor.id,
-          createdAt: touchedMap.get(id)?.createdAt ?? new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          createdAt: touchedMap.get(id)?.createdAt ?? now.toISOString(),
+          updatedAt: now.toISOString(),
         });
       }
 
@@ -485,6 +520,7 @@ export async function upsertAttendanceBatch(
             date: record.date,
             status: record.status,
             reason: record.reason,
+            checkInTime: record.checkInTime ?? null,
           })),
       };
     });
@@ -493,10 +529,18 @@ export async function upsertAttendanceBatch(
   const prisma = await getPrismaClient();
   const division = await getDivisionOrThrow(divisionSlug);
   const { start } = toUtcDateRange(normalizedDate);
+  const now = new Date();
 
   await prisma.$transaction(
-    input.records.map((record) =>
-      prisma.attendance.upsert({
+    input.records.map((record) => {
+      const checkInTime = resolveCheckInTime(
+        record.status,
+        normalizedDate,
+        period.startTime,
+        now,
+      );
+
+      return prisma.attendance.upsert({
         where: {
           studentId_periodId_date: {
             studentId: record.studentId,
@@ -507,6 +551,7 @@ export async function upsertAttendanceBatch(
         update: {
           status: record.status,
           reason: record.reason?.trim() ? record.reason.trim() : null,
+          checkInTime,
           recordedById: actor.id,
         },
         create: {
@@ -515,10 +560,11 @@ export async function upsertAttendanceBatch(
           date: start,
           status: record.status,
           reason: record.reason?.trim() ? record.reason.trim() : null,
+          checkInTime,
           recordedById: actor.id,
         },
-      }),
-    ),
+      });
+    }),
   );
 
   const updated = await prisma.attendance.findMany({
@@ -542,6 +588,7 @@ export async function upsertAttendanceBatch(
       date: normalizedDate,
       status: record.status,
       reason: record.reason,
+      checkInTime: record.checkInTime ? record.checkInTime.toISOString() : null,
     })),
   };
 }
@@ -606,6 +653,7 @@ export async function getAttendanceStats(
         date: true,
         status: true,
         reason: true,
+        checkInTime: true,
       },
     });
 
@@ -616,6 +664,7 @@ export async function getAttendanceStats(
       date: record.date.toISOString().slice(0, 10),
       status: record.status,
       reason: record.reason,
+      checkInTime: record.checkInTime ? record.checkInTime.toISOString() : null,
     }));
   }
 

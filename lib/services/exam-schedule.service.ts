@@ -1,4 +1,4 @@
-import { getMockAdminSession, getMockDivisionBySlug, isMockMode } from "@/lib/mock-data";
+import { getMockDivisionBySlug, isMockMode } from "@/lib/mock-data";
 import { notFound } from "@/lib/errors";
 import { readMockState, updateMockState, type MockExamScheduleRecord } from "@/lib/mock-store";
 import type { ExamScheduleSchemaInput, ExamScheduleUpdateSchemaInput } from "@/lib/exam-schedule-schemas";

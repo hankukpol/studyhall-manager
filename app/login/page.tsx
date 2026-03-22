@@ -1,7 +1,6 @@
 "use client";
 
 import { LoaderCircle, LogIn } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
 const LOCAL_TEST_PASSWORD = "test1234";
@@ -64,7 +63,6 @@ const LOCAL_TEST_ACCOUNTS = [
 ] as const;
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

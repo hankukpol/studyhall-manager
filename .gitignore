@@ -27,6 +27,7 @@ yarn-error.log*
 tmp-*
 next-start-*.log
 tsc.log
+build-*.log
 
 # local env files
 .env*.local

@@ -7,6 +7,7 @@ import { type PointRecordItem, listPointRecords } from "@/lib/services/point.ser
 import { getPeriods } from "@/lib/services/period.service";
 import { getDivisionSettings, getDivisionTheme } from "@/lib/services/settings.service";
 import { getStudentDetail, type StudentDetail } from "@/lib/services/student.service";
+import { getStudentMonthlyStudyMinutes } from "@/lib/services/study-time.service";
 
 type AttendanceStatus =
   | "PRESENT"
@@ -33,6 +34,9 @@ export type StudentDashboardData = {
     monthlyExpectedCount: number;
     weeklyAttendedCount: number;
     weeklyExpectedCount: number;
+    monthlyStudyMinutes: number;
+    monthlyStudyHours: number;
+    monthlyStudyMinutesRemainder: number;
   };
   weeklyAttendance: {
     dates: Array<{
@@ -353,7 +357,9 @@ export async function getStudentDashboardData(
   const monthStart = `${today.slice(0, 7)}-01`;
   const weekDates = getWeekDates(today);
 
-  const [student, periods, settings, division, recentPoints, latestExam, upcomingExamSchedule] = await Promise.all([
+  const currentMonth = today.slice(0, 7);
+
+  const [student, periods, settings, division, recentPoints, latestExam, upcomingExamSchedule, monthlyStudyMinutes] = await Promise.all([
     getStudentDetail(divisionSlug, studentId),
     getPeriods(divisionSlug),
     getDivisionSettings(divisionSlug),
@@ -361,6 +367,7 @@ export async function getStudentDashboardData(
     listPointRecords(divisionSlug, { studentId, limit: 5 }),
     getLatestExamSummaryForStudent(divisionSlug, studentId),
     getNextExamSchedule(divisionSlug),
+    getStudentMonthlyStudyMinutes(divisionSlug, studentId, currentMonth),
   ]);
 
   const attendanceRecords = await getStudentAttendanceRecords(
@@ -406,6 +413,9 @@ export async function getStudentDashboardData(
       monthlyExpectedCount: monthlySummary.expectedCount,
       weeklyAttendedCount: weeklySummary.attendedCount,
       weeklyExpectedCount: weeklySummary.expectedCount,
+      monthlyStudyMinutes,
+      monthlyStudyHours: Math.floor(monthlyStudyMinutes / 60),
+      monthlyStudyMinutesRemainder: monthlyStudyMinutes % 60,
     },
     weeklyAttendance: {
       dates: weekDates.map((date) => ({

@@ -54,6 +54,7 @@ const tabs = [
   { id: "exams", label: "성적" },
   { id: "payments", label: "수납" },
   { id: "interviews", label: "면담" },
+  { id: "study-time", label: "학습 시간" },
 ] as const;
 
 function formatDate(value: string | null) {

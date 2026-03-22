@@ -9,6 +9,7 @@ import { ExamScoreChart } from "@/components/exams/ExamScoreChart";
 import { ScoreTargetPanel } from "@/components/exams/ScoreTargetPanel";
 import { PointCategoryBadge, PointValueBadge } from "@/components/points/PointBadges";
 import { AttendanceCalendar } from "@/components/student-view/AttendanceCalendar";
+import { StudyTimeStats } from "@/components/study-time/StudyTimeStats";
 import { Modal } from "@/components/ui/Modal";
 import { getInterviewResultTypeClasses, getInterviewResultTypeLabel } from "@/lib/interview-meta";
 import { getLeaveStatusClasses, getLeaveStatusLabel, getLeaveTypeLabel } from "@/lib/leave-meta";
@@ -21,7 +22,7 @@ import type { ScoreTargetItem } from "@/lib/services/score-target.service";
 import type { StudentDashboardData } from "@/lib/services/student-dashboard.service";
 import type { TuitionPlanItem } from "@/lib/services/tuition-plan.service";
 
-type StudentDetailTabId = "attendance" | "points" | "exams" | "payments" | "interviews";
+type StudentDetailTabId = "attendance" | "points" | "exams" | "payments" | "interviews" | "study-time";
 
 type StudentDetailTabsProps = {
   divisionSlug: string;
@@ -497,6 +498,17 @@ export function StudentDetailTabs({
     );
   }
 
+  if (activeTab === "study-time") {
+    return (
+      <div className="space-y-5">
+        <div className="flex items-center gap-2 text-slate-600">
+          <span className="text-sm font-medium">학습 시간</span>
+        </div>
+        <StudyTimeStats divisionSlug={divisionSlug} studentId={studentId} />
+      </div>
+    );
+  }
+
   if (activeTab === "payments") {
     return (
       <div className="space-y-5">
@@ -725,3 +737,4 @@ export function StudentDetailTabs({
     </div>
   );
 }
+

@@ -237,6 +237,7 @@ async function applyMockLeaveAttendance(
       date: input.date,
       status: attendanceStatus as MockAttendanceStatus,
       reason: buildAttendanceReason(input.type, normalizeOptionalText(input.reason)),
+      checkInTime: null,
       recordedById: actorId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

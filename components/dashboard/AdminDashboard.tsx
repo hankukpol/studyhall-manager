@@ -7,6 +7,7 @@ import {
   ArrowRight,
   BookOpenCheck,
   CalendarClock,
+  CalendarDays,
   CalendarX,
   ClipboardList,
   Copy,
@@ -567,6 +568,40 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
 
       {/* 교시 타이머 */}
       <PeriodTimerWidget schedules={data.periodSchedules} />
+
+      {/* D-Day 배너 */}
+      {data.upcomingExamSchedule && (
+        <section className="flex items-center gap-4 rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-[0_8px_24px_rgba(18,32,56,0.06)]">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-white"
+            style={{ backgroundColor: data.division.color }}
+          >
+            <CalendarDays className="h-5 w-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Upcoming Exam</p>
+            <p className="mt-0.5 font-bold text-slate-950 truncate">{data.upcomingExamSchedule.name}</p>
+            <p className="mt-0.5 text-xs text-slate-500">{data.upcomingExamSchedule.examDate}</p>
+          </div>
+          <span
+            className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-extrabold ${
+              data.upcomingExamSchedule.dDayValue === 0
+                ? "bg-red-100 text-red-600"
+                : data.upcomingExamSchedule.dDayValue < 0
+                  ? "bg-slate-100 text-slate-500"
+                  : "bg-blue-50 text-blue-600"
+            }`}
+          >
+            {data.upcomingExamSchedule.dDayLabel}
+          </span>
+          <Link
+            href={`/${divisionSlug}/admin/settings/exam-schedules`}
+            className="shrink-0 text-xs text-slate-500 hover:text-slate-800 transition"
+          >
+            일정 관리 →
+          </Link>
+        </section>
+      )}
 
       {/* 핵심 지표 */}
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
