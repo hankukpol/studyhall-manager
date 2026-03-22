@@ -1,101 +1,120 @@
-import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, BookOpenCheck, Building2, Flame, LogIn, Shield, TestTube2 } from "lucide-react";
 
-export default function Home() {
+import { isMockMode } from "@/lib/mock-data";
+import { getDivisions } from "@/lib/services/division.service";
+
+const divisionIcons = {
+  police: Shield,
+  fire: Flame,
+  allpass: Building2,
+  "hankyung-sparta": BookOpenCheck,
+} as const;
+
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const divisions = await getDivisions();
+  const mockMode = isMockMode();
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <main className="min-h-screen bg-white px-4 py-10 md:px-8 lg:px-12">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8">
+        <section className="overflow-hidden rounded-[32px] border border-slate-200-black/5 bg-white/90 shadow-[0_30px_80px_rgba(25,57,99,0.12)] backdrop-blur">
+          <div className="grid gap-8 px-6 py-8 md:grid-cols-[1.3fr_0.7fr] md:px-10 md:py-10">
+            <div className="space-y-5">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
+                Time Control Study Room
+              </p>
+              <div className="space-y-3">
+                <h1 className="text-3xl font-extrabold tracking-tight text-slate-950 md:text-5xl">
+                  시간통제 자습반 관리 시스템
+                </h1>
+                <p className="max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
+                  직렬별 출석, 상벌점, 성적, 수납 흐름을 분리 관리하는 운영 플랫폼입니다.
+                  현재는 문서 기준으로 Phase 순서대로 개발 중이며, 아래 카드에서 직렬
+                  흐름과 관리자 영역을 확인할 수 있습니다.
+                </p>
+              </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
+                >
+                  <LogIn className="h-4 w-4" />
+                  관리자 로그인
+                </Link>
+                {mockMode ? (
+                  <span className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 bg-white px-4 py-3 text-sm font-medium text-emerald-700">
+                    <TestTube2 className="h-4 w-4" />
+                    MOCK_MODE 로컬 테스트 활성화
+                  </span>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="rounded-[28px] border border-slate-200-slate-200 bg-slate-950 p-6 text-white">
+              <p className="text-sm uppercase tracking-[0.24em] text-white/55">Current Scope</p>
+              <div className="mt-5 space-y-4">
+                <div className="rounded-2xl border border-slate-200-white/10 bg-white/5 p-4">
+                  <p className="text-sm text-white/70">진행 기준</p>
+                  <p className="mt-2 text-lg font-bold">Phase 1 기반 설정</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200-white/10 bg-white/5 p-4">
+                  <p className="text-sm text-white/70">핵심 원칙</p>
+                  <p className="mt-2 text-lg font-bold">직렬 완전 분리 · 설정 하드코딩 금지</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200-white/10 bg-white/5 p-4">
+                  <p className="text-sm text-white/70">로컬 테스트</p>
+                  <p className="mt-2 text-lg font-bold">bat 실행 + mock 모드 지원</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-5 md:grid-cols-2">
+          {divisions.map((division) => {
+            const Icon = divisionIcons[division.slug as keyof typeof divisionIcons] ?? Shield;
+
+            return (
+              <Link
+                key={division.id}
+                href={`/${division.slug}/admin`}
+                className="group overflow-hidden rounded-[28px] border border-slate-200-black/5 bg-white shadow-[0_18px_40px_rgba(18,32,56,0.08)] transition hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(18,32,56,0.12)]"
+              >
+                <div
+                  className="p-6 text-white"
+                  style={{
+                    backgroundColor: `${division.color}`,
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />
+                  </div>
+                  <h2 className="mt-10 text-2xl font-bold">{division.name}</h2>
+                  <p className="mt-2 text-sm text-white/75">{division.fullName}</p>
+                </div>
+
+                <div className="space-y-3 px-6 py-5">
+                  <p className="text-sm leading-6 text-slate-600">
+                    출석 관리, 학생 명단, 상벌점, 보고서까지 직렬별 독립 운영 구조로
+                    들어갑니다.
+                  </p>
+                  <div className="flex items-center justify-between text-sm font-medium text-slate-900">
+                    <span>관리자 화면으로 이동</span>
+                    <span className="text-slate-400">/{division.slug}</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </section>
+      </div>
+    </main>
   );
 }
