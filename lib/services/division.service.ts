@@ -5,6 +5,7 @@ import { readMockState } from "@/lib/mock-store";
 
 const getActiveDivisionsCached = unstable_cache(
   async () => {
+    const { prisma } = await import("@/lib/prisma");
 
     return prisma.division.findMany({
       where: { isActive: true },
@@ -17,6 +18,7 @@ const getActiveDivisionsCached = unstable_cache(
 
 const getAllDivisionsCached = unstable_cache(
   async () => {
+    const { prisma } = await import("@/lib/prisma");
 
     return prisma.division.findMany({
       orderBy: { displayOrder: "asc" },
@@ -28,6 +30,7 @@ const getAllDivisionsCached = unstable_cache(
 
 const getDivisionBySlugCached = unstable_cache(
   async (slug: string) => {
+    const { prisma } = await import("@/lib/prisma");
 
     return prisma.division.findUnique({
       where: { slug },

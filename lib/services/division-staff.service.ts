@@ -143,6 +143,7 @@ export async function updateDivisionStaff(
     });
   }
 
+  const { prisma } = await import("@/lib/prisma");
 
   const existing = await prisma.admin.findFirst({
     where: { id: staffId, divisionId, role: { in: ["ADMIN", "ASSISTANT"] } },
@@ -178,6 +179,7 @@ export async function deleteDivisionStaff(divisionId: string, staffId: string) {
     });
   }
 
+  const { prisma } = await import("@/lib/prisma");
 
   const existing = await prisma.admin.findFirst({
     where: { id: staffId, divisionId, role: { in: ["ADMIN", "ASSISTANT"] } },
@@ -199,6 +201,7 @@ export async function permanentDeleteDivisionStaff(divisionId: string, staffId: 
     });
   }
 
+  const { prisma } = await import("@/lib/prisma");
 
   const existing = await prisma.admin.findFirst({
     where: { id: staffId, divisionId, role: { in: ["ADMIN", "ASSISTANT"] } },
@@ -223,6 +226,7 @@ export async function resetDivisionStaffPassword(
     return { id: target.id, name: target.name };
   }
 
+  const { prisma } = await import("@/lib/prisma");
 
   const existing = await prisma.admin.findFirst({
     where: { id: staffId, divisionId, role: { in: ["ADMIN", "ASSISTANT"] } },

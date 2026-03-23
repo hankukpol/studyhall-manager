@@ -40,6 +40,7 @@ function reindexMockPeriods(periods: MockPeriodRecord[]) {
 }
 
 async function getDivisionOrThrow(divisionSlug: string) {
+  const { prisma } = await import("@/lib/prisma");
 
   const division = await prisma.division.findUnique({
     where: { slug: divisionSlug },
@@ -53,7 +54,7 @@ async function getDivisionOrThrow(divisionSlug: string) {
 }
 
 async function reorderDivisionPeriodsInDb(divisionId: string, orderedIds: string[]) {
-
+  const { prisma } = await import("@/lib/prisma");
 
   await prisma.$transaction(
     orderedIds.map((id, index) =>
@@ -91,7 +92,7 @@ async function getPeriodsUncached(divisionSlug: string) {
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-
+  const { prisma } = await import("@/lib/prisma");
 
   return prisma.period.findMany({
     where: { divisionId: division.id },
@@ -142,6 +143,7 @@ export async function createPeriod(divisionSlug: string, input: PeriodInput) {
 
 
   const division = await getDivisionOrThrow(divisionSlug);
+  const { prisma } = await import("@/lib/prisma");
   const count = await prisma.period.count({ where: { divisionId: division.id } });
 
   const createdPeriod = await prisma.period.create({
@@ -203,6 +205,7 @@ export async function updatePeriod(
     return reorderedPeriods;
   }
 
+  const { prisma } = await import("@/lib/prisma");
   const period = await prisma.period.findFirst({
     where: {
       id: periodId,
@@ -248,6 +251,7 @@ export async function deletePeriod(divisionSlug: string, periodId: string) {
 
 
   const division = await getDivisionOrThrow(divisionSlug);
+  const { prisma } = await import("@/lib/prisma");
   const period = await prisma.period.findFirst({
     where: {
       id: periodId,

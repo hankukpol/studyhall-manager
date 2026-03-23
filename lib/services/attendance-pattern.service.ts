@@ -1,6 +1,5 @@
 import { isMockMode } from "@/lib/mock-data";
 import { readMockState } from "@/lib/mock-store";
-import { prisma } from "@/lib/prisma";
 import { getPeriods } from "@/lib/services/period.service";
 import { listStudents } from "@/lib/services/student.service";
 
@@ -75,6 +74,7 @@ async function getPatternCounts(
     return counts;
   }
 
+  const { prisma } = await import("@/lib/prisma");
   const start = new Date(`${dateFrom}T00:00:00.000Z`);
   const end = new Date(`${addDays(dateTo, 1)}T00:00:00.000Z`);
   const rows = await prisma.attendance.findMany({

@@ -1,10 +1,22 @@
+import dynamic from "next/dynamic";
+
 import { ClipboardList, Smartphone } from "lucide-react";
 
 import { PhoneCheckForm } from "@/components/phones/PhoneCheckForm";
-import { PhoneSubmissionManager } from "@/components/phones/PhoneSubmissionManager";
-import { getPhoneDaySnapshot, listPhoneRecords } from "@/lib/services/phone-submission.service";
-import { listPointRules } from "@/lib/services/point.service";
+import { getPhoneDaySnapshot } from "@/lib/services/phone-submission.service";
 import { getSeatLayout, listStudyRooms } from "@/lib/services/seat.service";
+
+const PhoneSubmissionManager = dynamic(
+  () =>
+    import("@/components/phones/PhoneSubmissionManager").then((mod) => mod.PhoneSubmissionManager),
+  {
+    loading: () => (
+      <div className="rounded-[24px] border border-dashed border-slate-300 px-4 py-16 text-center text-sm text-slate-500">
+        이력 데이터를 불러오는 중입니다.
+      </div>
+    ),
+  },
+);
 
 function getKstToday() {
   return new Intl.DateTimeFormat("en-CA", {

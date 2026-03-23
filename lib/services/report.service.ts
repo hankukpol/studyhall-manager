@@ -303,6 +303,7 @@ async function listAttendanceRangeRecords(
       })) satisfies RawAttendanceRecord[];
   }
 
+  const { prisma } = await import("@/lib/prisma");
 
   const start = parseDateKey(dateFrom);
   const end = parseDateKey(dateTo);
@@ -702,6 +703,7 @@ async function listAttendanceEditLogs(
       .filter(Boolean) as ActivityLogItem[];
   }
 
+  const { prisma } = await import("@/lib/prisma");
 
   const start = new Date(`${dateFrom}T00:00:00.000Z`);
   const end = new Date(`${addDays(dateTo, 1)}T00:00:00.000Z`);

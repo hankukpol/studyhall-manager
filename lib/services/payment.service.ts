@@ -97,6 +97,7 @@ function serializePaymentCategory(category: {
 }
 
 const getDivisionOrThrow = cache(async function getDivisionOrThrow(divisionSlug: string) {
+  const { prisma } = await import("@/lib/prisma");
 
   const division = await prisma.division.findUnique({
     where: {
@@ -112,6 +113,7 @@ const getDivisionOrThrow = cache(async function getDivisionOrThrow(divisionSlug:
 });
 
 async function ensureDefaultPaymentCategories(divisionId: string) {
+  const { prisma } = await import("@/lib/prisma");
 
   const existing = await prisma.paymentCategory.findMany({
     where: {
@@ -228,6 +230,7 @@ export async function listPayments(
 
   const division = await getDivisionOrThrow(divisionSlug);
   await ensureDefaultPaymentCategories(division.id);
+  const { prisma } = await import("@/lib/prisma");
 
   const { from, to } = toUtcRange(options?.dateFrom, options?.dateTo);
   const payments = await prisma.payment.findMany({
@@ -337,6 +340,7 @@ export async function createPayment(
 
   const division = await getDivisionOrThrow(divisionSlug);
   await ensureDefaultPaymentCategories(division.id);
+  const { prisma } = await import("@/lib/prisma");
 
   const [student, category] = await Promise.all([
     prisma.student.findFirst({
@@ -447,6 +451,7 @@ export async function updatePayment(
 
   const division = await getDivisionOrThrow(divisionSlug);
   await ensureDefaultPaymentCategories(division.id);
+  const { prisma } = await import("@/lib/prisma");
 
   const payment = await prisma.payment.findFirst({
     where: {
@@ -544,6 +549,7 @@ export async function deletePayment(divisionSlug: string, paymentId: string) {
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
+  const { prisma } = await import("@/lib/prisma");
 
   const payment = await prisma.payment.findFirst({
     where: {

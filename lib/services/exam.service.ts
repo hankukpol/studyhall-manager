@@ -234,6 +234,7 @@ function assignRanks<T extends { totalScore: number | null }>(rows: T[]) {
 }
 
 async function getDivisionOrThrow(divisionSlug: string) {
+  const { prisma } = await import("@/lib/prisma");
 
   const division = await prisma.division.findUnique({
     where: {
@@ -330,6 +331,7 @@ export async function listExamTypes(divisionSlug: string) {
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
+  const { prisma } = await import("@/lib/prisma");
 
   const examTypes = await prisma.examType.findMany({
     where: {
@@ -381,6 +383,7 @@ export async function createExamType(divisionSlug: string, input: ExamTypeSchema
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
+  const { prisma } = await import("@/lib/prisma");
 
   const count = await prisma.examType.count({
     where: {
@@ -457,6 +460,7 @@ export async function updateExamType(
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
+  const { prisma } = await import("@/lib/prisma");
 
   const examType = await prisma.examType.findFirst({
     where: {
@@ -568,6 +572,7 @@ export async function deleteExamType(divisionSlug: string, examTypeId: string) {
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
+  const { prisma } = await import("@/lib/prisma");
 
   const examType = await prisma.examType.findFirst({
     where: {
@@ -634,6 +639,7 @@ export async function getExamScoreSheet(
     } satisfies ExamScoreSheet;
   }
 
+  const { prisma } = await import("@/lib/prisma");
 
   const records = await prisma.examScore.findMany({
     where: {
@@ -758,6 +764,7 @@ export async function saveExamScores(
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
+  const { prisma } = await import("@/lib/prisma");
 
   const studentIds = preparedRows.map((row) => row.studentId);
   const matchingStudents = await prisma.student.findMany({
@@ -844,6 +851,7 @@ export async function getLatestExamSummaryForStudent(
     };
   }
 
+  const { prisma } = await import("@/lib/prisma");
 
   const latest = await prisma.examScore.findFirst({
     where: {
@@ -895,6 +903,7 @@ export async function getLatestExamSummariesForStudents(
     return new Map(entries);
   }
 
+  const { prisma } = await import("@/lib/prisma");
 
   const latestScores = await prisma.examScore.findMany({
     where: {
@@ -984,6 +993,7 @@ export async function listStudentExamResults(
       });
   }
 
+  const { prisma } = await import("@/lib/prisma");
 
   const records = await prisma.examScore.findMany({
     where: {

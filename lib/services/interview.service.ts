@@ -92,6 +92,7 @@ function serializeInterviewRecord(
 }
 
 const getDivisionOrThrow = cache(async function getDivisionOrThrow(divisionSlug: string) {
+  const { prisma } = await import("@/lib/prisma");
 
   const division = await prisma.division.findUnique({
     where: {
@@ -136,7 +137,7 @@ export async function listInterviews(
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-
+  const { prisma } = await import("@/lib/prisma");
 
   const interviews = await prisma.interview.findMany({
     where: {
@@ -221,7 +222,7 @@ export async function createInterview(
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-
+  const { prisma } = await import("@/lib/prisma");
 
   const student = await prisma.student.findFirst({
     where: {
