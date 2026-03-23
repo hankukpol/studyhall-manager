@@ -1,5 +1,4 @@
 import { GeneralSettingsManager } from "@/components/settings/GeneralSettingsManager";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import { getDivisionGeneralSettings } from "@/lib/services/settings.service";
 
 type GeneralSettingsPageProps = {
@@ -8,12 +7,10 @@ type GeneralSettingsPageProps = {
   };
 };
 
-export const dynamic = "force-dynamic";
 
 export default async function GeneralSettingsPage({
   params,
 }: GeneralSettingsPageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
   const settings = await getDivisionGeneralSettings(params.division);
 
   return (

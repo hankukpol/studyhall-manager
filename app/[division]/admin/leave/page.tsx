@@ -1,5 +1,4 @@
 import { LeaveManager } from "@/components/leave/LeaveManager";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import { getDivisionSettings } from "@/lib/services/settings.service";
 import { listLeavePermissions } from "@/lib/services/leave.service";
 import { listStudents } from "@/lib/services/student.service";
@@ -10,10 +9,8 @@ type AdminLeavePageProps = {
   };
 };
 
-export const dynamic = "force-dynamic";
 
 export default async function AdminLeavePage({ params }: AdminLeavePageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
 
   const [students, permissions, settings] = await Promise.all([
     listStudents(params.division),

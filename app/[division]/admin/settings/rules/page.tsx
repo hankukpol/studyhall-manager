@@ -1,5 +1,4 @@
 import { RulesSettingsManager } from "@/components/settings/RulesSettingsManager";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import { getDivisionRuleSettings } from "@/lib/services/settings.service";
 
 type RulesSettingsPageProps = {
@@ -8,10 +7,8 @@ type RulesSettingsPageProps = {
   };
 };
 
-export const dynamic = "force-dynamic";
 
 export default async function RulesSettingsPage({ params }: RulesSettingsPageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
   const settings = await getDivisionRuleSettings(params.division);
 
   return (

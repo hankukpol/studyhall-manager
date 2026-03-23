@@ -1,5 +1,4 @@
 import { TuitionPlanManager } from "@/components/settings/TuitionPlanManager";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import { listTuitionPlans } from "@/lib/services/tuition-plan.service";
 
 type TuitionSettingsPageProps = {
@@ -9,7 +8,6 @@ type TuitionSettingsPageProps = {
 };
 
 export default async function TuitionSettingsPage({ params }: TuitionSettingsPageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
   const plans = await listTuitionPlans(params.division);
 
   return (

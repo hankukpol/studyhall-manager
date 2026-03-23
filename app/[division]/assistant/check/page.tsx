@@ -17,7 +17,6 @@ type AssistantCheckPageProps = {
   };
 };
 
-export const dynamic = "force-dynamic";
 
 export default async function AssistantCheckPage({ params }: AssistantCheckPageProps) {
   const today = getTodayInKst();

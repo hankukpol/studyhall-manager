@@ -1,5 +1,4 @@
 import { InterviewManager } from "@/components/interviews/InterviewManager";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import { listInterviews } from "@/lib/services/interview.service";
 import { getDivisionSettings } from "@/lib/services/settings.service";
 import { listStudents } from "@/lib/services/student.service";
@@ -10,10 +9,8 @@ type AdminInterviewsPageProps = {
   };
 };
 
-export const dynamic = "force-dynamic";
 
 export default async function AdminInterviewsPage({ params }: AdminInterviewsPageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
 
   const [students, interviews, settings] = await Promise.all([
     listStudents(params.division),
@@ -43,4 +40,3 @@ export default async function AdminInterviewsPage({ params }: AdminInterviewsPag
     </div>
   );
 }
-

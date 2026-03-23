@@ -1,8 +1,7 @@
+import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 import { ChartNoAxesColumn } from "lucide-react";
 
-import { ExamScoreChart } from "@/components/exams/ExamScoreChart";
-import { ScoreTargetPanel } from "@/components/exams/ScoreTargetPanel";
 import { StudentPortalFrame } from "@/components/student-view/StudentPortalFrame";
 import {
   PortalEmptyState,
@@ -23,6 +22,22 @@ type StudentExamsPageProps = {
     division: string;
   };
 };
+
+const panelFallback = (
+  <section className={`${portalSectionClass} animate-pulse rounded-[10px] border border-slate-200 bg-white p-5`}>
+    <div className="h-28 rounded-[10px] bg-slate-50" />
+  </section>
+);
+
+const ScoreTargetPanel = dynamic(
+  () => import("@/components/exams/ScoreTargetPanel").then((mod) => mod.ScoreTargetPanel),
+  { ssr: false, loading: () => panelFallback },
+);
+
+const ExamScoreChart = dynamic(
+  () => import("@/components/exams/ExamScoreChart").then((mod) => mod.ExamScoreChart),
+  { ssr: false, loading: () => panelFallback },
+);
 
 function formatDate(value: string | null) {
   if (!value) {

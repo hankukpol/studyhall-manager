@@ -1,5 +1,4 @@
 import { StaffManager } from "@/components/admin/StaffManager";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import { getDivisionBySlug } from "@/lib/services/division.service";
 import { listDivisionStaff } from "@/lib/services/division-staff.service";
 
@@ -10,7 +9,6 @@ type StaffPageProps = {
 };
 
 export default async function StaffPage({ params }: StaffPageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
 
   const division = await getDivisionBySlug(params.division);
   const staff = division ? await listDivisionStaff(division.id, params.division) : [];

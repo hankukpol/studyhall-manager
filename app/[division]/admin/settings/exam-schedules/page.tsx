@@ -1,5 +1,4 @@
 import { ExamScheduleManager } from "@/components/exam-schedules/ExamScheduleManager";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import { listExamSchedules } from "@/lib/services/exam-schedule.service";
 
 type ExamScheduleSettingsPageProps = {
@@ -8,10 +7,8 @@ type ExamScheduleSettingsPageProps = {
   };
 };
 
-export const dynamic = "force-dynamic";
 
 export default async function ExamScheduleSettingsPage({ params }: ExamScheduleSettingsPageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
 
   const schedules = await listExamSchedules(params.division);
 

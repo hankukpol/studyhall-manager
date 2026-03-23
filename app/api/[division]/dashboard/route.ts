@@ -5,7 +5,7 @@ import { requireApiAuth } from "@/lib/api-auth";
 import { getAdminDashboardData } from "@/lib/services/admin-dashboard.service";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: { division: string } },
 ) {
   const auth = await requireApiAuth(params.division, ["ADMIN", "SUPER_ADMIN"]);
@@ -15,7 +15,8 @@ export async function GET(
   }
 
   try {
-    const data = await getAdminDashboardData(params.division);
+    const forceFresh = new URL(request.url).searchParams.has("refresh");
+    const data = await getAdminDashboardData(params.division, { forceFresh });
     return NextResponse.json({ data }, {
       headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=30" },
     });

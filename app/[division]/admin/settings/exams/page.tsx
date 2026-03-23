@@ -1,5 +1,4 @@
 import { ExamTypeManager } from "@/components/exams/ExamTypeManager";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import { listExamTypes } from "@/lib/services/exam.service";
 import { getDivisionGeneralSettings } from "@/lib/services/settings.service";
 
@@ -9,10 +8,8 @@ type ExamSettingsPageProps = {
   };
 };
 
-export const dynamic = "force-dynamic";
 
 export default async function ExamSettingsPage({ params }: ExamSettingsPageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
 
   const [examTypes, generalSettings] = await Promise.all([
     listExamTypes(params.division),

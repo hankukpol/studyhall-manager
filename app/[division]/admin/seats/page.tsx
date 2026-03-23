@@ -1,19 +1,16 @@
 import { SeatStatusBoard } from "@/components/seats/SeatStatusBoard";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import { getAttendanceSnapshot } from "@/lib/services/attendance.service";
 import { listPaymentCategories } from "@/lib/services/payment.service";
 import { listPointRules } from "@/lib/services/point.service";
 import { getSeatLayout, listStudyRooms } from "@/lib/services/seat.service";
 import { listTuitionPlans } from "@/lib/services/tuition-plan.service";
 
-export const dynamic = "force-dynamic";
 
 type Props = {
   params: { division: string };
 };
 
 export default async function SeatStatusPage({ params }: Props) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
 
   const today = new Date()
     .toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" })

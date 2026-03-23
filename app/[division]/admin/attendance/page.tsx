@@ -30,7 +30,6 @@ type AdminAttendancePageProps = {
   };
 };
 
-export const dynamic = "force-dynamic";
 
 export default async function AdminAttendancePage({ params }: AdminAttendancePageProps) {
   const today = getTodayInKst();

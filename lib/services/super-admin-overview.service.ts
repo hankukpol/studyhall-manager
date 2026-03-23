@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+
 import { parseUtcDateFromYmd } from "@/lib/date-utils";
 import { isMockMode } from "@/lib/mock-data";
 import { getPrismaClient } from "@/lib/service-helpers";
@@ -264,7 +266,7 @@ async function getDivisionSummary(
   };
 }
 
-export async function getSuperAdminOverview(): Promise<DivisionOverviewSummary[]> {
+async function getSuperAdminOverviewUncached(): Promise<DivisionOverviewSummary[]> {
   const today = getKstToday();
   const [divisions, allAdmins] = await Promise.all([
     listManagedDivisions(),
@@ -300,4 +302,20 @@ export async function getSuperAdminOverview(): Promise<DivisionOverviewSummary[]
   );
 
   return summaries;
+}
+
+const getSuperAdminOverviewCached = unstable_cache(
+  async () => getSuperAdminOverviewUncached(),
+  ["super-admin-overview"],
+  { revalidate: 30, tags: ["super-admin-overview"] },
+);
+
+export async function getSuperAdminOverview(
+  options?: { forceFresh?: boolean },
+): Promise<DivisionOverviewSummary[]> {
+  if (options?.forceFresh) {
+    return getSuperAdminOverviewUncached();
+  }
+
+  return getSuperAdminOverviewCached();
 }

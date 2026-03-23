@@ -1,5 +1,4 @@
 import { PointGrantManager } from "@/components/points/PointGrantManager";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import { listPointRecords, listPointRules } from "@/lib/services/point.service";
 import { listStudents } from "@/lib/services/student.service";
 
@@ -10,7 +9,6 @@ type AdminPointsPageProps = {
 };
 
 export default async function AdminPointsPage({ params }: AdminPointsPageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
 
   const [students, rules, records] = await Promise.all([
     listStudents(params.division),

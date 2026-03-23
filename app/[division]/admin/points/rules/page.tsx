@@ -1,5 +1,4 @@
 import { PointRuleManager } from "@/components/points/PointRuleManager";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import { listPointRules } from "@/lib/services/point.service";
 
 type PointRulePageProps = {
@@ -9,7 +8,6 @@ type PointRulePageProps = {
 };
 
 export default async function PointRulePage({ params }: PointRulePageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
   const rules = await listPointRules(params.division);
 
   return (

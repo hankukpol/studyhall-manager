@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import NextLink from "next/link";
 import {
   AlertTriangle,
@@ -13,16 +14,6 @@ import {
   Users,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ComponentProps } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { toast } from "sonner";
 
 import type { DivisionOverviewSummary } from "@/lib/services/super-admin-overview.service";
@@ -31,8 +22,19 @@ type SuperAdminOverviewProps = {
   initialDivisions: DivisionOverviewSummary[];
 };
 
-function Link({ prefetch = false, ...props }: ComponentProps<typeof NextLink>) {
-  return <NextLink {...props} prefetch={prefetch} />;
+const LazyAttendanceComparisonChart = dynamic(
+  () =>
+    import("@/components/super-admin/SuperAdminAttendanceComparisonChart").then(
+      (mod) => mod.SuperAdminAttendanceComparisonChart,
+    ),
+  {
+    ssr: false,
+    loading: () => <div className="h-44 rounded-[10px] bg-slate-50 animate-pulse" />,
+  },
+);
+
+function Link(props: ComponentProps<typeof NextLink>) {
+  return <NextLink {...props} prefetch={props.prefetch ?? false} />;
 }
 
 // ─── 원형 게이지 ──────────────────────────────────────────────────────────────
@@ -288,8 +290,8 @@ function CriticalIssueBanner({ divisions }: { divisions: DivisionOverviewSummary
 // ─── 지점별 출석률 비교 차트 ─────────────────────────────────────────────────
 
 function AttendanceComparisonChart({ divisions }: { divisions: DivisionOverviewSummary[] }) {
-  const activeDivisions = divisions.filter((d) => d.isActive);
-  if (activeDivisions.length < 2) return null;
+  return <LazyAttendanceComparisonChart divisions={divisions} />;
+/*
 
   const chartData = activeDivisions.map((d) => ({
     name: d.name,
@@ -344,6 +346,7 @@ function AttendanceComparisonChart({ divisions }: { divisions: DivisionOverviewS
       </div>
     </section>
   );
+*/
 }
 
 // ─── 합산 지표 카드 ──────────────────────────────────────────────────────────
@@ -406,7 +409,10 @@ export function SuperAdminOverview({ initialDivisions }: SuperAdminOverviewProps
   const refresh = useCallback(async (showToast = false) => {
     setIsRefreshing(true);
     try {
-      const response = await fetch("/api/super-admin/overview", { cache: "no-store" });
+      const response = await fetch(
+        `/api/super-admin/overview${showToast ? `?refresh=${Date.now()}` : ""}`,
+        { cache: "no-store" },
+      );
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "데이터를 불러오지 못했습니다.");
       if (!mountedRef.current) return;

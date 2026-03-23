@@ -1,15 +1,13 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { CalendarDays, CreditCard, LoaderCircle, MessageSquareWarning, Plus, Star, Target } from "lucide-react";
 import { toast } from "sonner";
 
-import { ExamScoreChart } from "@/components/exams/ExamScoreChart";
-import { ScoreTargetPanel } from "@/components/exams/ScoreTargetPanel";
 import { PointCategoryBadge, PointValueBadge } from "@/components/points/PointBadges";
 import { AttendanceCalendar } from "@/components/student-view/AttendanceCalendar";
-import { StudyTimeStats } from "@/components/study-time/StudyTimeStats";
 import { Modal } from "@/components/ui/Modal";
 import { getInterviewResultTypeClasses, getInterviewResultTypeLabel } from "@/lib/interview-meta";
 import { getLeaveStatusClasses, getLeaveStatusLabel, getLeaveTypeLabel } from "@/lib/leave-meta";
@@ -45,6 +43,27 @@ type StudentDetailTabsProps = {
   pointRules: PointRuleItem[];
   interviews: InterviewItem[];
 };
+
+const tabSectionFallback = () => (
+  <div className="rounded-[22px] border border-slate-200 bg-white p-4 text-sm text-slate-500">
+    불러오는 중...
+  </div>
+);
+
+const ScoreTargetPanel = dynamic(
+  () => import("@/components/exams/ScoreTargetPanel").then((mod) => mod.ScoreTargetPanel),
+  { ssr: false, loading: tabSectionFallback },
+);
+
+const ExamScoreChart = dynamic(
+  () => import("@/components/exams/ExamScoreChart").then((mod) => mod.ExamScoreChart),
+  { ssr: false, loading: tabSectionFallback },
+);
+
+const StudyTimeStats = dynamic(
+  () => import("@/components/study-time/StudyTimeStats").then((mod) => mod.StudyTimeStats),
+  { ssr: false, loading: tabSectionFallback },
+);
 
 function formatDate(value: string | null) {
   if (!value) {
@@ -737,4 +756,3 @@ export function StudentDetailTabs({
     </div>
   );
 }
-

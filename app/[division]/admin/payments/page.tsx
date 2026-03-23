@@ -1,5 +1,4 @@
 import { PaymentManager } from "@/components/payments/PaymentManager";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import {
   listPaymentCategories,
   listPayments,
@@ -13,10 +12,8 @@ type AdminPaymentsPageProps = {
   };
 };
 
-export const dynamic = "force-dynamic";
 
 export default async function AdminPaymentsPage({ params }: AdminPaymentsPageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
 
   const [students, paymentCategories, payments, tuitionPlans] = await Promise.all([
     listStudents(params.division),

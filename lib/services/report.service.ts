@@ -1,7 +1,10 @@
 import { isMockMode } from "@/lib/mock-data";
 import { normalizeYmMonth, normalizeYmdDate } from "@/lib/date-utils";
 import { readMockState } from "@/lib/mock-store";
-import { getLatestExamSummaryForStudent } from "@/lib/services/exam.service";
+import {
+  getLatestExamSummariesForStudents,
+  getLatestExamSummaryForStudent,
+} from "@/lib/services/exam.service";
 import { listInterviews } from "@/lib/services/interview.service";
 import { getPeriods } from "@/lib/services/period.service";
 import { listPayments } from "@/lib/services/payment.service";
@@ -389,14 +392,10 @@ async function buildExamSummaryMap(
   divisionSlug: string,
   students: StudentListItem[],
 ) {
-  const entries = await Promise.all(
-    students.map(async (student) => [
-      student.id,
-      await getLatestExamSummaryForStudent(divisionSlug, student.id),
-    ] as const),
+  return getLatestExamSummariesForStudents(
+    divisionSlug,
+    students.map((student) => student.id),
   );
-
-  return new Map(entries);
 }
 
 function buildStudentRows(

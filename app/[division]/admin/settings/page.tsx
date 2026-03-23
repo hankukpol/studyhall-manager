@@ -12,7 +12,6 @@ import {
   UserCog,
 } from "lucide-react";
 
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import { getDivisionBySlug } from "@/lib/services/division.service";
 import { getDivisionGeneralSettings, getDivisionRuleSettings } from "@/lib/services/settings.service";
 
@@ -22,7 +21,6 @@ type SettingsHubPageProps = {
   };
 };
 
-export const dynamic = "force-dynamic";
 
 const sections = [
   {
@@ -91,7 +89,6 @@ const sections = [
 ] as const;
 
 export default async function SettingsHubPage({ params }: SettingsHubPageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
 
   const [division, generalSettings, ruleSettings] = await Promise.all([
     getDivisionBySlug(params.division),

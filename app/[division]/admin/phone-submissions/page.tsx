@@ -2,7 +2,6 @@ import { ClipboardList, Smartphone } from "lucide-react";
 
 import { PhoneCheckForm } from "@/components/phones/PhoneCheckForm";
 import { PhoneSubmissionManager } from "@/components/phones/PhoneSubmissionManager";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import { getPhoneDaySnapshot, listPhoneRecords } from "@/lib/services/phone-submission.service";
 import { listPointRules } from "@/lib/services/point.service";
 import { getSeatLayout, listStudyRooms } from "@/lib/services/seat.service";
@@ -27,10 +26,8 @@ type PhoneSubmissionsPageProps = {
   };
 };
 
-export const dynamic = "force-dynamic";
 
 export default async function PhoneSubmissionsPage({ params }: PhoneSubmissionsPageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
 
   const today = getKstToday();
 

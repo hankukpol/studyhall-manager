@@ -1,5 +1,4 @@
 import { SeatEditor } from "@/components/seats/SeatEditor";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import { getSeatLayout, listStudyRooms } from "@/lib/services/seat.service";
 import { listStudents } from "@/lib/services/student.service";
 
@@ -10,7 +9,6 @@ type SeatSettingsPageProps = {
 };
 
 export default async function SeatSettingsPage({ params }: SeatSettingsPageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
 
   const [rooms, students] = await Promise.all([
     listStudyRooms(params.division),

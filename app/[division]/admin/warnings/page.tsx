@@ -1,5 +1,4 @@
 import { WarningStudentsManager } from "@/components/points/WarningStudentsManager";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import { listWarningStudents } from "@/lib/services/point.service";
 import {
   getDivisionRuleSettings,
@@ -13,7 +12,6 @@ type WarningPageProps = {
 };
 
 export default async function WarningPage({ params }: WarningPageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
   const [students, settings, division] = await Promise.all([
     listWarningStudents(params.division),
     getDivisionRuleSettings(params.division),

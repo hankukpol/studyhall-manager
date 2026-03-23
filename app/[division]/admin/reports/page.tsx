@@ -1,5 +1,4 @@
 import { ReportsDashboard } from "@/components/reports/ReportsDashboard";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import {
   getActivityLogData,
   getReportData,
@@ -21,13 +20,11 @@ type AdminReportsPageProps = {
   };
 };
 
-export const dynamic = "force-dynamic";
 
 export default async function AdminReportsPage({
   params,
   searchParams,
 }: AdminReportsPageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
 
   const selection = resolveReportSelection(searchParams);
   const [data, initialActivityLog] = await Promise.all([

@@ -70,12 +70,13 @@ function createMatrix(
   records: AttendanceRecordItem[],
 ): MatrixState {
   const next: MatrixState = {};
+  const recordMap = new Map(records.map((record) => [`${record.studentId}:${record.periodId}`, record]));
 
   for (const student of students) {
     next[student.id] = {};
 
     for (const period of periods) {
-      const record = records.find((item) => item.studentId === student.id && item.periodId === period.id);
+      const record = recordMap.get(`${student.id}:${period.id}`);
       next[student.id][period.id] = {
         status: record?.status ?? "",
         reason: record?.reason ?? "",
@@ -96,10 +97,14 @@ export function AdminAttendanceBoard({
   seatRooms,
   initialSeatLayout,
 }: AdminAttendanceBoardProps) {
+  const initialMatrix = useMemo(
+    () => createMatrix(initialStudents, initialPeriods, initialRecords),
+    [initialPeriods, initialRecords, initialStudents],
+  );
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [students, setStudents] = useState(initialStudents);
   const [periods, setPeriods] = useState(initialPeriods);
-  const [matrix, setMatrix] = useState<MatrixState>(() => createMatrix(initialStudents, initialPeriods, initialRecords));
+  const [matrix, setMatrix] = useState<MatrixState>(() => initialMatrix);
   const [stats, setStats] = useState(initialStats);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -118,6 +123,18 @@ export function AdminAttendanceBoard({
 
   useEffect(() => {
     let isMounted = true;
+
+    if (selectedDate === initialDate) {
+      setStudents(initialStudents);
+      setPeriods(initialPeriods);
+      setMatrix(initialMatrix);
+      setStats(initialStats);
+      setIsLoading(false);
+
+      return () => {
+        isMounted = false;
+      };
+    }
 
     async function loadData() {
       setIsLoading(true);
@@ -164,7 +181,7 @@ export function AdminAttendanceBoard({
     return () => {
       isMounted = false;
     };
-  }, [divisionSlug, selectedDate]);
+  }, [divisionSlug, initialDate, initialMatrix, initialPeriods, initialStats, initialStudents, selectedDate]);
 
   function updateCell(studentId: string, periodId: string, value: Partial<{ status: AttendanceOptionValue; reason: string }>) {
     setMatrix((current) => ({

@@ -33,8 +33,8 @@ type AdminDashboardProps = {
   initialData: AdminDashboardData;
 };
 
-function Link({ prefetch = false, ...props }: ComponentProps<typeof NextLink>) {
-  return <NextLink {...props} prefetch={prefetch} />;
+function Link(props: ComponentProps<typeof NextLink>) {
+  return <NextLink {...props} prefetch={props.prefetch ?? false} />;
 }
 
 // ─── 헬퍼 ────────────────────────────────────────────────────────────────────
@@ -327,7 +327,10 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
     async (showToast: boolean) => {
       setIsRefreshing(true);
       try {
-        const response = await fetch(`/api/${divisionSlug}/dashboard`, { cache: "no-store" });
+        const response = await fetch(
+          `/api/${divisionSlug}/dashboard${showToast ? `?refresh=${Date.now()}` : ""}`,
+          { cache: "no-store" },
+        );
         const payload = await response.json();
         if (!response.ok)
           throw new Error(payload.error ?? "대시보드 데이터를 불러오지 못했습니다.");

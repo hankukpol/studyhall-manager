@@ -7,7 +7,6 @@ type PeriodSettingsPageProps = {
   };
 };
 
-export const dynamic = "force-dynamic";
 
 export default async function PeriodSettingsPage({ params }: PeriodSettingsPageProps) {
   const periods = await getPeriods(params.division);

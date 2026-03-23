@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+
 import { listPointRecords, type PointRecordItem } from "@/lib/services/point.service";
 import { listPayments } from "@/lib/services/payment.service";
 import { getDivisionSettings, getDivisionTheme } from "@/lib/services/settings.service";
@@ -325,7 +327,7 @@ function getSnapshotOrThrow(snapshotMap: Map<string, AttendanceSnapshot>, date: 
   return snapshot;
 }
 
-export async function getAdminDashboardData(divisionSlug: string): Promise<AdminDashboardData> {
+async function getAdminDashboardDataUncached(divisionSlug: string): Promise<AdminDashboardData> {
   const today = getKstDate();
   const yesterday = getPreviousDate(today);
   const weekStart = getWeekStart(today);
@@ -575,4 +577,21 @@ export async function getAdminDashboardData(divisionSlug: string): Promise<Admin
     todayLeaveStudents,
     interviewNeededStudents,
   };
+}
+
+const getAdminDashboardDataCached = unstable_cache(
+  async (divisionSlug: string) => getAdminDashboardDataUncached(divisionSlug),
+  ["admin-dashboard-data"],
+  { revalidate: 30, tags: ["admin-dashboard"] },
+);
+
+export async function getAdminDashboardData(
+  divisionSlug: string,
+  options?: { forceFresh?: boolean },
+): Promise<AdminDashboardData> {
+  if (options?.forceFresh) {
+    return getAdminDashboardDataUncached(divisionSlug);
+  }
+
+  return getAdminDashboardDataCached(divisionSlug);
 }

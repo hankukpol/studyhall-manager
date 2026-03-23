@@ -1,17 +1,9 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { Download, LoaderCircle, RefreshCcw } from "lucide-react";
 import { toast } from "sonner";
 
@@ -28,6 +20,14 @@ type ReportsDashboardProps = {
   data: ReportData;
   initialActivityLog: ActivityLogData;
 };
+
+const ReportsTrendChart = dynamic(
+  () => import("@/components/reports/ReportsTrendChart").then((mod) => mod.ReportsTrendChart),
+  {
+    ssr: false,
+    loading: () => <div className="h-full rounded-[20px] bg-slate-50 animate-pulse" />,
+  },
+);
 
 function formatPointDelta(value: number) {
   return value > 0 ? `+${value}` : `${value}`;
@@ -384,45 +384,7 @@ export function ReportsDashboard({
               </div>
 
               <div className="mt-5 h-[320px] rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={data.trend} margin={{ top: 12, right: 16, left: -16, bottom: 0 }}>
-                    <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
-                    <XAxis dataKey="label" tick={{ fill: "#64748b", fontSize: 12 }} />
-                    <YAxis
-                      domain={[0, 100]}
-                      tick={{ fill: "#64748b", fontSize: 12 }}
-                      tickFormatter={(value) => `${value}%`}
-                    />
-                    <Tooltip
-                      formatter={(value: unknown, name: unknown) => {
-                        const rawValue = Array.isArray(value) ? value[0] : value;
-                        const numericValue =
-                          typeof rawValue === "number" ? rawValue : Number(rawValue ?? 0);
-                        const metricName = String(name ?? "");
-
-                        if (metricName === "attendanceRate") {
-                          return [`${numericValue}%`, "출석률"];
-                        }
-
-                        if (metricName === "tardyCount") {
-                          return [numericValue, "지각"];
-                        }
-
-                        return [numericValue, "결석"];
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="attendanceRate"
-                      stroke={data.division.color}
-                      strokeWidth={3}
-                      dot={{ r: 3 }}
-                      activeDot={{ r: 5 }}
-                    />
-                    <Line type="monotone" dataKey="tardyCount" stroke="#f59e0b" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="absentCount" stroke="#ef4444" strokeWidth={2} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
+                <ReportsTrendChart color={data.division.color} trend={data.trend} />
               </div>
             </section>
 

@@ -29,6 +29,7 @@ export function StudentPortalTabs({
             <Link
               key={item.key}
               href={href}
+              prefetch={false}
               className={`relative shrink-0 whitespace-nowrap py-4 text-sm font-semibold transition ${
                 isActive ? "text-slate-950" : "text-slate-500 hover:text-slate-800"
               }`}

@@ -3,7 +3,7 @@ import type { CSSProperties, ReactNode } from "react";
 
 import { getDivisionBySlug } from "@/lib/services/division.service";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 function normalizeHexColor(value: string) {
   const trimmed = value.trim();

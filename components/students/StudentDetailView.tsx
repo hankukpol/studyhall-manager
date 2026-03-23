@@ -412,7 +412,6 @@ export function StudentDetailView({
               initialStudent={initialStudent}
               canEdit={canEdit && initialStudent.status !== "WITHDRAWN"}
               showAdvancedFields
-              hideSeatSection
               studyTrackOptions={studyTrackOptions}
               seatOptions={seatOptions}
               tuitionPlans={tuitionPlans}
@@ -463,21 +462,6 @@ export function StudentDetailView({
           </div>
         </section>
       </div>
-
-      {/* 좌석 및 운영 정보 — full width */}
-      <section className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
-        <StudentForm
-          divisionSlug={divisionSlug}
-          mode="edit"
-          initialStudent={initialStudent}
-          canEdit={canEdit && initialStudent.status !== "WITHDRAWN"}
-          showAdvancedFields
-          showSeatSectionOnly
-          studyTrackOptions={studyTrackOptions}
-          seatOptions={seatOptions}
-          tuitionPlans={tuitionPlans}
-        />
-      </section>
 
       <Modal
         open={isWithdrawOpen}

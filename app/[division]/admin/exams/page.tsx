@@ -1,5 +1,4 @@
 import { ExamScoreManager } from "@/components/exams/ExamScoreManager";
-import { requireDivisionAdminAccess } from "@/lib/auth";
 import { listExamTypes } from "@/lib/services/exam.service";
 
 type AdminExamsPageProps = {
@@ -8,10 +7,8 @@ type AdminExamsPageProps = {
   };
 };
 
-export const dynamic = "force-dynamic";
 
 export default async function AdminExamsPage({ params }: AdminExamsPageProps) {
-  await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
   const examTypes = (await listExamTypes(params.division)).filter((examType) => examType.isActive);
 
   return (

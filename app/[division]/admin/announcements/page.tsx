@@ -8,7 +8,6 @@ type AdminAnnouncementsPageProps = {
   };
 };
 
-export const dynamic = "force-dynamic";
 
 export default async function AdminAnnouncementsPage({ params }: AdminAnnouncementsPageProps) {
   const session = await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);

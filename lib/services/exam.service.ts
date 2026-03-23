@@ -884,6 +884,67 @@ export async function getLatestExamSummaryForStudent(
   };
 }
 
+export async function getLatestExamSummariesForStudents(
+  divisionSlug: string,
+  studentIds: string[],
+): Promise<Map<string, LatestExamSummary | null>> {
+  if (studentIds.length === 0) {
+    return new Map();
+  }
+
+  if (isMockMode()) {
+    const entries = await Promise.all(
+      studentIds.map(async (studentId) => [studentId, await getLatestExamSummaryForStudent(divisionSlug, studentId)] as const),
+    );
+
+    return new Map(entries);
+  }
+
+  const prisma = await getPrismaClient();
+  const latestScores = await prisma.examScore.findMany({
+    where: {
+      studentId: { in: studentIds },
+      student: {
+        division: {
+          slug: divisionSlug,
+        },
+      },
+    },
+    include: {
+      examType: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    orderBy: [{ examDate: "desc" }, { createdAt: "desc" }],
+  });
+
+  const summaryMap = new Map<string, LatestExamSummary | null>();
+
+  for (const studentId of studentIds) {
+    summaryMap.set(studentId, null);
+  }
+
+  for (const score of latestScores) {
+    if (summaryMap.get(score.studentId)) {
+      continue;
+    }
+
+    summaryMap.set(score.studentId, {
+      id: score.id,
+      examTypeName: score.examType.name,
+      examRound: score.examRound,
+      examDate: toDateString(score.examDate),
+      totalScore: score.totalScore,
+      rankInClass: score.rankInClass,
+      notes: score.notes,
+    });
+  }
+
+  return summaryMap;
+}
+
 export async function listStudentExamResults(
   divisionSlug: string,
   studentId: string,
