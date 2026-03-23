@@ -95,6 +95,8 @@ export function StudentForm({
   const [selectedRoomId, setSelectedRoomId] = useState("");
   const [seatLayout, setSeatLayout] = useState<SeatLayout | null>(null);
   const [isSeatLayoutLoading, setIsSeatLayoutLoading] = useState(false);
+  const [isSeatBrowserOpen, setIsSeatBrowserOpen] = useState(showSeatSectionOnly);
+  const [hasLoadedSeatBrowser, setHasLoadedSeatBrowser] = useState(false);
 
   const activeTuitionPlans = useMemo(
     () => tuitionPlans.filter((plan) => plan.isActive || plan.id === initialStudent?.tuitionPlanId),
@@ -125,6 +127,10 @@ export function StudentForm({
   const availableSeatCount = Math.max(activeRoomSeatCount - occupiedSeatCount, 0);
 
   useEffect(() => {
+    if (!isSeatBrowserOpen || hasLoadedSeatBrowser) {
+      return;
+    }
+
     let active = true;
 
     async function loadRooms() {
@@ -142,6 +148,7 @@ export function StudentForm({
 
         const nextRooms = data.rooms as StudyRoomItem[];
         setRooms(nextRooms);
+        setHasLoadedSeatBrowser(true);
 
         const preferredRoomId =
           selectedSeatChoice?.studyRoomId ??
@@ -164,7 +171,7 @@ export function StudentForm({
     return () => {
       active = false;
     };
-  }, [divisionSlug, seatChoices, seatId, selectedSeatChoice?.studyRoomId]);
+  }, [divisionSlug, hasLoadedSeatBrowser, isSeatBrowserOpen, seatChoices, seatId, selectedSeatChoice?.studyRoomId]);
 
   useEffect(() => {
     if (!selectedSeatChoice?.studyRoomId) {
@@ -175,8 +182,16 @@ export function StudentForm({
   }, [selectedSeatChoice?.studyRoomId]);
 
   useEffect(() => {
+    if (!isSeatBrowserOpen) {
+      return;
+    }
+
     if (!selectedRoomId) {
       setSeatLayout(null);
+      return;
+    }
+
+    if (seatLayout?.room?.id === selectedRoomId) {
       return;
     }
 
@@ -214,7 +229,7 @@ export function StudentForm({
     return () => {
       active = false;
     };
-  }, [divisionSlug, selectedRoomId]);
+  }, [divisionSlug, isSeatBrowserOpen, seatLayout?.room?.id, selectedRoomId]);
 
   function handleSeatMapSelect(clickedSeatId: string | null) {
     if (!clickedSeatId || !seatLayout) {
@@ -555,7 +570,21 @@ export function StudentForm({
             </select>
           </label>
 
-          {rooms.length > 0 ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[20px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-4">
+            <p className="text-sm text-slate-500">
+              ?섏씠吏 泥?吏꾩엯 ?띿룄瑜??꾪빐 醫뚯꽍 留? ?꾩뿉 ?꾨븘???붾윭?⑸땲?? ?꾪븘???좏깮?섎㈃ ?ㅽ떆 諛곗젙?덉쓣 ?뺤씤???덉뒿?덈떎.
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsSeatBrowserOpen((current) => !current)}
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+            >
+              <MapPinned className="h-4 w-4" />
+              {isSeatBrowserOpen ? "醫뚯꽍 留? ?リ린" : "醫뚯꽍 留? ?닿린"}
+            </button>
+          </div>
+
+          {isSeatBrowserOpen && rooms.length > 0 ? (
             <div className="space-y-4 rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -619,6 +648,21 @@ export function StudentForm({
                   </button>
                 ) : null}
               </div>
+            </div>
+          ) : null}
+
+          {isSeatBrowserOpen && !hasLoadedSeatBrowser ? (
+            <div className="rounded-[20px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-center text-sm text-slate-500">
+              <span className="inline-flex items-center gap-2">
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+                醫뚯꽍 ?꾪솴???鍮꾪븯?뒗 以묒엯?덈떎.
+              </span>
+            </div>
+          ) : null}
+
+          {isSeatBrowserOpen && hasLoadedSeatBrowser && rooms.length === 0 ? (
+            <div className="rounded-[20px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-center text-sm text-slate-500">
+              ?깅줉???먯뒿?ㅼ씠 ?놁뒿?덈떎.
             </div>
           ) : null}
 

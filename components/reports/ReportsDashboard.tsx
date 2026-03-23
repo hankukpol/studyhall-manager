@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Download, LoaderCircle, RefreshCcw } from "lucide-react";
 import { toast } from "sonner";
 
@@ -72,6 +72,9 @@ export function ReportsDashboard({
     initialActivityLog.actionType ?? "ALL",
   );
   const [isActivityLoading, setIsActivityLoading] = useState(false);
+  const [hasRequestedActivity, setHasRequestedActivity] = useState(
+    initialActivityLog.items.length > 0 || initialActivityLog.actorOptions.length > 0,
+  );
 
   const exportLinks = useMemo(() => {
     const rangeParams = new URLSearchParams({
@@ -116,7 +119,7 @@ export function ReportsDashboard({
     router.push(`${pathname}?${params.toString()}`);
   }
 
-  async function refreshActivityLogs(showToast = false) {
+  const refreshActivityLogs = useCallback(async (showToast = false) => {
     setIsActivityLoading(true);
 
     try {
@@ -143,6 +146,7 @@ export function ReportsDashboard({
       }
 
       setActivity(payload.activity);
+      setHasRequestedActivity(true);
 
       if (showToast) {
         toast.success("활동 로그를 새로고침했습니다.");
@@ -152,15 +156,16 @@ export function ReportsDashboard({
     } finally {
       setIsActivityLoading(false);
     }
-  }
+  }, [activityActionType, activityActorId, activityDateFrom, activityDateTo, divisionSlug]);
 
   useEffect(() => {
-    if (tab !== "activity" || activity.items.length > 0 || isActivityLoading) {
+    if (tab !== "activity" || hasRequestedActivity || isActivityLoading) {
       return;
     }
 
+    setHasRequestedActivity(true);
     void refreshActivityLogs(false);
-  }, [activity.items.length, isActivityLoading, tab]);
+  }, [hasRequestedActivity, isActivityLoading, refreshActivityLogs, tab]);
 
   return (
     <div className="space-y-6">

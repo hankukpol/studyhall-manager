@@ -146,10 +146,9 @@ export function SeatEditor({
   initialLayout,
   students: initialStudents,
 }: SeatEditorProps) {
+  const initialRoomId = initialLayout.room?.id ?? initialRooms[0]?.id ?? null;
   const [rooms, setRooms] = useState(initialRooms);
-  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(
-    initialLayout.room?.id ?? initialRooms[0]?.id ?? null,
-  );
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(initialRoomId);
   const [layout, setLayout] = useState(initialLayout);
   const [roomForm, setRoomForm] = useState<RoomFormState>(() => buildRoomFormState(initialLayout.room));
   const [draftSeats, setDraftSeats] = useState<DraftSeat[]>(() => buildDraftSeats(initialLayout));
@@ -157,6 +156,7 @@ export function SeatEditor({
   const [selectedLocalId, setSelectedLocalId] = useState<string | null>(
     buildDraftSeats(initialLayout)[0]?.localId ?? null,
   );
+  const [hasSkippedInitialLayoutLoad, setHasSkippedInitialLayoutLoad] = useState(false);
   const [newRoomForm, setNewRoomForm] = useState<RoomFormState>({
     name: "",
     columns: 9,
@@ -264,20 +264,34 @@ export function SeatEditor({
   );
 
   useEffect(() => {
-    if (selectedRoomId) {
-      void loadLayout(selectedRoomId);
-    } else {
-      setLayout({
-        room: null,
-        columns: roomForm.columns,
-        rows: roomForm.rows,
-        aisleColumns: previewAisleColumns,
-        seats: [],
-      });
-      setDraftSeats([]);
-      setSelectedLocalId(null);
+    if (!selectedRoomId) {
+      return;
     }
-  }, [loadLayout, previewAisleColumns, roomForm.columns, roomForm.rows, selectedRoomId]);
+
+    if (!hasSkippedInitialLayoutLoad && selectedRoomId === initialRoomId) {
+      setHasSkippedInitialLayoutLoad(true);
+      return;
+    }
+
+    setHasSkippedInitialLayoutLoad(true);
+    void loadLayout(selectedRoomId);
+  }, [hasSkippedInitialLayoutLoad, initialRoomId, loadLayout, selectedRoomId]);
+
+  useEffect(() => {
+    if (selectedRoomId) {
+      return;
+    }
+
+    setLayout({
+      room: null,
+      columns: roomForm.columns,
+      rows: roomForm.rows,
+      aisleColumns: previewAisleColumns,
+      seats: [],
+    });
+    setDraftSeats([]);
+    setSelectedLocalId(null);
+  }, [previewAisleColumns, roomForm.columns, roomForm.rows, selectedRoomId]);
 
   function selectSeatByCell(positionX: number, positionY: number, seatId: string | null) {
     if (seatId) {
@@ -378,8 +392,6 @@ export function SeatEditor({
       toast.success("자습실을 생성했습니다.");
       setNewRoomForm({ name: "", columns: 9, rows: 6, aisleColumnsText: "5", isActive: true });
       await refreshRooms(room.id);
-      setSelectedRoomId(room.id);
-      await loadLayout(room.id);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "자습실 생성에 실패했습니다.");
     } finally {
@@ -449,8 +461,6 @@ export function SeatEditor({
       await refreshStudents();
 
       if (fallbackRoomId) {
-        setSelectedRoomId(fallbackRoomId);
-        await loadLayout(fallbackRoomId);
       } else {
         setSelectedRoomId(null);
         setRoomForm(buildRoomFormState(null));
