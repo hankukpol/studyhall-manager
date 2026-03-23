@@ -111,21 +111,31 @@ export function LeaveManager({
 
 
   const selectedSummaryStudent = activeStudents.find((student) => student.id === summaryStudentId) ?? null;
+  const usageSummaryByType = useMemo(() => {
+    const summary = new Map<LeaveTypeValue, number>();
+
+    permissions.forEach((permission) => {
+      if (
+        permission.studentId !== summaryStudentId ||
+        permission.status === "REJECTED" ||
+        !permission.date.startsWith(summaryMonth)
+      ) {
+        return;
+      }
+
+      summary.set(permission.type, (summary.get(permission.type) ?? 0) + 1);
+    });
+
+    return summary;
+  }, [permissions, summaryMonth, summaryStudentId]);
 
   const usageCards = useMemo(() => {
     if (!summaryStudentId) {
       return [];
     }
 
-    const currentMonthPermissions = permissions.filter(
-      (permission) =>
-        permission.studentId === summaryStudentId &&
-        permission.date.startsWith(summaryMonth) &&
-        permission.status !== "REJECTED",
-    );
-
     return LEAVE_TYPE_OPTIONS.map((option) => {
-      const used = currentMonthPermissions.filter((permission) => permission.type === option.value).length;
+      const used = usageSummaryByType.get(option.value) ?? 0;
       const limit = getLimit(option.value, settings);
 
       return {
@@ -136,7 +146,7 @@ export function LeaveManager({
         remaining: limit === null ? null : Math.max(limit - used, 0),
       };
     });
-  }, [permissions, settings, summaryMonth, summaryStudentId]);
+  }, [settings, summaryStudentId, usageSummaryByType]);
 
   const historyRows = useMemo(() => {
     return permissions

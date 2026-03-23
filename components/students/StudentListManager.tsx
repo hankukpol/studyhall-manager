@@ -139,12 +139,27 @@ export function StudentListManager({
   }, [deferredSearch, initialStudents, sortBy, statusFilter, warningFilter, trackFilter]);
 
   const summary = useMemo(
-    () => ({
-      total: initialStudents.length,
-      active: initialStudents.filter((student) => student.status === "ACTIVE").length,
-      warning: initialStudents.filter((student) => student.warningStage !== "NORMAL").length,
-      withdrawn: initialStudents.filter((student) => student.status === "WITHDRAWN").length,
-    }),
+    () =>
+      initialStudents.reduce(
+        (accumulator, student) => {
+          accumulator.total += 1;
+
+          if (student.status === "ACTIVE") {
+            accumulator.active += 1;
+          }
+
+          if (student.warningStage !== "NORMAL") {
+            accumulator.warning += 1;
+          }
+
+          if (student.status === "WITHDRAWN") {
+            accumulator.withdrawn += 1;
+          }
+
+          return accumulator;
+        },
+        { total: 0, active: 0, warning: 0, withdrawn: 0 },
+      ),
     [initialStudents],
   );
 
@@ -326,6 +341,7 @@ export function StudentListManager({
             <div className="flex flex-wrap gap-2">
               <Link
                 href={`/${divisionSlug}/admin/seats`}
+                prefetch={false}
                 className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 <MapPin className="h-4 w-4" />
@@ -540,6 +556,7 @@ export function StudentListManager({
                     <td className="px-4 py-4 text-right">
                       <Link
                         href={`/${divisionSlug}/admin/students/${student.id}`}
+                        prefetch={false}
                         className="inline-flex items-center gap-1 rounded-full border border-slate-200-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
                       >
                         상세 보기
@@ -581,6 +598,7 @@ export function StudentListManager({
 
                 <Link
                   href={`/${divisionSlug}/admin/students/${student.id}`}
+                  prefetch={false}
                   className="mt-4 inline-flex items-center gap-2 rounded-full bg-[var(--division-color)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
                 >
                   상세 보기

@@ -105,31 +105,64 @@ export function PaymentManager({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<string>("");
 
+  const paymentSummaryByStudent = useMemo(() => {
+    const summary = new Map<
+      string,
+      {
+        count: number;
+        totalAmount: number;
+        lastPaymentDate: string | null;
+      }
+    >();
+
+    payments.forEach((payment) => {
+      if (
+        payment.paymentTypeId !== summaryPaymentTypeId ||
+        !monthMatches(payment.paymentDate, summaryMonth)
+      ) {
+        return;
+      }
+
+      const current = summary.get(payment.studentId);
+
+      if (current) {
+        current.count += 1;
+        current.totalAmount += payment.amount;
+        current.lastPaymentDate =
+          !current.lastPaymentDate || payment.paymentDate > current.lastPaymentDate
+            ? payment.paymentDate
+            : current.lastPaymentDate;
+        return;
+      }
+
+      summary.set(payment.studentId, {
+        count: 1,
+        totalAmount: payment.amount,
+        lastPaymentDate: payment.paymentDate,
+      });
+    });
+
+    return summary;
+  }, [payments, summaryMonth, summaryPaymentTypeId]);
+
   const summaryRows = useMemo(() => {
     return activeStudents
       .map((student) => {
-        const matchedPayments = payments
-          .filter(
-            (payment) =>
-              payment.studentId === student.id &&
-              payment.paymentTypeId === summaryPaymentTypeId &&
-              monthMatches(payment.paymentDate, summaryMonth),
-          )
-          .sort((left, right) => right.paymentDate.localeCompare(left.paymentDate));
+        const matchedPayments = paymentSummaryByStudent.get(student.id);
 
         return {
           studentId: student.id,
           studentName: student.name,
           studentNumber: student.studentNumber,
           seatLabel: student.seatDisplay,
-          status: matchedPayments.length > 0 ? "PAID" : "UNPAID",
-          totalAmount: matchedPayments.reduce((sum, payment) => sum + payment.amount, 0),
-          lastPaymentDate: matchedPayments[0]?.paymentDate ?? null,
+          status: matchedPayments ? "PAID" : "UNPAID",
+          totalAmount: matchedPayments?.totalAmount ?? 0,
+          lastPaymentDate: matchedPayments?.lastPaymentDate ?? null,
         };
       })
       .filter((row) => summaryStatusFilter === "ALL" || row.status === summaryStatusFilter)
       .sort((left, right) => left.studentNumber.localeCompare(right.studentNumber, "ko"));
-  }, [activeStudents, payments, summaryMonth, summaryPaymentTypeId, summaryStatusFilter]);
+  }, [activeStudents, paymentSummaryByStudent, summaryStatusFilter]);
 
   const historyRows = useMemo(() => {
     const keyword = historySearch.trim().toLowerCase();
