@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { DEFAULT_PAYMENT_CATEGORY_NAMES } from "@/lib/payment-meta";
 import { getMockAdminSession, isMockMode } from "@/lib/mock-data";
 import { parseUtcDateFromYmd } from "@/lib/date-utils";
@@ -50,11 +52,6 @@ export type PaymentInput = {
   notes?: string | null;
 };
 
-async function getPrismaClient() {
-  const { prisma } = await import("@/lib/prisma");
-  return prisma;
-}
-
 function normalizeOptionalText(value?: string | null) {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;
@@ -99,8 +96,8 @@ function serializePaymentCategory(category: {
   } satisfies PaymentCategoryItem;
 }
 
-async function getDivisionOrThrow(divisionSlug: string) {
-  const prisma = await getPrismaClient();
+const getDivisionOrThrow = cache(async function getDivisionOrThrow(divisionSlug: string) {
+
   const division = await prisma.division.findUnique({
     where: {
       slug: divisionSlug,
@@ -112,10 +109,10 @@ async function getDivisionOrThrow(divisionSlug: string) {
   }
 
   return division;
-}
+});
 
 async function ensureDefaultPaymentCategories(divisionId: string) {
-  const prisma = await getPrismaClient();
+
   const existing = await prisma.paymentCategory.findMany({
     where: {
       divisionId,
@@ -231,7 +228,7 @@ export async function listPayments(
 
   const division = await getDivisionOrThrow(divisionSlug);
   await ensureDefaultPaymentCategories(division.id);
-  const prisma = await getPrismaClient();
+
   const { from, to } = toUtcRange(options?.dateFrom, options?.dateTo);
   const payments = await prisma.payment.findMany({
     where: {
@@ -340,7 +337,7 @@ export async function createPayment(
 
   const division = await getDivisionOrThrow(divisionSlug);
   await ensureDefaultPaymentCategories(division.id);
-  const prisma = await getPrismaClient();
+
   const [student, category] = await Promise.all([
     prisma.student.findFirst({
       where: {
@@ -380,11 +377,28 @@ export async function createPayment(
       notes: normalizeOptionalText(input.notes),
       recordedById: actor.id,
     },
+    include: {
+      student: { select: { id: true, name: true, studentNumber: true } },
+      paymentType: { select: { id: true, name: true } },
+      recordedBy: { select: { id: true, name: true } },
+    },
   });
 
-  return (await listPayments(divisionSlug, { studentId: input.studentId })).find(
-    (item) => item.id === payment.id,
-  ) ?? null;
+  return {
+    id: payment.id,
+    studentId: payment.student.id,
+    studentName: payment.student.name,
+    studentNumber: payment.student.studentNumber,
+    paymentTypeId: payment.paymentType.id,
+    paymentTypeName: payment.paymentType.name,
+    amount: payment.amount,
+    paymentDate: toDateString(payment.paymentDate),
+    method: payment.method,
+    notes: payment.notes,
+    recordedById: payment.recordedBy.id,
+    recordedByName: payment.recordedBy.name,
+    createdAt: payment.createdAt.toISOString(),
+  } satisfies PaymentItem;
 }
 
 export async function updatePayment(
@@ -433,7 +447,7 @@ export async function updatePayment(
 
   const division = await getDivisionOrThrow(divisionSlug);
   await ensureDefaultPaymentCategories(division.id);
-  const prisma = await getPrismaClient();
+
   const payment = await prisma.payment.findFirst({
     where: {
       id: paymentId,
@@ -479,7 +493,7 @@ export async function updatePayment(
     throw new Error("수납 유형을 찾을 수 없습니다.");
   }
 
-  await prisma.payment.update({
+  const updated = await prisma.payment.update({
     where: {
       id: paymentId,
     },
@@ -491,9 +505,28 @@ export async function updatePayment(
       method: normalizeOptionalText(input.method),
       notes: normalizeOptionalText(input.notes),
     },
+    include: {
+      student: { select: { id: true, name: true, studentNumber: true } },
+      paymentType: { select: { id: true, name: true } },
+      recordedBy: { select: { id: true, name: true } },
+    },
   });
 
-  return (await listPayments(divisionSlug)).find((item) => item.id === paymentId) ?? null;
+  return {
+    id: updated.id,
+    studentId: updated.student.id,
+    studentName: updated.student.name,
+    studentNumber: updated.student.studentNumber,
+    paymentTypeId: updated.paymentType.id,
+    paymentTypeName: updated.paymentType.name,
+    amount: updated.amount,
+    paymentDate: toDateString(updated.paymentDate),
+    method: updated.method,
+    notes: updated.notes,
+    recordedById: updated.recordedBy.id,
+    recordedByName: updated.recordedBy.name,
+    createdAt: updated.createdAt.toISOString(),
+  } satisfies PaymentItem;
 }
 
 export async function deletePayment(divisionSlug: string, paymentId: string) {
@@ -511,7 +544,7 @@ export async function deletePayment(divisionSlug: string, paymentId: string) {
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-  const prisma = await getPrismaClient();
+
   const payment = await prisma.payment.findFirst({
     where: {
       id: paymentId,

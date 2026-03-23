@@ -1,16 +1,27 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { LayoutGrid, LoaderCircle, RefreshCcw, Save, Table2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { AttendanceSeatView } from "@/components/attendance/AttendanceSeatView";
 import {
   ATTENDANCE_STATUS_OPTIONS,
   getAttendanceStatusClasses,
   type AttendanceOptionValue,
 } from "@/lib/attendance-meta";
 import type { SeatLayout, StudyRoomItem } from "@/lib/services/seat.service";
+
+const seatViewFallback = () => (
+  <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-6 text-sm text-slate-500">
+    좌석 출석 보드를 불러오는 중입니다.
+  </div>
+);
+
+const AttendanceSeatView = dynamic(
+  () => import("@/components/attendance/AttendanceSeatView").then((mod) => mod.AttendanceSeatView),
+  { ssr: false, loading: seatViewFallback },
+);
 
 type PeriodItem = {
   id: string;
@@ -87,7 +98,7 @@ function createMatrix(
   return next;
 }
 
-export function AdminAttendanceBoard({
+export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
   divisionSlug,
   initialDate,
   initialPeriods,
@@ -211,31 +222,36 @@ export function AdminAttendanceBoard({
       ? students.filter((s) => targetStudentIds.includes(s.id))
       : students;
 
+    // Validate all periods first
     for (const period of periods) {
       const unresolved = targetStudents.find((student) => !matrix[student.id]?.[period.id]?.status);
       if (unresolved) {
         throw new Error(`${period.name}에서 ${unresolved.name} 학생 상태가 비어 있습니다.`);
       }
-
-      const response = await fetch(`/api/${divisionSlug}/attendance`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          periodId: period.id,
-          date: selectedDate,
-          records: targetStudents.map((student) => ({
-            studentId: student.id,
-            status: matrix[student.id][period.id].status,
-            reason: matrix[student.id][period.id].reason || null,
-          })),
-        }),
-      });
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error ?? `${period.name} 저장에 실패했습니다.`);
-      }
     }
+
+    // Save all periods in parallel
+    await Promise.all(
+      periods.map(async (period) => {
+        const response = await fetch(`/api/${divisionSlug}/attendance`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            periodId: period.id,
+            date: selectedDate,
+            records: targetStudents.map((student) => ({
+              studentId: student.id,
+              status: matrix[student.id][period.id].status,
+              reason: matrix[student.id][period.id].reason || null,
+            })),
+          }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error ?? `${period.name} 저장에 실패했습니다.`);
+        }
+      })
+    );
 
     const statsResponse = await fetch(
       `/api/${divisionSlug}/attendance/stats?dateFrom=${selectedDate}&dateTo=${selectedDate}`,
@@ -458,4 +474,4 @@ export function AdminAttendanceBoard({
       </section>
     </div>
   );
-}
+});

@@ -132,9 +132,17 @@ function getCurrentPeriodInfo(
   return { type: "END" };
 }
 
+let sharedAudioContext: AudioContext | null = null;
+
 function playBeep() {
   try {
-    const ctx = new AudioContext();
+    if (!sharedAudioContext) {
+      sharedAudioContext = new AudioContext();
+    }
+    const ctx = sharedAudioContext;
+    if (ctx.state === "suspended") {
+      void ctx.resume();
+    }
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
@@ -200,7 +208,7 @@ function PeriodTimerWidget({
   useEffect(() => {
     const updateNow = () => setNow(new Date());
     updateNow();
-    const timer = window.setInterval(updateNow, 1000);
+    const timer = window.setInterval(updateNow, 60_000);
     return () => window.clearInterval(timer);
   }, []);
 

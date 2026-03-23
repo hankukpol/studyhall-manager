@@ -26,7 +26,9 @@ export async function GET(
 
   try {
     const stats = await getAttendanceStats(params.division, dateFrom, dateTo);
-    return NextResponse.json(stats);
+    return NextResponse.json(stats, {
+      headers: { "Cache-Control": "max-age=10, stale-while-revalidate=5" },
+    });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "출석 통계를 계산하지 못했습니다." },

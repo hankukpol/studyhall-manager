@@ -137,6 +137,10 @@ export function MobileCheckForm({
   const [swipeOffsets, setSwipeOffsets] = useState<Record<string, number>>({});
   const [headerHeight, setHeaderHeight] = useState(132);
   const swipeRef = useRef<SwipeContext | null>(null);
+  const initialFormState = useMemo(
+    () => buildInitialState(initialStudents, initialRecords),
+    [initialRecords, initialStudents],
+  );
 
   const selectedPeriod = useMemo(
     () => periods.find((period) => period.id === selectedPeriodId) ?? null,
@@ -197,6 +201,15 @@ export function MobileCheckForm({
       return;
     }
 
+    if (selectedDate === initialDate && selectedPeriodId === (initialPeriodId ?? initialPeriods[0]?.id ?? "")) {
+      setStudents(initialStudents);
+      setFormState(initialFormState);
+      setShowOnlyUnchecked(false);
+      setSwipeOffsets({});
+      setIsLoading(false);
+      return;
+    }
+
     let isMounted = true;
 
     async function loadSnapshot() {
@@ -237,7 +250,16 @@ export function MobileCheckForm({
     return () => {
       isMounted = false;
     };
-  }, [divisionSlug, selectedDate, selectedPeriodId]);
+  }, [
+    divisionSlug,
+    initialDate,
+    initialFormState,
+    initialPeriodId,
+    initialPeriods,
+    initialStudents,
+    selectedDate,
+    selectedPeriodId,
+  ]);
 
   function updateStudentState(studentId: string, value: Partial<{ status: AttendanceOptionValue; reason: string }>) {
     setFormState((current) => ({

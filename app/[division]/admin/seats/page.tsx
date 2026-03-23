@@ -1,9 +1,6 @@
 import { SeatStatusBoard } from "@/components/seats/SeatStatusBoard";
 import { getAttendanceSnapshot } from "@/lib/services/attendance.service";
-import { listPaymentCategories } from "@/lib/services/payment.service";
-import { listPointRules } from "@/lib/services/point.service";
 import { getSeatLayout, listStudyRooms } from "@/lib/services/seat.service";
-import { listTuitionPlans } from "@/lib/services/tuition-plan.service";
 
 
 type Props = {
@@ -16,12 +13,9 @@ export default async function SeatStatusPage({ params }: Props) {
     .toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" })
     .slice(0, 10);
 
-  const [rooms, todaySnapshot, paymentCategories, allPointRules, tuitionPlans] = await Promise.all([
+  const [rooms, todaySnapshot] = await Promise.all([
     listStudyRooms(params.division),
     getAttendanceSnapshot(params.division, today),
-    listPaymentCategories(params.division, { activeOnly: true }),
-    listPointRules(params.division),
-    listTuitionPlans(params.division, { activeOnly: true }),
   ]);
 
   const layout = await getSeatLayout(params.division, rooms[0]?.id);
@@ -50,9 +44,6 @@ export default async function SeatStatusPage({ params }: Props) {
           initialRooms={rooms}
           initialLayout={layout}
           todaySnapshot={todaySnapshot}
-          paymentCategories={paymentCategories}
-          pointRules={allPointRules.filter((r) => r.isActive)}
-          tuitionPlans={tuitionPlans}
         />
       )}
     </div>

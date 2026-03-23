@@ -3,14 +3,8 @@ import { unstable_cache } from "next/cache";
 import { getMockDivisionBySlug, isMockMode } from "@/lib/mock-data";
 import { readMockState } from "@/lib/mock-store";
 
-async function getPrismaClient() {
-  const { prisma } = await import("@/lib/prisma");
-  return prisma;
-}
-
 const getActiveDivisionsCached = unstable_cache(
   async () => {
-    const prisma = await getPrismaClient();
 
     return prisma.division.findMany({
       where: { isActive: true },
@@ -23,7 +17,6 @@ const getActiveDivisionsCached = unstable_cache(
 
 const getAllDivisionsCached = unstable_cache(
   async () => {
-    const prisma = await getPrismaClient();
 
     return prisma.division.findMany({
       orderBy: { displayOrder: "asc" },
@@ -35,7 +28,6 @@ const getAllDivisionsCached = unstable_cache(
 
 const getDivisionBySlugCached = unstable_cache(
   async (slug: string) => {
-    const prisma = await getPrismaClient();
 
     return prisma.division.findUnique({
       where: { slug },

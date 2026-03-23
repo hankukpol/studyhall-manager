@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { getMockAdminSession, getMockDivisionBySlug, isMockMode } from "@/lib/mock-data";
 import { parseUtcDateFromYmd } from "@/lib/date-utils";
 import {
@@ -29,11 +31,6 @@ export type InterviewItem = {
   createdByName: string;
   createdAt: string;
 };
-
-async function getPrismaClient() {
-  const { prisma } = await import("@/lib/prisma");
-  return prisma;
-}
 
 function normalizeText(value: string) {
   return value.trim();
@@ -94,8 +91,8 @@ function serializeInterviewRecord(
   } satisfies InterviewItem;
 }
 
-async function getDivisionOrThrow(divisionSlug: string) {
-  const prisma = await getPrismaClient();
+const getDivisionOrThrow = cache(async function getDivisionOrThrow(divisionSlug: string) {
+
   const division = await prisma.division.findUnique({
     where: {
       slug: divisionSlug,
@@ -107,7 +104,7 @@ async function getDivisionOrThrow(divisionSlug: string) {
   }
 
   return division;
-}
+});
 
 export async function listInterviews(
   divisionSlug: string,
@@ -139,7 +136,8 @@ export async function listInterviews(
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-  const prisma = await getPrismaClient();
+
+
   const interviews = await prisma.interview.findMany({
     where: {
       student: {
@@ -223,7 +221,8 @@ export async function createInterview(
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-  const prisma = await getPrismaClient();
+
+
   const student = await prisma.student.findFirst({
     where: {
       id: input.studentId,
@@ -249,9 +248,11 @@ export async function createInterview(
       resultType: input.resultType,
       createdById: actor.id,
     },
+    include: {
+      student: { select: { id: true, name: true, studentNumber: true } },
+      createdBy: { select: { id: true, name: true } },
+    },
   });
 
-  return (await listInterviews(divisionSlug, { studentId: input.studentId })).find(
-    (item) => item.id === interview.id,
-  ) ?? null;
+  return serializeInterviewRecord(interview, interview.student, interview.createdBy.name);
 }

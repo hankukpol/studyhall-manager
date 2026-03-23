@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 import Link from "next/link";
 import {
@@ -47,9 +47,6 @@ type SeatStatusBoardProps = {
   initialRooms: StudyRoomItem[];
   initialLayout: SeatLayout;
   todaySnapshot: AttendanceSnapshot;
-  paymentCategories: PaymentCategoryItem[];
-  pointRules: PointRuleItem[];
-  tuitionPlans: TuitionPlanItem[];
 };
 
 type SelectedSeatInfo = {
@@ -120,13 +117,11 @@ function getSeatToneClasses(
   }
 }
 
-function computeDayStatus(
-  studentId: string,
-  records: AttendanceSnapshot["records"],
+function computeDayStatusFromStudentRecords(
+  studentRecords: AttendanceSnapshot["records"],
   periods: AttendanceSnapshot["periods"],
 ): AttendanceStatusKey | null {
   const mandatoryPeriods = periods.filter((p) => p.isActive && p.isMandatory);
-  const studentRecords = records.filter((r) => r.studentId === studentId);
   const statuses = studentRecords.map((r) => r.status as AttendanceStatusKey);
 
   if (statuses.includes("ABSENT")) return "ABSENT";
@@ -143,43 +138,17 @@ function computeDayStatus(
   return "PRESENT";
 }
 
+
 // ─── 통계 카드 ───────────────────────────────────────────────────────────────
 
-function computeStats(
-  layout: SeatLayout,
-  snapshot: AttendanceSnapshot,
-): { totalSeats: number; assignedCount: number; emptyCount: number; presentRate: number } {
-  const activeSeats = layout.seats.filter((s) => s.isActive);
-  const assignedSeats = activeSeats.filter((s) => s.assignedStudent?.status === "ACTIVE");
-  const emptyCount = activeSeats.filter((s) => !s.assignedStudent).length;
-
-  const presentCount = assignedSeats.filter((s) => {
-    if (!s.assignedStudent) return false;
-    const status = computeDayStatus(s.assignedStudent.id, snapshot.records, snapshot.periods);
-    return status === "PRESENT";
-  }).length;
-
-  const presentRate =
-    assignedSeats.length > 0 ? Math.round((presentCount / assignedSeats.length) * 100) : 0;
-
-  return {
-    totalSeats: activeSeats.length,
-    assignedCount: assignedSeats.length,
-    emptyCount,
-    presentRate,
-  };
-}
 
 // ─── 메인 컴포넌트 ───────────────────────────────────────────────────────────
 
-export function SeatStatusBoard({
+export const SeatStatusBoard = memo(function SeatStatusBoard({
   divisionSlug,
   initialRooms,
   initialLayout,
   todaySnapshot,
-  paymentCategories,
-  pointRules,
-  tuitionPlans,
 }: SeatStatusBoardProps) {
   const [rooms] = useState<StudyRoomItem[]>(initialRooms);
   const [layout, setLayout] = useState<SeatLayout>(initialLayout);
@@ -215,6 +184,9 @@ export function SeatStatusBoard({
 
   // 수납 탭
   const [selectedPlanId, setSelectedPlanId] = useState("");
+  const [paymentCategories, setPaymentCategories] = useState<PaymentCategoryItem[]>([]);
+  const [tuitionPlans, setTuitionPlans] = useState<TuitionPlanItem[]>([]);
+  const [isLoadingPaymentMeta, setIsLoadingPaymentMeta] = useState(false);
   const [paymentTypeId, setPaymentTypeId] = useState("");
   const [paymentDate, setPaymentDate] = useState(() =>
     new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" }).slice(0, 10),
@@ -228,6 +200,8 @@ export function SeatStatusBoard({
 
   // 상벌점 탭
   const [pointRuleId, setPointRuleId] = useState("");
+  const [pointRules, setPointRules] = useState<PointRuleItem[]>([]);
+  const [isLoadingPointRules, setIsLoadingPointRules] = useState(false);
   const [pointsValue, setPointsValue] = useState("");
   const [pointsNotes, setPointsNotes] = useState("");
   const [isSavingPoints, setIsSavingPoints] = useState(false);
@@ -235,7 +209,130 @@ export function SeatStatusBoard({
   const selectedRule = pointRules.find((r) => r.id === pointRuleId) ?? null;
 
   const today = todaySnapshot.date;
-  const stats = computeStats(layout, todaySnapshot);
+  const activePeriods = useMemo(
+    () => todaySnapshot.periods.filter((period) => period.isActive),
+    [todaySnapshot.periods],
+  );
+  const recordsByStudentId = useMemo(() => {
+    const grouped = new Map<string, AttendanceSnapshot["records"]>();
+
+    todaySnapshot.records.forEach((record) => {
+      const current = grouped.get(record.studentId);
+
+      if (current) {
+        current.push(record);
+        return;
+      }
+
+      grouped.set(record.studentId, [record]);
+    });
+
+    return grouped;
+  }, [todaySnapshot.records]);
+  const dayStatusByStudentId = useMemo(() => {
+    const grouped = new Map<string, AttendanceStatusKey | null>();
+
+    layout.seats.forEach((seat) => {
+      const studentId = seat.assignedStudent?.id;
+
+      if (!studentId || grouped.has(studentId)) {
+        return;
+      }
+
+      grouped.set(
+        studentId,
+        computeDayStatusFromStudentRecords(recordsByStudentId.get(studentId) ?? [], activePeriods),
+      );
+    });
+
+    return grouped;
+  }, [activePeriods, layout.seats, recordsByStudentId]);
+  const stats = useMemo(() => {
+    const activeSeats = layout.seats.filter((seat) => seat.isActive);
+    const assignedSeats = activeSeats.filter((seat) => seat.assignedStudent?.status === "ACTIVE");
+    const emptyCount = activeSeats.filter((seat) => !seat.assignedStudent).length;
+    const presentCount = assignedSeats.filter((seat) => {
+      const studentId = seat.assignedStudent?.id;
+      return studentId ? dayStatusByStudentId.get(studentId) === "PRESENT" : false;
+    }).length;
+
+    return {
+      totalSeats: activeSeats.length,
+      assignedCount: assignedSeats.length,
+      emptyCount,
+      presentRate:
+        assignedSeats.length > 0 ? Math.round((presentCount / assignedSeats.length) * 100) : 0,
+    };
+  }, [dayStatusByStudentId, layout.seats]);
+
+  useEffect(() => {
+    if (panelTab !== "payment" || (paymentCategories.length > 0 && tuitionPlans.length > 0)) {
+      return;
+    }
+
+    let isMounted = true;
+    setIsLoadingPaymentMeta(true);
+
+    Promise.all([
+      fetch(`/api/${divisionSlug}/payment-categories?activeOnly=true`).then((response) => response.json()),
+      fetch(`/api/${divisionSlug}/tuition-plans?activeOnly=true`).then((response) => response.json()),
+    ])
+      .then(([paymentCategoryData, tuitionPlanData]) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setPaymentCategories((paymentCategoryData.categories as PaymentCategoryItem[]) ?? []);
+        setTuitionPlans((tuitionPlanData.plans as TuitionPlanItem[]) ?? []);
+      })
+      .catch(() => {
+        if (isMounted) {
+          toast.error("납부 기본 정보를 불러오지 못했습니다.");
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoadingPaymentMeta(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [divisionSlug, panelTab, paymentCategories.length, tuitionPlans.length]);
+
+  useEffect(() => {
+    if (panelTab !== "points" || pointRules.length > 0) {
+      return;
+    }
+
+    let isMounted = true;
+    setIsLoadingPointRules(true);
+
+    fetch(`/api/${divisionSlug}/point-rules?activeOnly=true`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setPointRules((data.rules as PointRuleItem[]) ?? []);
+      })
+      .catch(() => {
+        if (isMounted) {
+          toast.error("상벌점 규칙을 불러오지 못했습니다.");
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoadingPointRules(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [divisionSlug, panelTab, pointRules.length]);
 
   // 수납 탭 열릴 때 결제 내역 fetch
   useEffect(() => {
@@ -458,16 +555,10 @@ export function SeatStatusBoard({
         setPanelInfo(null);
         return;
       }
-      const dayStatus = computeDayStatus(
-        seat.assignedStudent.id,
-        todaySnapshot.records,
-        todaySnapshot.periods,
-      );
-      const studentRecords = todaySnapshot.records.filter(
-        (r) => r.studentId === seat.assignedStudent!.id,
-      );
-      const periodRecords = todaySnapshot.periods
-        .filter((p) => p.isActive)
+      const studentId = seat.assignedStudent.id;
+      const dayStatus = dayStatusByStudentId.get(studentId) ?? null;
+      const studentRecords = recordsByStudentId.get(studentId) ?? [];
+      const periodRecords = activePeriods
         .map((p) => {
           const rec = studentRecords.find((r) => r.periodId === p.id);
           return {
@@ -482,13 +573,15 @@ export function SeatStatusBoard({
       setTargetRoomId(null);
       setTargetLayout(null);
     },
-    [todaySnapshot],
+    [activePeriods, dayStatusByStudentId, recordsByStudentId],
   );
 
   // 좌석 그리드 렌더링
   const { columns, rows, aisleColumns } = layout;
-  const seatMap = new Map(
-    layout.seats.map((seat) => [getSeatPositionKey(seat.positionX, seat.positionY), seat]),
+  const seatMap = useMemo(
+    () =>
+      new Map(layout.seats.map((seat) => [getSeatPositionKey(seat.positionX, seat.positionY), seat])),
+    [layout.seats],
   );
 
   return (
@@ -627,9 +720,7 @@ export function SeatStatusBoard({
                   }
 
                   const student = seat.assignedStudent;
-                  const dayStatus = student
-                    ? computeDayStatus(student.id, todaySnapshot.records, todaySnapshot.periods)
-                    : null;
+                  const dayStatus = student ? dayStatusByStudentId.get(student.id) ?? null : null;
                   const tone = getSeatToneClasses(dayStatus, !!student, seat.isActive);
                   const isSelected = panelInfo?.seat.id === seat.id;
                   const canDrag =
@@ -1068,6 +1159,7 @@ export function SeatStatusBoard({
                     <select
                       value={paymentTypeId}
                       onChange={(e) => setPaymentTypeId(e.target.value)}
+                      disabled={isLoadingPaymentMeta}
                       className="w-full rounded-xl border border-slate-200-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
                     >
                       <option value="">유형 선택</option>
@@ -1129,7 +1221,7 @@ export function SeatStatusBoard({
 
                   <button
                     type="button"
-                    disabled={!paymentTypeId || !paymentAmount || isSavingPayment}
+                    disabled={!paymentTypeId || !paymentAmount || isSavingPayment || isLoadingPaymentMeta}
                     onClick={() => void handlePaymentSave()}
                     className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-50"
                   >
@@ -1155,6 +1247,7 @@ export function SeatStatusBoard({
                       setPointRuleId(e.target.value);
                       setPointsValue("");
                     }}
+                    disabled={isLoadingPointRules}
                     className="w-full rounded-xl border border-slate-200-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-slate-400"
                   >
                     <option value="">직접 점수 입력</option>
@@ -1210,7 +1303,7 @@ export function SeatStatusBoard({
 
                 <button
                   type="button"
-                  disabled={(!pointRuleId && !pointsValue) || isSavingPoints}
+                  disabled={(!pointRuleId && !pointsValue) || isSavingPoints || isLoadingPointRules}
                   onClick={() => void handlePointsSave()}
                   className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-50"
                 >
@@ -1228,4 +1321,4 @@ export function SeatStatusBoard({
       </Modal>
     </div>
   );
-}
+});

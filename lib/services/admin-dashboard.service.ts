@@ -13,6 +13,13 @@ import { listExamSchedules, type ExamScheduleItem } from "@/lib/services/exam-sc
 import { listLeavePermissions } from "@/lib/services/leave.service";
 import { getPrismaClient } from "@/lib/service-helpers";
 
+const kstDateFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Seoul",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
 export type AdminDashboardData = {
   division: {
     slug: string;
@@ -136,13 +143,7 @@ export type AdminDashboardData = {
 function getKstDate(offsetDays = 0) {
   const base = new Date();
   base.setUTCDate(base.getUTCDate() + offsetDays);
-
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(base);
+  return kstDateFormatter.format(base);
 }
 
 function getKstDateFromString(date: string, offsetDays: number) {
@@ -181,44 +182,60 @@ function createCounts() {
   };
 }
 
+function indexRecordsByPeriod(records: AttendanceSnapshot["records"]) {
+  const map = new Map<string, AttendanceSnapshot["records"]>();
+  for (const record of records) {
+    const list = map.get(record.periodId);
+    if (list) {
+      list.push(record);
+    } else {
+      map.set(record.periodId, [record]);
+    }
+  }
+  return map;
+}
+
+function countRecords(records: AttendanceSnapshot["records"]) {
+  const counts = createCounts();
+  for (const record of records) {
+    switch (record.status) {
+      case "PRESENT":
+        counts.present += 1;
+        break;
+      case "TARDY":
+        counts.tardy += 1;
+        break;
+      case "ABSENT":
+        counts.absent += 1;
+        break;
+      case "EXCUSED":
+        counts.excused += 1;
+        break;
+      case "HOLIDAY":
+        counts.holiday += 1;
+        break;
+      case "HALF_HOLIDAY":
+        counts.halfHoliday += 1;
+        break;
+      case "NOT_APPLICABLE":
+        counts.notApplicable += 1;
+        break;
+    }
+  }
+  return counts;
+}
+
 function buildRateSummary(
   snapshot: AttendanceSnapshot,
   activeStudentCount: number,
+  recordsByPeriod: Map<string, AttendanceSnapshot["records"]>,
 ) {
   const mandatoryPeriods = snapshot.periods.filter((period) => period.isActive && period.isMandatory);
   let attendedCount = 0;
   let expectedCount = 0;
 
   for (const period of mandatoryPeriods) {
-    const records = snapshot.records.filter((record) => record.periodId === period.id);
-    const counts = createCounts();
-
-    for (const record of records) {
-      switch (record.status) {
-        case "PRESENT":
-          counts.present += 1;
-          break;
-        case "TARDY":
-          counts.tardy += 1;
-          break;
-        case "ABSENT":
-          counts.absent += 1;
-          break;
-        case "EXCUSED":
-          counts.excused += 1;
-          break;
-        case "HOLIDAY":
-          counts.holiday += 1;
-          break;
-        case "HALF_HOLIDAY":
-          counts.halfHoliday += 1;
-          break;
-        case "NOT_APPLICABLE":
-          counts.notApplicable += 1;
-          break;
-      }
-    }
-
+    const counts = countRecords(recordsByPeriod.get(period.id) ?? []);
     attendedCount += counts.present + counts.tardy + counts.holiday + counts.halfHoliday;
     expectedCount += Math.max(activeStudentCount - counts.notApplicable, 0);
   }
@@ -234,38 +251,13 @@ function buildRateSummary(
 function buildPeriodRows(
   snapshot: AttendanceSnapshot,
   activeStudentCount: number,
+  recordsByPeriod: Map<string, AttendanceSnapshot["records"]>,
 ) {
   return snapshot.periods
     .filter((period) => period.isActive)
     .sort((left, right) => left.displayOrder - right.displayOrder)
     .map((period) => {
-      const counts = createCounts();
-
-      for (const record of snapshot.records.filter((candidate) => candidate.periodId === period.id)) {
-        switch (record.status) {
-          case "PRESENT":
-            counts.present += 1;
-            break;
-          case "TARDY":
-            counts.tardy += 1;
-            break;
-          case "ABSENT":
-            counts.absent += 1;
-            break;
-          case "EXCUSED":
-            counts.excused += 1;
-            break;
-          case "HOLIDAY":
-            counts.holiday += 1;
-            break;
-          case "HALF_HOLIDAY":
-            counts.halfHoliday += 1;
-            break;
-          case "NOT_APPLICABLE":
-            counts.notApplicable += 1;
-            break;
-        }
-      }
+      const counts = countRecords(recordsByPeriod.get(period.id) ?? []);
 
       const processed =
         counts.present +
@@ -345,50 +337,31 @@ async function getAdminDashboardDataUncached(divisionSlug: string): Promise<Admi
   const thirtyDaysAgo = getKstDateFromString(today, -30);
 
   const prismaClient = await getPrismaClient();
-  const divisionRow = await prismaClient.division.findUnique({
-    where: { slug: divisionSlug },
-    select: { id: true },
-  });
-  const divisionId = divisionRow?.id;
 
-  const results = await Promise.allSettled([
+  const [division, settings, students, snapshots, recentPoints, thisMonthPayments, todayLeaves, interviewGroups, examSchedules, repeatedTardy, repeatedAbsent] = await Promise.all([
     getDivisionTheme(divisionSlug),
     getDivisionSettings(divisionSlug),
     listStudents(divisionSlug),
     getAttendanceSnapshots(divisionSlug, snapshotDates),
     listPointRecords(divisionSlug, { limit: 5 }),
-    listPayments(divisionSlug, { dateFrom: firstDayOfMonth, dateTo: today }),
-    listLeavePermissions(divisionSlug, { month: today.slice(0, 7) }),
-    divisionId
-      ? prismaClient.interview.groupBy({
-          by: ["studentId"],
-          where: {
-            student: { divisionId },
-            date: { gte: new Date(thirtyDaysAgo + "T00:00:00Z") },
-          },
-          _max: { date: true },
-        })
-      : Promise.resolve([]),
-    listExamSchedules(divisionSlug, { onlyActive: true }),
+    listPayments(divisionSlug, { dateFrom: firstDayOfMonth, dateTo: today }).catch(() => [] as Awaited<ReturnType<typeof listPayments>>),
+    listLeavePermissions(divisionSlug, { month: today.slice(0, 7) }).catch(() => [] as Awaited<ReturnType<typeof listLeavePermissions>>),
+    prismaClient.division.findUnique({ where: { slug: divisionSlug }, select: { id: true } })
+      .then((row) => row?.id
+        ? prismaClient.interview.groupBy({
+            by: ["studentId"],
+            where: {
+              student: { divisionId: row.id },
+              date: { gte: new Date(thirtyDaysAgo + "T00:00:00Z") },
+            },
+            _max: { date: true },
+          })
+        : [] as { studentId: string; _max: { date: Date | null } }[],
+      ).catch(() => [] as { studentId: string; _max: { date: Date | null } }[]),
+    listExamSchedules(divisionSlug, { onlyActive: true }).catch(() => [] as Awaited<ReturnType<typeof listExamSchedules>>),
+    detectRepeatedTardy(divisionSlug).catch(() => [] as Awaited<ReturnType<typeof detectRepeatedTardy>>),
+    detectRepeatedAbsent(divisionSlug).catch(() => [] as Awaited<ReturnType<typeof detectRepeatedAbsent>>),
   ]);
-
-  const [division, settings, students, snapshots, recentPoints, thisMonthPayments, todayLeaves, interviewGroups, examSchedules] = results.map(
-    (r) => (r.status === "fulfilled" ? r.value : null),
-  ) as [
-    Awaited<ReturnType<typeof getDivisionTheme>>,
-    Awaited<ReturnType<typeof getDivisionSettings>>,
-    Awaited<ReturnType<typeof listStudents>>,
-    Awaited<ReturnType<typeof getAttendanceSnapshots>>,
-    Awaited<ReturnType<typeof listPointRecords>>,
-    Awaited<ReturnType<typeof listPayments>>,
-    Awaited<ReturnType<typeof listLeavePermissions>>,
-    { studentId: string; _max: { date: Date | null } }[],
-    Awaited<ReturnType<typeof listExamSchedules>>,
-  ];
-
-  if (!division || !settings || !students || !snapshots) {
-    throw new Error("Failed to load required dashboard data");
-  }
   const snapshotMap = new Map(snapshots.map((snapshot) => [snapshot.date, snapshot]));
   const todaySnapshot = getSnapshotOrThrow(snapshotMap, today);
   const yesterdaySnapshot = getSnapshotOrThrow(snapshotMap, yesterday);
@@ -398,16 +371,12 @@ async function getAdminDashboardDataUncached(divisionSlug: string): Promise<Admi
   );
   const weeklySnapshots = weekDates.map((date) => getSnapshotOrThrow(snapshotMap, date));
 
-  const todaySummary = buildRateSummary(todaySnapshot, activeStudents.length);
-  const yesterdaySummary = buildRateSummary(yesterdaySnapshot, activeStudents.length);
-  const periodRows = buildPeriodRows(todaySnapshot, activeStudents.length);
+  const todayRecordsByPeriod = indexRecordsByPeriod(todaySnapshot.records);
+  const yesterdayRecordsByPeriod = indexRecordsByPeriod(yesterdaySnapshot.records);
+  const todaySummary = buildRateSummary(todaySnapshot, activeStudents.length, todayRecordsByPeriod);
+  const yesterdaySummary = buildRateSummary(yesterdaySnapshot, activeStudents.length, yesterdayRecordsByPeriod);
+  const periodRows = buildPeriodRows(todaySnapshot, activeStudents.length, todayRecordsByPeriod);
   const weeklyIssues = countWeeklyIssues(weeklySnapshots);
-  const [repeatedTardyResult, repeatedAbsentResult] = await Promise.allSettled([
-    detectRepeatedTardy(divisionSlug),
-    detectRepeatedAbsent(divisionSlug),
-  ]);
-  const repeatedTardy = repeatedTardyResult.status === "fulfilled" ? repeatedTardyResult.value : [];
-  const repeatedAbsent = repeatedAbsentResult.status === "fulfilled" ? repeatedAbsentResult.value : [];
   const attentionStudentMap = new Map(
     [...repeatedAbsent, ...repeatedTardy].map((student) => [student.studentId, student]),
   );
@@ -582,7 +551,7 @@ async function getAdminDashboardDataUncached(divisionSlug: string): Promise<Admi
 const getAdminDashboardDataCached = unstable_cache(
   async (divisionSlug: string) => getAdminDashboardDataUncached(divisionSlug),
   ["admin-dashboard-data"],
-  { revalidate: 30, tags: ["admin-dashboard"] },
+  { revalidate: 60, tags: ["admin-dashboard"] },
 );
 
 export async function getAdminDashboardData(

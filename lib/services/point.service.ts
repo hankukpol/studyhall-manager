@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { getMockAdminSession, getMockDivisionBySlug, isMockMode } from "@/lib/mock-data";
 import { parseUtcDateFromYmd } from "@/lib/date-utils";
 import { badRequest, notFound } from "@/lib/errors";
@@ -152,7 +154,7 @@ function toPointRuleItem(rule: {
   } satisfies PointRuleItem;
 }
 
-async function getDivisionOrThrow(divisionSlug: string) {
+const getDivisionOrThrow = cache(async function getDivisionOrThrow(divisionSlug: string) {
   const prisma = await getPrismaClient();
   const division = await prisma.division.findUnique({
     where: {
@@ -165,7 +167,7 @@ async function getDivisionOrThrow(divisionSlug: string) {
   }
 
   return division;
-}
+});
 
 async function getMockRuleMap(divisionSlug: string) {
   const state = await readMockState();
@@ -228,12 +230,15 @@ function normalizeRulePoints(category: PointCategoryValue, points: number) {
   return points > 0 ? -Math.abs(points) : points;
 }
 
-export async function listPointRules(divisionSlug: string) {
+export async function listPointRules(divisionSlug: string, options?: { activeOnly?: boolean }) {
   if (isMockMode()) {
     const state = await readMockState();
-    return [...(state.pointRulesByDivision[divisionSlug] ?? [])]
-      .sort((left, right) => left.displayOrder - right.displayOrder)
-      .map((rule) => toPointRuleItem(rule));
+    let rules = [...(state.pointRulesByDivision[divisionSlug] ?? [])]
+      .sort((left, right) => left.displayOrder - right.displayOrder);
+    if (options?.activeOnly) {
+      rules = rules.filter((rule) => rule.isActive);
+    }
+    return rules.map((rule) => toPointRuleItem(rule));
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
@@ -241,6 +246,7 @@ export async function listPointRules(divisionSlug: string) {
   const rules = await prisma.pointRule.findMany({
     where: {
       divisionId: division.id,
+      ...(options?.activeOnly ? { isActive: true } : {}),
     },
     orderBy: {
       displayOrder: "asc",
@@ -570,9 +576,10 @@ export async function createPointRecord(
 
       return nextRecord;
     });
-    return (await listPointRecords(divisionSlug, { studentId: record.studentId, limit: 1 })).find(
-      (item) => item.id === record.id,
-    ) ?? null;
+    const students = await listStudents(divisionSlug);
+    const studentMap = new Map(students.map((s) => [s.id, s]));
+    const rules = await getMockRuleMap(divisionSlug);
+    return serializePointRecordFromMock(record, studentMap, rules, divisionSlug);
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
@@ -621,11 +628,29 @@ export async function createPointRecord(
       date: recordDate,
       recordedById: actor.id,
     },
+    include: {
+      student: { select: { id: true, name: true, studentNumber: true } },
+      rule: { select: { id: true, name: true, category: true } },
+      recordedBy: { select: { id: true, name: true } },
+    },
   });
 
-  return (await listPointRecords(divisionSlug, { studentId: student.id, limit: 1 })).find(
-    (item) => item.id === record.id,
-  ) ?? null;
+  return {
+    id: record.id,
+    studentId: record.student.id,
+    studentName: record.student.name,
+    studentNumber: record.student.studentNumber,
+    ruleId: record.ruleId,
+    ruleName: record.rule?.name ?? null,
+    category: record.rule?.category ?? "OTHER",
+    categoryLabel: getPointCategoryLabel(record.rule?.category ?? "OTHER"),
+    points: record.points,
+    notes: record.notes,
+    recordedById: record.recordedBy.id,
+    recordedByName: record.recordedBy.name,
+    createdAt: record.createdAt.toISOString(),
+    date: record.date.toISOString(),
+  } satisfies PointRecordItem;
 }
 
 export async function createPointRecordsBatch(

@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
 import {
@@ -19,7 +20,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Modal } from "@/components/ui/Modal";
 import { StudentStatusBadge, WarningStageBadge } from "@/components/students/StudentBadges";
-import { StudentForm } from "@/components/students/StudentForm";
 import {
   STUDENT_STATUS_OPTIONS,
   WARNING_STAGE_OPTIONS,
@@ -52,6 +52,18 @@ type WarningFilterValue = "ALL" | (typeof WARNING_STAGE_OPTIONS)[number]["value"
 const statusFilterValues = new Set(["ALL", ...STUDENT_STATUS_OPTIONS.map((option) => option.value)]);
 const warningFilterValues = new Set(["ALL", ...WARNING_STAGE_OPTIONS.map((option) => option.value)]);
 const sortFilterValues = new Set(sortOptions.map((option) => option.value));
+
+const LazyStudentForm = dynamic(
+  () => import("@/components/students/StudentForm").then((mod) => mod.StudentForm),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-6 text-sm text-slate-500">
+        학생 등록 폼을 불러오는 중입니다.
+      </div>
+    ),
+  },
+);
 
 function getValidQueryValue<T extends string>(value: string | null, validValues: Set<string>, fallback: T): T {
   if (!value) {
@@ -627,7 +639,7 @@ export function StudentListManager({
           description="학생 정보를 입력하고 저장하면 목록이 즉시 새로고침됩니다."
           widthClassName="max-w-4xl"
         >
-          <StudentForm
+          <LazyStudentForm
             divisionSlug={divisionSlug}
             mode="create"
             studyTrackOptions={studyTrackOptions}

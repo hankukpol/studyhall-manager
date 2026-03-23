@@ -375,7 +375,7 @@ async function getDbStudentsWithMetrics(divisionSlug: string) {
   );
 }
 
-async function getDivisionOrThrow(divisionSlug: string) {
+const getDivisionOrThrow = cache(async function getDivisionOrThrow(divisionSlug: string) {
   const prisma = await getPrismaClient();
   const division = await prisma.division.findUnique({
     where: { slug: divisionSlug },
@@ -386,7 +386,7 @@ async function getDivisionOrThrow(divisionSlug: string) {
   }
 
   return division;
-}
+});
 
 function ensureMockStudentNumberAvailableInState(
   state: Awaited<ReturnType<typeof readMockState>>,

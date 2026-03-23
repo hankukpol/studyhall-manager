@@ -11,6 +11,13 @@ import {
   listManagedDivisions,
 } from "@/lib/services/super-admin.service";
 
+const kstDateFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Seoul",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
 export type DivisionOverviewSummary = {
   slug: string;
   name: string;
@@ -39,12 +46,7 @@ type OverviewStudentMetric = {
 };
 
 function getKstToday() {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+  return kstDateFormatter.format(new Date());
 }
 
 function toNetPoints(points: number | null | undefined) {
@@ -210,11 +212,22 @@ async function getDivisionSummary(
   if (attendance) {
     const mandatoryPeriods = attendance.periods;
 
+    const recordsByPeriod = new Map<string, typeof attendance.records>();
+    for (const record of attendance.records) {
+      const list = recordsByPeriod.get(record.periodId);
+      if (list) {
+        list.push(record);
+      } else {
+        recordsByPeriod.set(record.periodId, [record]);
+      }
+    }
+
     for (const period of mandatoryPeriods) {
-      const records = attendance.records.filter((record) => record.periodId === period.id);
+      const records = recordsByPeriod.get(period.id) ?? [];
       let periodAttended = 0;
       let periodExpected = 0;
       let notApplicable = 0;
+      let applicableCount = 0;
 
       for (const record of records) {
         if (record.status === "NOT_APPLICABLE") {
@@ -226,6 +239,9 @@ async function getDivisionSummary(
           record.status === "HALF_HOLIDAY"
         ) {
           periodAttended += 1;
+          applicableCount += 1;
+        } else {
+          applicableCount += 1;
         }
       }
 
@@ -233,8 +249,7 @@ async function getDivisionSummary(
       attendedCount += periodAttended;
       expectedCount += periodExpected;
 
-      const isUnchecked =
-        periodExpected > 0 && records.filter((r) => r.status !== "NOT_APPLICABLE").length === 0;
+      const isUnchecked = periodExpected > 0 && applicableCount === 0;
       if (isUnchecked) uncheckedPeriodCount += 1;
     }
 

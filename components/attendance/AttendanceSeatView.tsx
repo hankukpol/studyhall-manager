@@ -1,7 +1,7 @@
 "use client";
 
 import { Save } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Modal } from "@/components/ui/Modal";
 import { getSeatPositionKey } from "@/lib/seat-layout";
@@ -163,14 +163,30 @@ export function AttendanceSeatView({
   }
 
   const { columns, rows, aisleColumns } = layout;
-  const seatMap = new Map(
-    layout.seats.map((s) => [getSeatPositionKey(s.positionX, s.positionY), s]),
+  const seatMap = useMemo(
+    () => new Map(layout.seats.map((s) => [getSeatPositionKey(s.positionX, s.positionY), s])),
+    [layout.seats],
   );
-  const studentById = new Map(students.map((s) => [s.id, s]));
+  const studentById = useMemo(() => new Map(students.map((s) => [s.id, s])), [students]);
   // layout.seats의 assignedStudent.id → students 배열 매핑
-  const seatToStudentId = new Map<string, string>(
-    layout.seats.filter((s) => s.assignedStudent).map((s) => [s.id, s.assignedStudent!.id]),
+  const seatToStudentId = useMemo(
+    () =>
+      new Map<string, string>(
+        layout.seats
+          .filter((s) => s.assignedStudent)
+          .map((s) => [s.id, s.assignedStudent!.id]),
+      ),
+    [layout.seats],
   );
+  const dayStatusByStudentId = useMemo(() => {
+    const next = new Map<string, StatusKey>();
+
+    students.forEach((student) => {
+      next.set(student.id, computeDayStatus(student.id, matrix, periods));
+    });
+
+    return next;
+  }, [matrix, periods, students]);
 
   const modalStudent = modalStudentId ? studentById.get(modalStudentId) : null;
 
@@ -240,9 +256,7 @@ export function AttendanceSeatView({
 
               const studentId = seatToStudentId.get(seat.id) ?? null;
               const student = studentId ? studentById.get(studentId) : null;
-              const dayStatus = student
-                ? computeDayStatus(student.id, matrix, periods)
-                : null;
+              const dayStatus = student ? dayStatusByStudentId.get(student.id) ?? null : null;
               const isSelected = student?.id === modalStudentId;
 
               const tone = !seat.isActive

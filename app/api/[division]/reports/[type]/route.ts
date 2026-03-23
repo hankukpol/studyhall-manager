@@ -56,13 +56,17 @@ export async function GET(
         params.division,
         resolveReportSelection({ period, date, month }),
       );
-      return NextResponse.json({ type: parsedType.data, report });
+      return NextResponse.json({ type: parsedType.data, report }, {
+        headers: { "Cache-Control": "max-age=30, stale-while-revalidate=15" },
+      });
     }
 
     if (parsedType.data === "monthly") {
       const month = normalizeMonth(request.nextUrl.searchParams.get("month"));
       const rows = await getMonthlyExportRows(params.division, month);
-      return NextResponse.json({ type: parsedType.data, month, rows });
+      return NextResponse.json({ type: parsedType.data, month, rows }, {
+        headers: { "Cache-Control": "max-age=30, stale-while-revalidate=15" },
+      });
     }
 
     const dateFrom = normalizeDate(request.nextUrl.searchParams.get("dateFrom"));
@@ -70,11 +74,15 @@ export async function GET(
 
     if (parsedType.data === "points") {
       const rows = await getPointExportRows(params.division, dateFrom, dateTo);
-      return NextResponse.json({ type: parsedType.data, dateFrom, dateTo, rows });
+      return NextResponse.json({ type: parsedType.data, dateFrom, dateTo, rows }, {
+        headers: { "Cache-Control": "max-age=30, stale-while-revalidate=15" },
+      });
     }
 
     const rows = await getPaymentExportRows(params.division, dateFrom, dateTo);
-    return NextResponse.json({ type: parsedType.data, dateFrom, dateTo, rows });
+    return NextResponse.json({ type: parsedType.data, dateFrom, dateTo, rows }, {
+      headers: { "Cache-Control": "max-age=30, stale-while-revalidate=15" },
+    });
   } catch (error) {
     return toApiErrorResponse(error, "보고서 데이터를 불러오는 중 오류가 발생했습니다.");
   }

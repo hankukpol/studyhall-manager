@@ -1,5 +1,27 @@
 import { SignJWT, jwtVerify } from "jose";
 
+const verifiedTokenCache = new Map<string, { payload: AdminSessionTokenPayload | StudentSessionTokenPayload | null; expiresAt: number }>();
+const TOKEN_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const TOKEN_CACHE_MAX = 200;
+
+function getCachedToken<T>(token: string): T | undefined {
+  const entry = verifiedTokenCache.get(token);
+  if (!entry) return undefined;
+  if (Date.now() > entry.expiresAt) {
+    verifiedTokenCache.delete(token);
+    return undefined;
+  }
+  return entry.payload as T;
+}
+
+function setCachedToken(token: string, payload: AdminSessionTokenPayload | StudentSessionTokenPayload | null) {
+  if (verifiedTokenCache.size >= TOKEN_CACHE_MAX) {
+    const firstKey = verifiedTokenCache.keys().next().value;
+    if (firstKey) verifiedTokenCache.delete(firstKey);
+  }
+  verifiedTokenCache.set(token, { payload, expiresAt: Date.now() + TOKEN_CACHE_TTL });
+}
+
 export type SessionAdminRole = "SUPER_ADMIN" | "ADMIN" | "ASSISTANT";
 
 export type AdminSessionTokenPayload = {
@@ -49,6 +71,9 @@ export async function createAdminSessionToken(session: AdminSessionTokenPayload)
 }
 
 export async function verifyAdminSessionToken(token: string): Promise<AdminSessionTokenPayload | null> {
+  const cached = getCachedToken<AdminSessionTokenPayload | null>(token);
+  if (cached !== undefined) return cached;
+
   try {
     const { payload } = await jwtVerify(token, getSessionSecret());
 
@@ -61,10 +86,11 @@ export async function verifyAdminSessionToken(token: string): Promise<AdminSessi
       (payload.divisionId !== null && typeof payload.divisionId !== "string") ||
       (payload.divisionSlug !== null && typeof payload.divisionSlug !== "string")
     ) {
+      setCachedToken(token, null);
       return null;
     }
 
-    return {
+    const result: AdminSessionTokenPayload = {
       id: payload.id,
       userId: payload.userId,
       name: payload.name,
@@ -72,7 +98,10 @@ export async function verifyAdminSessionToken(token: string): Promise<AdminSessi
       divisionId: payload.divisionId ?? null,
       divisionSlug: payload.divisionSlug ?? null,
     };
+    setCachedToken(token, result);
+    return result;
   } catch {
+    setCachedToken(token, null);
     return null;
   }
 }
@@ -88,6 +117,9 @@ export async function createStudentSessionToken(session: StudentSessionTokenPayl
 export async function verifyStudentSessionToken(
   token: string,
 ): Promise<StudentSessionTokenPayload | null> {
+  const cached = getCachedToken<StudentSessionTokenPayload | null>(token);
+  if (cached !== undefined) return cached;
+
   try {
     const { payload } = await jwtVerify(token, getSessionSecret());
 
@@ -99,17 +131,21 @@ export async function verifyStudentSessionToken(
       typeof payload.studentNumber !== "string" ||
       typeof payload.name !== "string"
     ) {
+      setCachedToken(token, null);
       return null;
     }
 
-    return {
+    const result: StudentSessionTokenPayload = {
       studentId: payload.studentId,
       divisionId: payload.divisionId,
       divisionSlug: payload.divisionSlug,
       studentNumber: payload.studentNumber,
       name: payload.name,
     };
+    setCachedToken(token, result);
+    return result;
   } catch {
+    setCachedToken(token, null);
     return null;
   }
 }

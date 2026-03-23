@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { getSeatPositionKey } from "@/lib/seat-layout";
 import type { SeatMapSeat } from "@/lib/services/seat.service";
 import {
@@ -44,7 +45,7 @@ function getSeatTone(seat: SeatMapSeat | null) {
   }
 }
 
-export function SeatMap({
+export const SeatMap = memo(function SeatMap({
   seats,
   columns,
   rows,
@@ -194,4 +195,4 @@ export function SeatMap({
       </div>
     </div>
   );
-}
+});

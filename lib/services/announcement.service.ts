@@ -45,11 +45,6 @@ export type PinnedAnnouncementItem = {
   publishedAt: string | null;
 };
 
-async function getPrismaClient() {
-  const { prisma } = await import("@/lib/prisma");
-  return prisma;
-}
-
 function normalizeText(value: string) {
   return value.trim();
 }
@@ -180,7 +175,8 @@ function serializeAnnouncement(
 }
 
 async function getDivisionOrThrow(divisionSlug: string) {
-  const prisma = await getPrismaClient();
+  const { prisma } = await import("@/lib/prisma");
+
   const division = await prisma.division.findUnique({
     where: {
       slug: divisionSlug,
@@ -237,7 +233,8 @@ export async function listAnnouncements(
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-  const prisma = await getPrismaClient();
+  const { prisma } = await import("@/lib/prisma");
+
   const announcements = await prisma.announcement.findMany({
     where: {
       OR: [{ divisionId: division.id }, { divisionId: null }],
@@ -325,7 +322,8 @@ export async function createAnnouncement(
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-  const prisma = await getPrismaClient();
+  const { prisma } = await import("@/lib/prisma");
+
   const announcement = await prisma.announcement.create({
     data: {
       divisionId: input.scope === "GLOBAL" ? null : division.id,
@@ -335,11 +333,17 @@ export async function createAnnouncement(
       publishedAt: publishedAt ? new Date(publishedAt) : null,
       createdById: actor.id,
     },
+    include: {
+      division: { select: { name: true, fullName: true } },
+      createdBy: { select: { name: true } },
+    },
   });
 
-  return (
-    await listAnnouncements(divisionSlug, { includeScheduled: true })
-  ).find((item) => item.id === announcement.id) ?? null;
+  return serializeAnnouncement(
+    announcement,
+    announcement.divisionId ? (announcement.division?.fullName ?? announcement.division?.name ?? null) : null,
+    announcement.createdBy.name,
+  );
 }
 export async function updateAnnouncement(
   divisionSlug: string,
@@ -411,7 +415,8 @@ export async function updateAnnouncement(
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-  const prisma = await getPrismaClient();
+  const { prisma } = await import("@/lib/prisma");
+
   const current = await prisma.announcement.findFirst({
     where: {
       id: announcementId,
@@ -431,7 +436,7 @@ export async function updateAnnouncement(
     assertGlobalPermission(actor);
   }
 
-  await prisma.announcement.update({
+  const updated = await prisma.announcement.update({
     where: {
       id: announcementId,
     },
@@ -442,11 +447,17 @@ export async function updateAnnouncement(
       isPinned: input.isPinned ?? false,
       publishedAt: publishedAt ? new Date(publishedAt) : null,
     },
+    include: {
+      division: { select: { name: true, fullName: true } },
+      createdBy: { select: { name: true } },
+    },
   });
 
-  return (
-    await listAnnouncements(divisionSlug, { includeScheduled: true })
-  ).find((item) => item.id === announcementId) ?? null;
+  return serializeAnnouncement(
+    updated,
+    updated.divisionId ? (updated.division?.fullName ?? updated.division?.name ?? null) : null,
+    updated.createdBy.name,
+  );
 }
 
 export async function deleteAnnouncement(
@@ -480,7 +491,8 @@ export async function deleteAnnouncement(
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-  const prisma = await getPrismaClient();
+  const { prisma } = await import("@/lib/prisma");
+
   const current = await prisma.announcement.findFirst({
     where: {
       id: announcementId,

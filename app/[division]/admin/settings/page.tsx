@@ -141,6 +141,7 @@ export default async function SettingsHubPage({ params }: SettingsHubPageProps) 
             <Link
               key={section.key}
               href={`/${params.division}/admin/${section.href}`}
+              prefetch={false}
               className="group rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_50px_rgba(18,32,56,0.10)]"
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">

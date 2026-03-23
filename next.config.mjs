@@ -4,6 +4,15 @@ const externalPackages = ["@prisma/client", "prisma", "exceljs"];
 const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: externalPackages,
+    optimizePackageImports: [
+      "lucide-react",
+      "recharts",
+      "sonner",
+      "@dnd-kit/core",
+      "@dnd-kit/sortable",
+      "@dnd-kit/utilities",
+      "date-fns",
+    ],
   },
   compress: true,
   poweredByHeader: false,

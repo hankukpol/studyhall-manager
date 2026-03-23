@@ -27,8 +27,8 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
   const session = await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
 
   try {
-    const dashboardData = await getStudentDashboardData(params.division, params.id);
     const [
+      dashboardData,
       pointRecords,
       examResults,
       scoreTargets,
@@ -43,6 +43,7 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
       ruleSettings,
       pointRules,
     ] = await Promise.all([
+      getStudentDashboardData(params.division, params.id),
       listPointRecords(params.division, { studentId: params.id }),
       listStudentExamResults(params.division, params.id),
       listScoreTargets(params.division, params.id),

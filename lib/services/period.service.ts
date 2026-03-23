@@ -27,11 +27,6 @@ export type PeriodInput = {
   isActive: boolean;
 };
 
-async function getPrismaClient() {
-  const { prisma } = await import("@/lib/prisma");
-  return prisma;
-}
-
 function sortPeriods<T extends { displayOrder: number }>(periods: T[]) {
   return [...periods].sort((left, right) => left.displayOrder - right.displayOrder);
 }
@@ -45,7 +40,7 @@ function reindexMockPeriods(periods: MockPeriodRecord[]) {
 }
 
 async function getDivisionOrThrow(divisionSlug: string) {
-  const prisma = await getPrismaClient();
+
   const division = await prisma.division.findUnique({
     where: { slug: divisionSlug },
   });
@@ -58,7 +53,7 @@ async function getDivisionOrThrow(divisionSlug: string) {
 }
 
 async function reorderDivisionPeriodsInDb(divisionId: string, orderedIds: string[]) {
-  const prisma = await getPrismaClient();
+
 
   await prisma.$transaction(
     orderedIds.map((id, index) =>
@@ -96,7 +91,7 @@ async function getPeriodsUncached(divisionSlug: string) {
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-  const prisma = await getPrismaClient();
+
 
   return prisma.period.findMany({
     where: { divisionId: division.id },
@@ -145,7 +140,7 @@ export async function createPeriod(divisionSlug: string, input: PeriodInput) {
     });
   }
 
-  const prisma = await getPrismaClient();
+
   const division = await getDivisionOrThrow(divisionSlug);
   const count = await prisma.period.count({ where: { divisionId: division.id } });
 
@@ -199,7 +194,7 @@ export async function updatePeriod(
     });
   }
 
-  const prisma = await getPrismaClient();
+
   const division = await getDivisionOrThrow(divisionSlug);
 
   if (input.reorderIds?.length) {
@@ -251,7 +246,7 @@ export async function deletePeriod(divisionSlug: string, periodId: string) {
     });
   }
 
-  const prisma = await getPrismaClient();
+
   const division = await getDivisionOrThrow(divisionSlug);
   const period = await prisma.period.findFirst({
     where: {

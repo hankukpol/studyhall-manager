@@ -161,11 +161,6 @@ function formatPointDelta(value: number) {
   return value > 0 ? `+${value}` : `${value}`;
 }
 
-async function getPrismaClient() {
-  const { prisma } = await import("@/lib/prisma");
-  return prisma;
-}
-
 function getKstToday() {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Seoul",
@@ -308,7 +303,7 @@ async function listAttendanceRangeRecords(
       })) satisfies RawAttendanceRecord[];
   }
 
-  const prisma = await getPrismaClient();
+
   const start = parseDateKey(dateFrom);
   const end = parseDateKey(dateTo);
   end.setUTCDate(end.getUTCDate() + 1);
@@ -707,7 +702,7 @@ async function listAttendanceEditLogs(
       .filter(Boolean) as ActivityLogItem[];
   }
 
-  const prisma = await getPrismaClient();
+
   const start = new Date(`${dateFrom}T00:00:00.000Z`);
   const end = new Date(`${addDays(dateTo, 1)}T00:00:00.000Z`);
   const records = await prisma.attendance.findMany({
@@ -912,8 +907,10 @@ async function getReportDataUncached(
     (student) => student.status === "ACTIVE" || student.status === "ON_LEAVE",
   );
   const mandatoryPeriods = periods.filter((period) => period.isActive && period.isMandatory);
-  const dates = enumerateDates(range.dateFrom, range.dateTo);
-  const examSummaryMap = await buildExamSummaryMap(divisionSlug, activeStudents);
+  const [dates, examSummaryMap] = await Promise.all([
+    Promise.resolve(enumerateDates(range.dateFrom, range.dateTo)),
+    buildExamSummaryMap(divisionSlug, activeStudents),
+  ]);
   const studentRows = buildStudentRows(
     activeStudents,
     mandatoryPeriods,
@@ -957,7 +954,7 @@ const getReportDataCached = unstable_cache(
   async (divisionSlug: string, selectionCacheKey: string) =>
     getReportDataUncached(divisionSlug, deserializeReportSelection(selectionCacheKey)),
   ["report-data"],
-  { revalidate: 30, tags: ["report-data"] },
+  { revalidate: 120, tags: ["report-data"] },
 );
 
 export async function getReportData(

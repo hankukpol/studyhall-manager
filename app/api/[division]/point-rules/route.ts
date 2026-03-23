@@ -6,7 +6,7 @@ import { pointRuleSchema } from "@/lib/point-schemas";
 import { createPointRule, listPointRules } from "@/lib/services/point.service";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { division: string } },
 ) {
   const auth = await requireApiAuth(params.division, ["ADMIN", "SUPER_ADMIN"]);
@@ -16,7 +16,8 @@ export async function GET(
   }
 
   try {
-    const rules = await listPointRules(params.division);
+    const activeOnly = request.nextUrl.searchParams.get("activeOnly") === "true";
+    const rules = await listPointRules(params.division, { activeOnly });
     return NextResponse.json({ rules });
   } catch (error) {
     return toApiErrorResponse(error, "상벌점 규칙 처리 중 오류가 발생했습니다.");

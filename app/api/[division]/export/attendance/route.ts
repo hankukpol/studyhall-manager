@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import ExcelJS from "exceljs";
 
 import { toApiErrorResponse } from "@/lib/api-error-response";
 import { requireApiAuth } from "@/lib/api-auth";
@@ -25,6 +24,7 @@ export async function GET(
 
   try {
     const rows = await getAttendanceExportRows(params.division, dateFrom, dateTo);
+    const ExcelJS = await import("exceljs");
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("attendance");
 

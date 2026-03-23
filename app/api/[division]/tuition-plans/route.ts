@@ -6,7 +6,7 @@ import { tuitionPlanSchema } from "@/lib/tuition-schemas";
 import { createTuitionPlan, listTuitionPlans } from "@/lib/services/tuition-plan.service";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { division: string } },
 ) {
   const auth = await requireApiAuth(params.division, ["ADMIN", "SUPER_ADMIN"]);
@@ -16,7 +16,8 @@ export async function GET(
   }
 
   try {
-    const plans = await listTuitionPlans(params.division);
+    const activeOnly = request.nextUrl.searchParams.get("activeOnly") === "true";
+    const plans = await listTuitionPlans(params.division, { activeOnly });
     return NextResponse.json({ plans });
   } catch (error) {
     return toApiErrorResponse(error, "등록 플랜 처리에 실패했습니다.");

@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { notFound } from "@/lib/errors";
 
 export async function getPrismaClient() {
@@ -10,7 +12,9 @@ export function normalizeOptionalText(value?: string | null) {
   return trimmed ? trimmed : null;
 }
 
-export async function getDivisionBySlugOrThrow(divisionSlug: string) {
+export const getDivisionBySlugOrThrow = cache(async function getDivisionBySlugOrThrow(
+  divisionSlug: string,
+) {
   const prisma = await getPrismaClient();
   const division = await prisma.division.findUnique({
     where: {
@@ -23,4 +27,4 @@ export async function getDivisionBySlugOrThrow(divisionSlug: string) {
   }
 
   return division;
-}
+});

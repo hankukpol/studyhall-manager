@@ -90,11 +90,6 @@ export type StudentExamResultItem = {
   }>;
 };
 
-async function getPrismaClient() {
-  const { prisma } = await import("@/lib/prisma");
-  return prisma;
-}
-
 function normalizeText(value: string) {
   return value.trim();
 }
@@ -239,7 +234,7 @@ function assignRanks<T extends { totalScore: number | null }>(rows: T[]) {
 }
 
 async function getDivisionOrThrow(divisionSlug: string) {
-  const prisma = await getPrismaClient();
+
   const division = await prisma.division.findUnique({
     where: {
       slug: divisionSlug,
@@ -335,7 +330,7 @@ export async function listExamTypes(divisionSlug: string) {
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-  const prisma = await getPrismaClient();
+
   const examTypes = await prisma.examType.findMany({
     where: {
       divisionId: division.id,
@@ -386,7 +381,7 @@ export async function createExamType(divisionSlug: string, input: ExamTypeSchema
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-  const prisma = await getPrismaClient();
+
   const count = await prisma.examType.count({
     where: {
       divisionId: division.id,
@@ -462,7 +457,7 @@ export async function updateExamType(
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-  const prisma = await getPrismaClient();
+
   const examType = await prisma.examType.findFirst({
     where: {
       id: examTypeId,
@@ -573,7 +568,7 @@ export async function deleteExamType(divisionSlug: string, examTypeId: string) {
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-  const prisma = await getPrismaClient();
+
   const examType = await prisma.examType.findFirst({
     where: {
       id: examTypeId,
@@ -639,7 +634,7 @@ export async function getExamScoreSheet(
     } satisfies ExamScoreSheet;
   }
 
-  const prisma = await getPrismaClient();
+
   const records = await prisma.examScore.findMany({
     where: {
       examTypeId,
@@ -763,7 +758,7 @@ export async function saveExamScores(
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-  const prisma = await getPrismaClient();
+
   const studentIds = preparedRows.map((row) => row.studentId);
   const matchingStudents = await prisma.student.findMany({
     where: {
@@ -849,7 +844,7 @@ export async function getLatestExamSummaryForStudent(
     };
   }
 
-  const prisma = await getPrismaClient();
+
   const latest = await prisma.examScore.findFirst({
     where: {
       studentId,
@@ -900,7 +895,7 @@ export async function getLatestExamSummariesForStudents(
     return new Map(entries);
   }
 
-  const prisma = await getPrismaClient();
+
   const latestScores = await prisma.examScore.findMany({
     where: {
       studentId: { in: studentIds },
@@ -989,7 +984,7 @@ export async function listStudentExamResults(
       });
   }
 
-  const prisma = await getPrismaClient();
+
   const records = await prisma.examScore.findMany({
     where: {
       studentId,

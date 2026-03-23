@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarClock, LoaderCircle, Plus, RefreshCcw, Save } from "lucide-react";
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Modal } from "@/components/ui/Modal";
@@ -84,7 +84,7 @@ function getLimit(type: LeaveTypeValue, settings: LeaveManagerProps["settings"])
   }
 }
 
-export function LeaveManager({
+export const LeaveManager = memo(function LeaveManager({
   divisionSlug,
   students,
   initialPermissions,
@@ -635,4 +635,4 @@ export function LeaveManager({
       </Modal>
     </>
   );
-}
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import {
   CheckSquare,
   LoaderCircle,
@@ -48,7 +48,7 @@ function formatRulePreview(rule: PointRuleItem) {
   return `${rule.name} · ${rule.points > 0 ? "+" : ""}${rule.points}점`;
 }
 
-export function PointGrantManager({
+export const PointGrantManager = memo(function PointGrantManager({
   divisionSlug,
   students,
   rules,
@@ -716,4 +716,4 @@ export function PointGrantManager({
       </Modal>
     </div>
   );
-}
+});

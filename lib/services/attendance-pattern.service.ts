@@ -1,7 +1,15 @@
 import { isMockMode } from "@/lib/mock-data";
 import { readMockState } from "@/lib/mock-store";
+import { prisma } from "@/lib/prisma";
 import { getPeriods } from "@/lib/services/period.service";
 import { listStudents } from "@/lib/services/student.service";
+
+const kstDateFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Seoul",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
 
 type PatternType = "TARDY" | "ABSENT";
 
@@ -16,18 +24,8 @@ export type AttendancePatternItem = {
   message: string;
 };
 
-async function getPrismaClient() {
-  const { prisma } = await import("@/lib/prisma");
-  return prisma;
-}
-
 function getKstToday() {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+  return kstDateFormatter.format(new Date());
 }
 
 function addDays(date: string, offsetDays: number) {
@@ -52,6 +50,7 @@ async function getPatternCounts(
 
   const dateTo = getKstToday();
   const dateFrom = addDays(dateTo, -(Math.max(days, 1) - 1));
+  const mandatoryPeriodSet = new Set(mandatoryPeriods);
 
   if (isMockMode()) {
     const state = await readMockState();
@@ -62,7 +61,7 @@ async function getPatternCounts(
         continue;
       }
 
-      if (!mandatoryPeriods.includes(record.periodId)) {
+      if (!mandatoryPeriodSet.has(record.periodId)) {
         continue;
       }
 
@@ -76,7 +75,6 @@ async function getPatternCounts(
     return counts;
   }
 
-  const prisma = await getPrismaClient();
   const start = new Date(`${dateFrom}T00:00:00.000Z`);
   const end = new Date(`${addDays(dateTo, 1)}T00:00:00.000Z`);
   const rows = await prisma.attendance.findMany({

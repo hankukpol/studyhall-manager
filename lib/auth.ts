@@ -130,7 +130,7 @@ export const getCurrentAdminSession = cache(async function getCurrentAdminSessio
   };
 });
 
-export async function getCurrentStudentSession(
+export const getCurrentStudentSession = cache(async function getCurrentStudentSession(
   requestedDivisionSlug?: string,
 ): Promise<StudentSession | null> {
   const token = cookies().get(STUDENT_SESSION_COOKIE)?.value;
@@ -160,7 +160,7 @@ export async function getCurrentStudentSession(
   } catch {
     return null;
   }
-}
+});
 
 export async function requireDivisionAdminAccess(
   divisionSlug: string,

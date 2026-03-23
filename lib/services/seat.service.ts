@@ -1,3 +1,5 @@
+import { revalidateTag, unstable_cache } from "next/cache";
+import { cache } from "react";
 import { Prisma } from "@prisma/client/index";
 
 import { badRequest, conflict, notFound } from "@/lib/errors";
@@ -81,6 +83,29 @@ export type SeatOptionItem = {
 async function getPrismaClient() {
   const { prisma } = await import("@/lib/prisma");
   return prisma;
+}
+
+function studyRoomsTag(divisionSlug: string) {
+  return `study-rooms:${divisionSlug}`;
+}
+
+function seatOptionsTag(divisionSlug: string, activeOnly: boolean) {
+  return `seat-options:${divisionSlug}:${activeOnly ? "active" : "all"}`;
+}
+
+function seatLayoutTag(divisionSlug: string, roomId?: string) {
+  return `seat-layout:${divisionSlug}:${roomId ?? "default"}`;
+}
+
+function revalidateSeatData(divisionSlug: string, roomId?: string) {
+  revalidateTag(studyRoomsTag(divisionSlug));
+  revalidateTag(seatOptionsTag(divisionSlug, false));
+  revalidateTag(seatOptionsTag(divisionSlug, true));
+  revalidateTag(seatLayoutTag(divisionSlug));
+
+  if (roomId) {
+    revalidateTag(seatLayoutTag(divisionSlug, roomId));
+  }
 }
 
 function normalizeText(value: string) {
@@ -264,7 +289,7 @@ function findMockSeatForStudent(seats: MockSeatRecord[], student: MockStudentRec
   return matches.length === 1 ? matches[0] : null;
 }
 
-async function getDivisionOrThrow(divisionSlug: string) {
+const getDivisionOrThrow = cache(async function getDivisionOrThrow(divisionSlug: string) {
   const prisma = await getPrismaClient();
   const division = await prisma.division.findUnique({
     where: {
@@ -277,7 +302,7 @@ async function getDivisionOrThrow(divisionSlug: string) {
   }
 
   return division;
-}
+});
 
 async function ensureDefaultStudyRoom(divisionSlug: string, divisionId: string) {
   const prisma = await getPrismaClient();
@@ -346,41 +371,7 @@ export async function listStudyRooms(divisionSlug: string): Promise<StudyRoomIte
     );
   }
 
-  const division = await getDivisionOrThrow(divisionSlug);
-  await ensureDefaultStudyRoom(divisionSlug, division.id);
-  const prisma = await getPrismaClient();
-  const rooms = await prisma.studyRoom.findMany({
-    where: {
-      divisionId: division.id,
-    },
-    include: {
-      seats: {
-        include: {
-          student: {
-            select: {
-              id: true,
-            },
-          },
-        },
-      },
-    },
-    orderBy: [
-      {
-        displayOrder: "asc",
-      },
-      {
-        createdAt: "asc",
-      },
-    ],
-  });
-
-  return rooms.map((room) =>
-    serializeRoom(
-      room,
-      room.seats.length,
-      room.seats.reduce((sum, seat) => sum + (seat.student ? 1 : 0), 0),
-    ),
-  );
+  return getListStudyRoomsCached(divisionSlug)();
 }
 
 export async function listSeatOptions(
@@ -412,50 +403,7 @@ export async function listSeatOptions(
     });
   }
 
-  const division = await getDivisionOrThrow(divisionSlug);
-  await ensureDefaultStudyRoom(divisionSlug, division.id);
-  const prisma = await getPrismaClient();
-  const seats = await prisma.seat.findMany({
-    where: {
-      divisionId: division.id,
-      ...(options?.activeOnly ? { isActive: true } : {}),
-    },
-    include: {
-      studyRoom: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      student: {
-        select: {
-          id: true,
-        },
-      },
-    },
-    orderBy: [
-      {
-        studyRoom: {
-          displayOrder: "asc",
-        },
-      },
-      {
-        positionY: "asc",
-      },
-      {
-        positionX: "asc",
-      },
-    ],
-  });
-
-  return seats.map((seat) => ({
-    id: seat.id,
-    studyRoomId: seat.studyRoom.id,
-    studyRoomName: seat.studyRoom.name,
-    label: seat.label,
-    isActive: seat.isActive,
-    assignedStudentId: seat.student?.id ?? null,
-  }));
+  return getListSeatOptionsCached(divisionSlug, options?.activeOnly ?? false)();
 }
 
 export async function getSeatLayout(
@@ -496,6 +444,116 @@ export async function getSeatLayout(
     };
   }
 
+  return getSeatLayoutCached(divisionSlug, roomId)();
+}
+
+async function listStudyRoomsUncached(divisionSlug: string): Promise<StudyRoomItem[]> {
+  const division = await getDivisionOrThrow(divisionSlug);
+  await ensureDefaultStudyRoom(divisionSlug, division.id);
+  const prisma = await getPrismaClient();
+  const rooms = await prisma.studyRoom.findMany({
+    where: {
+      divisionId: division.id,
+    },
+    include: {
+      seats: {
+        include: {
+          student: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: [
+      {
+        displayOrder: "asc",
+      },
+      {
+        createdAt: "asc",
+      },
+    ],
+  });
+
+  return rooms.map((room) =>
+    serializeRoom(
+      room,
+      room.seats.length,
+      room.seats.reduce((sum, seat) => sum + (seat.student ? 1 : 0), 0),
+    ),
+  );
+}
+
+function getListStudyRoomsCached(divisionSlug: string) {
+  return unstable_cache(() => listStudyRoomsUncached(divisionSlug), ["study-rooms", divisionSlug], {
+    revalidate: 300,
+    tags: [studyRoomsTag(divisionSlug)],
+  });
+}
+
+async function listSeatOptionsUncached(
+  divisionSlug: string,
+  activeOnly: boolean,
+): Promise<SeatOptionItem[]> {
+  const division = await getDivisionOrThrow(divisionSlug);
+  await ensureDefaultStudyRoom(divisionSlug, division.id);
+  const prisma = await getPrismaClient();
+  const seats = await prisma.seat.findMany({
+    where: {
+      divisionId: division.id,
+      ...(activeOnly ? { isActive: true } : {}),
+    },
+    include: {
+      studyRoom: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      student: {
+        select: {
+          id: true,
+        },
+      },
+    },
+    orderBy: [
+      {
+        studyRoom: {
+          displayOrder: "asc",
+        },
+      },
+      {
+        positionY: "asc",
+      },
+      {
+        positionX: "asc",
+      },
+    ],
+  });
+
+  return seats.map((seat) => ({
+    id: seat.id,
+    studyRoomId: seat.studyRoom.id,
+    studyRoomName: seat.studyRoom.name,
+    label: seat.label,
+    isActive: seat.isActive,
+    assignedStudentId: seat.student?.id ?? null,
+  }));
+}
+
+function getListSeatOptionsCached(divisionSlug: string, activeOnly: boolean) {
+  return unstable_cache(
+    () => listSeatOptionsUncached(divisionSlug, activeOnly),
+    ["seat-options", divisionSlug, activeOnly ? "active" : "all"],
+    {
+      revalidate: 300,
+      tags: [seatOptionsTag(divisionSlug, activeOnly)],
+    },
+  );
+}
+
+async function getSeatLayoutUncached(divisionSlug: string, roomId?: string): Promise<SeatLayout> {
   const division = await getDivisionOrThrow(divisionSlug);
   const defaultRoom = await ensureDefaultStudyRoom(divisionSlug, division.id);
   const prisma = await getPrismaClient();
@@ -578,6 +636,17 @@ export async function getSeatLayout(
   };
 }
 
+function getSeatLayoutCached(divisionSlug: string, roomId?: string) {
+  return unstable_cache(
+    () => getSeatLayoutUncached(divisionSlug, roomId),
+    ["seat-layout", divisionSlug, roomId ?? "default"],
+    {
+      revalidate: 300,
+      tags: [seatLayoutTag(divisionSlug), seatLayoutTag(divisionSlug, roomId)],
+    },
+  );
+}
+
 export async function createStudyRoom(divisionSlug: string, input: StudyRoomInput) {
   const normalized = validateRoomInput(input);
 
@@ -644,7 +713,9 @@ export async function createStudyRoom(divisionSlug: string, input: StudyRoomInpu
     },
   });
 
-  return serializeRoom(room, 0, 0);
+  const serializedRoom = serializeRoom(room, 0, 0);
+  revalidateSeatData(divisionSlug, room.id);
+  return serializedRoom;
 }
 export async function updateStudyRoom(
   divisionSlug: string,
@@ -757,11 +828,13 @@ export async function updateStudyRoom(
     },
   });
 
-  return serializeRoom(
+  const serializedRoom = serializeRoom(
     updated,
     updated.seats.length,
     updated.seats.reduce((sum, seat) => sum + (seat.student ? 1 : 0), 0),
   );
+  revalidateSeatData(divisionSlug, roomId);
+  return serializedRoom;
 }
 export async function deleteStudyRoom(divisionSlug: string, roomId: string) {
   if (isMockMode()) {
@@ -854,6 +927,7 @@ export async function deleteStudyRoom(divisionSlug: string, roomId: string) {
     });
   });
 
+  revalidateSeatData(divisionSlug, roomId);
   return { id: roomId };
 }
 export async function saveSeatLayout(
@@ -1006,6 +1080,7 @@ export async function saveSeatLayout(
     }
   });
 
+  revalidateSeatData(divisionSlug, roomId);
   return getSeatLayout(divisionSlug, roomId);
 }
 export async function assignStudentToSeat(
@@ -1137,6 +1212,6 @@ export async function assignStudentToSeat(
     throw toSeatAssignmentError(error);
   }
 
+  revalidateSeatData(divisionSlug, seat.studyRoomId);
   return getSeatLayout(divisionSlug, seat.studyRoomId);
 }
-

@@ -18,11 +18,6 @@ export type DivisionStaffAccount = {
   createdAt: string;
 };
 
-async function getPrismaClient() {
-  const { prisma } = await import("@/lib/prisma");
-  return prisma;
-}
-
 function serializeMockStaff(admin: MockAdminRecord): DivisionStaffAccount {
   return {
     id: admin.id,
@@ -44,7 +39,8 @@ export async function listDivisionStaff(divisionId: string, divisionSlug: string
       .map(serializeMockStaff);
   }
 
-  const prisma = await getPrismaClient();
+  const { prisma } = await import("@/lib/prisma");
+
   const admins = await prisma.admin.findMany({
     where: {
       divisionId,
@@ -101,7 +97,8 @@ export async function createDivisionStaff(
   });
 
   try {
-    const prisma = await getPrismaClient();
+    const { prisma } = await import("@/lib/prisma");
+
     const admin = await prisma.admin.create({
       data: {
         userId: user.id,
@@ -146,7 +143,7 @@ export async function updateDivisionStaff(
     });
   }
 
-  const prisma = await getPrismaClient();
+
   const existing = await prisma.admin.findFirst({
     where: { id: staffId, divisionId, role: { in: ["ADMIN", "ASSISTANT"] } },
   });
@@ -181,7 +178,7 @@ export async function deleteDivisionStaff(divisionId: string, staffId: string) {
     });
   }
 
-  const prisma = await getPrismaClient();
+
   const existing = await prisma.admin.findFirst({
     where: { id: staffId, divisionId, role: { in: ["ADMIN", "ASSISTANT"] } },
     select: { id: true, name: true },
@@ -202,7 +199,7 @@ export async function permanentDeleteDivisionStaff(divisionId: string, staffId: 
     });
   }
 
-  const prisma = await getPrismaClient();
+
   const existing = await prisma.admin.findFirst({
     where: { id: staffId, divisionId, role: { in: ["ADMIN", "ASSISTANT"] } },
     select: { id: true, name: true, userId: true },
@@ -226,7 +223,7 @@ export async function resetDivisionStaffPassword(
     return { id: target.id, name: target.name };
   }
 
-  const prisma = await getPrismaClient();
+
   const existing = await prisma.admin.findFirst({
     where: { id: staffId, divisionId, role: { in: ["ADMIN", "ASSISTANT"] } },
     select: { id: true, name: true, userId: true },

@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { getMockAdminSession, getMockDivisionBySlug, isMockMode } from "@/lib/mock-data";
 import { normalizeYmMonth, parseUtcDateFromYmd } from "@/lib/date-utils";
 import { badRequest, conflict, notFound } from "@/lib/errors";
@@ -181,7 +183,7 @@ function serializeLeaveRecord(
   } satisfies LeavePermissionItem;
 }
 
-async function getDivisionOrThrow(divisionSlug: string) {
+const getDivisionOrThrow = cache(async function getDivisionOrThrow(divisionSlug: string) {
   const prisma = await getPrismaClient();
   const division = await prisma.division.findUnique({
     where: {
@@ -194,7 +196,7 @@ async function getDivisionOrThrow(divisionSlug: string) {
   }
 
   return division;
-}
+});
 
 async function applyMockLeaveAttendance(
   divisionSlug: string,
@@ -482,8 +484,12 @@ export async function createLeavePermission(
 
       return nextRecord;
     });
-
-    return (await listLeavePermissions(divisionSlug)).find((item) => item.id === record.id) ?? null;
+    const mockState = await readMockState();
+    const mockStudent = (mockState.studentsByDivision[divisionSlug] ?? []).find(
+      (s) => s.id === record.studentId,
+    );
+    if (!mockStudent) return null;
+    return serializeLeaveRecord(record, mockStudent, getMockAdminSession(divisionSlug).name);
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
@@ -540,9 +546,15 @@ export async function createLeavePermission(
     reason,
   });
 
-  return (await listLeavePermissions(divisionSlug, { studentId: input.studentId })).find(
-    (item) => item.id === permission.id,
-  ) ?? null;
+  const createdPermission = await prisma.leavePermission.findUnique({
+    where: { id: permission.id },
+    include: {
+      student: { select: { id: true, name: true, studentNumber: true } },
+      approvedBy: { select: { id: true, name: true } },
+    },
+  });
+  if (!createdPermission) return null;
+  return serializeLeaveRecord(createdPermission, createdPermission.student, createdPermission.approvedBy.name);
 }
 
 export async function previewLeaveSettlement(
@@ -593,49 +605,26 @@ export async function previewLeaveSettlement(
 
   const division = await getDivisionOrThrow(divisionSlug);
   const prisma = await getPrismaClient();
-  const students = await prisma.student.findMany({
-    where: {
-      divisionId: division.id,
-    },
-    select: {
-      id: true,
-      name: true,
-      studentNumber: true,
-      studyTrack: true,
-      status: true,
-    },
-  });
-  const permissions = await prisma.leavePermission.findMany({
-    where: {
-      student: {
-        divisionId: division.id,
+  const [students, permissions, settledStudentIds] = await Promise.all([
+    prisma.student.findMany({
+      where: { divisionId: division.id },
+      select: { id: true, name: true, studentNumber: true, studyTrack: true, status: true },
+    }),
+    prisma.leavePermission.findMany({
+      where: {
+        student: { divisionId: division.id },
+        date: { gte: start, lt: end },
       },
-      date: {
-        gte: start,
-        lt: end,
+      select: { studentId: true, type: true, status: true },
+    }),
+    prisma.pointRecord.findMany({
+      where: {
+        student: { divisionId: division.id },
+        notes: settlementNote,
       },
-    },
-    select: {
-      studentId: true,
-      type: true,
-      status: true,
-    },
-  });
-  const settledStudentIds = new Set(
-    (
-      await prisma.pointRecord.findMany({
-        where: {
-          student: {
-            divisionId: division.id,
-          },
-          notes: settlementNote,
-        },
-        select: {
-          studentId: true,
-        },
-      })
-    ).map((record) => record.studentId),
-  );
+      select: { studentId: true },
+    }).then((records) => new Set(records.map((record) => record.studentId))),
+  ]);
   const items = buildLeaveSettlementPreviewItems({
     students,
     permissions,

@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import {
   readMockState,
   updateMockState,
@@ -212,7 +214,7 @@ function buildAttendanceSnapshot(
   };
 }
 
-async function getDivisionOrThrow(divisionSlug: string) {
+const getDivisionOrThrow = cache(async function getDivisionOrThrow(divisionSlug: string) {
   const prisma = await getPrismaClient();
   const division = await prisma.division.findUnique({
     where: { slug: divisionSlug },
@@ -223,7 +225,7 @@ async function getDivisionOrThrow(divisionSlug: string) {
   }
 
   return division;
-}
+});
 
 async function ensureAssistantAllowed(
   divisionSlug: string,

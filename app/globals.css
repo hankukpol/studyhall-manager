@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css");
 
 :root {
   --background: #f4f6f9;
@@ -46,7 +45,7 @@ body {
   margin: 0;
   color: var(--foreground);
   background: var(--background);
-  font-family: 'Pretendard', sans-serif;
+  font-family: var(--font-pretendard), 'Pretendard', sans-serif;
   text-rendering: optimizeLegibility;
 }
 

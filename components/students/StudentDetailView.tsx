@@ -1,12 +1,12 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { Ban, CircleAlert, LoaderCircle, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 import { StudentStatusBadge, WarningStageBadge } from "@/components/students/StudentBadges";
-import { StudentForm } from "@/components/students/StudentForm";
 import { StudentDetailTabs } from "@/components/students/StudentDetailTabs";
 import { Modal } from "@/components/ui/Modal";
 import type { ExamTypeItem, StudentExamResultItem } from "@/lib/services/exam.service";
@@ -56,6 +56,17 @@ const tabs = [
   { id: "interviews", label: "면담" },
   { id: "study-time", label: "학습 시간" },
 ] as const;
+
+const studentFormFallback = () => (
+  <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-6 text-sm text-slate-500">
+    학생 정보를 불러오는 중입니다.
+  </div>
+);
+
+const StudentForm = dynamic(
+  () => import("@/components/students/StudentForm").then((mod) => mod.StudentForm),
+  { ssr: false, loading: studentFormFallback },
+);
 
 function formatDate(value: string | null) {
   if (!value) {

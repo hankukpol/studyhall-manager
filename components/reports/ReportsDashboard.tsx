@@ -262,6 +262,7 @@ export function ReportsDashboard({
             <div className="flex flex-wrap items-end gap-2 xl:justify-end">
               <Link
                 href={exportLinks.attendance}
+                prefetch={false}
                 className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 <Download className="h-4 w-4" />
@@ -269,6 +270,7 @@ export function ReportsDashboard({
               </Link>
               <Link
                 href={exportLinks.points}
+                prefetch={false}
                 className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 <Download className="h-4 w-4" />
@@ -276,6 +278,7 @@ export function ReportsDashboard({
               </Link>
               <Link
                 href={exportLinks.monthly}
+                prefetch={false}
                 className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 <Download className="h-4 w-4" />
@@ -283,6 +286,7 @@ export function ReportsDashboard({
               </Link>
               <Link
                 href={exportLinks.payments}
+                prefetch={false}
                 className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 <Download className="h-4 w-4" />
@@ -357,6 +361,7 @@ export function ReportsDashboard({
               </button>
               <Link
                 href={exportLinks.activity}
+                prefetch={false}
                 className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 <Download className="h-4 w-4" />
