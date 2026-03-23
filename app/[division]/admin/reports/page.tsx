@@ -1,6 +1,6 @@
 import { ReportsDashboard } from "@/components/reports/ReportsDashboard";
 import {
-  getActivityLogData,
+  type ActivityLogData,
   getReportData,
   resolveReportSelection,
 } from "@/lib/services/report.service";
@@ -27,20 +27,20 @@ export default async function AdminReportsPage({
 }: AdminReportsPageProps) {
 
   const selection = resolveReportSelection(searchParams);
-  const [data, initialActivityLog] = await Promise.all([
-    getReportData(params.division, selection),
-    getActivityLogData(params.division, {
-      dateFrom: searchParams?.activityDateFrom,
-      dateTo: searchParams?.activityDateTo,
-      actorId: searchParams?.activityActorId ?? null,
-      actionType: (searchParams?.activityActionType as
-        | "POINT"
-        | "ATTENDANCE_EDIT"
-        | "STUDENT_STATUS"
-        | "INTERVIEW"
-        | undefined) ?? null,
-    }),
-  ]);
+  const data = await getReportData(params.division, selection);
+  const initialActivityLog = {
+    dateFrom: searchParams?.activityDateFrom ?? data.range.dateFrom,
+    dateTo: searchParams?.activityDateTo ?? data.range.dateTo,
+    actorId: searchParams?.activityActorId ?? null,
+    actionType: (searchParams?.activityActionType as
+      | "POINT"
+      | "ATTENDANCE_EDIT"
+      | "STUDENT_STATUS"
+      | "INTERVIEW"
+      | undefined) ?? null,
+    items: [],
+    actorOptions: [],
+  } satisfies ActivityLogData;
   const selectionKey =
     selection.period === "monthly"
       ? `${selection.period}:${selection.month}`

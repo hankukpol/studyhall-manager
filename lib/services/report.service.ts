@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+
 import { isMockMode } from "@/lib/mock-data";
 import { normalizeYmMonth, normalizeYmdDate } from "@/lib/date-utils";
 import { readMockState } from "@/lib/mock-store";
@@ -865,7 +867,33 @@ export async function getActivityLogData(
   };
 }
 
-export async function getReportData(
+function serializeReportSelection(selection: ReportSelection) {
+  return selection.period === "monthly"
+    ? `${selection.period}:${selection.month}`
+    : `${selection.period}:${selection.date}`;
+}
+
+function deserializeReportSelection(cacheKey: string): ReportSelection {
+  const [period, value] = cacheKey.split(":", 2);
+
+  if (period === "monthly") {
+    return {
+      period,
+      month: value,
+    };
+  }
+
+  if (period === "daily" || period === "weekly") {
+    return {
+      period,
+      date: value,
+    };
+  }
+
+  throw new Error("Unsupported cached report selection");
+}
+
+async function getReportDataUncached(
   divisionSlug: string,
   selection: ReportSelection,
 ): Promise<ReportData> {
@@ -923,6 +951,25 @@ export async function getReportData(
     dailyPeriodRows,
     pointMovers: buildPointMovers(studentRows),
   };
+}
+
+const getReportDataCached = unstable_cache(
+  async (divisionSlug: string, selectionCacheKey: string) =>
+    getReportDataUncached(divisionSlug, deserializeReportSelection(selectionCacheKey)),
+  ["report-data"],
+  { revalidate: 30, tags: ["report-data"] },
+);
+
+export async function getReportData(
+  divisionSlug: string,
+  selection: ReportSelection,
+  options?: { forceFresh?: boolean },
+): Promise<ReportData> {
+  if (options?.forceFresh) {
+    return getReportDataUncached(divisionSlug, selection);
+  }
+
+  return getReportDataCached(divisionSlug, serializeReportSelection(selection));
 }
 
 export async function getPaymentExportRows(

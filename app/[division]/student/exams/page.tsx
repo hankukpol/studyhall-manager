@@ -2,6 +2,7 @@ import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 import { ChartNoAxesColumn } from "lucide-react";
 
+import { ExamScoreChartLoader } from "@/components/exams/ExamScoreChartLoader";
 import { StudentPortalFrame } from "@/components/student-view/StudentPortalFrame";
 import {
   PortalEmptyState,
@@ -31,11 +32,6 @@ const panelFallback = (
 
 const ScoreTargetPanel = dynamic(
   () => import("@/components/exams/ScoreTargetPanel").then((mod) => mod.ScoreTargetPanel),
-  { ssr: false, loading: () => panelFallback },
-);
-
-const ExamScoreChart = dynamic(
-  () => import("@/components/exams/ExamScoreChart").then((mod) => mod.ExamScoreChart),
   { ssr: false, loading: () => panelFallback },
 );
 
@@ -90,7 +86,7 @@ export default async function StudentExamsPage({ params }: StudentExamsPageProps
           initialTargets={scoreTargets}
         />
 
-        <ExamScoreChart results={exams} />
+        <ExamScoreChartLoader results={exams} />
 
         <section className={portalSectionClass}>
           <PortalSectionHeader

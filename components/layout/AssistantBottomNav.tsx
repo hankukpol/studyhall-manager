@@ -34,12 +34,13 @@ export function AssistantBottomNav({ divisionSlug }: AssistantBottomNavProps) {
             const Icon = item.icon;
 
             return (
-              <Link
-                key={href}
-                href={href}
-                className={`inline-flex items-center justify-center gap-2 rounded-[20px] px-4 py-3 text-sm font-semibold transition ${
-                  isActive
-                    ? "bg-[var(--division-color)] text-white"
+            <Link
+              key={href}
+              href={href}
+              prefetch={false}
+              className={`inline-flex items-center justify-center gap-2 rounded-[20px] px-4 py-3 text-sm font-semibold transition ${
+                isActive
+                  ? "bg-[var(--division-color)] text-white"
                     : "bg-slate-50 text-slate-600 hover:bg-slate-100"
                 }`}
               >

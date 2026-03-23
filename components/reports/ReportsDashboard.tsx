@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Download, LoaderCircle, RefreshCcw } from "lucide-react";
 import { toast } from "sonner";
 
@@ -153,6 +153,14 @@ export function ReportsDashboard({
       setIsActivityLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (tab !== "activity" || activity.items.length > 0 || isActivityLoading) {
+      return;
+    }
+
+    void refreshActivityLogs(false);
+  }, [activity.items.length, isActivityLoading, tab]);
 
   return (
     <div className="space-y-6">
