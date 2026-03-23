@@ -20,7 +20,7 @@ export async function GET(
 
   try {
     const schedules = await listExamSchedules(params.division);
-    return NextResponse.json({ schedules });
+    return NextResponse.json({ schedules }, { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=30" } });
   } catch (error) {
     return toApiErrorResponse(error, "시험 일정 처리 중 오류가 발생했습니다.");
   }

@@ -14,5 +14,5 @@ export async function GET(
   }
 
   const period = await getCurrentPeriod(params.division);
-  return NextResponse.json({ period });
+  return NextResponse.json({ period }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=15" } });
 }

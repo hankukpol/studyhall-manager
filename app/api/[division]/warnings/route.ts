@@ -16,7 +16,7 @@ export async function GET(
 
   try {
     const students = await listWarningStudents(params.division);
-    return NextResponse.json({ students });
+    return NextResponse.json({ students }, { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=30" } });
   } catch (error) {
     return toApiErrorResponse(error, "경고 대상자 정보를 불러오지 못했습니다.");
   }

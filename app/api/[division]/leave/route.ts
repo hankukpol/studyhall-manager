@@ -20,7 +20,7 @@ export async function GET(
       studentId: request.nextUrl.searchParams.get("studentId") || undefined,
       month: request.nextUrl.searchParams.get("month") || undefined,
     });
-    return NextResponse.json({ permissions });
+    return NextResponse.json({ permissions }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=15" } });
   } catch (error) {
     return toApiErrorResponse(error, "외출/휴가 내역을 불러오지 못했습니다.");
   }

@@ -28,7 +28,7 @@ export async function GET(
 
   try {
     const stats = await getStudentStudyTimeStats(params.division, studentId, month);
-    return NextResponse.json({ stats });
+    return NextResponse.json({ stats }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=15" } });
   } catch (error) {
     return toApiErrorResponse(error, "학습 시간 통계 처리 중 오류가 발생했습니다.");
   }

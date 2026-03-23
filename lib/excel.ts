@@ -47,7 +47,7 @@ export function buildExcelResponse(filename: string, buffer: Buffer | Uint8Array
       "Content-Type":
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "Content-Disposition": `attachment; filename=\"${filename}\"`,
-      "Cache-Control": "no-store",
+      "Cache-Control": "private, no-store",
     },
   });
 }

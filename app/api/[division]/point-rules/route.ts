@@ -18,7 +18,7 @@ export async function GET(
   try {
     const activeOnly = request.nextUrl.searchParams.get("activeOnly") === "true";
     const rules = await listPointRules(params.division, { activeOnly });
-    return NextResponse.json({ rules });
+    return NextResponse.json({ rules }, { headers: { "Cache-Control": "private, max-age=300, stale-while-revalidate=60" } });
   } catch (error) {
     return toApiErrorResponse(error, "상벌점 규칙 처리 중 오류가 발생했습니다.");
   }

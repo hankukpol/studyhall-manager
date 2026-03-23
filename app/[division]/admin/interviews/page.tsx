@@ -9,12 +9,20 @@ type AdminInterviewsPageProps = {
   };
 };
 
+function getCurrentMonth() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+  }).format(new Date());
+}
 
 export default async function AdminInterviewsPage({ params }: AdminInterviewsPageProps) {
+  const currentMonth = getCurrentMonth();
 
   const [students, interviews, settings] = await Promise.all([
     listStudents(params.division),
-    listInterviews(params.division),
+    listInterviews(params.division, { month: currentMonth }),
     getDivisionSettings(params.division),
   ]);
 

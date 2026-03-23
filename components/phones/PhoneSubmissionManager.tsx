@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, Check, Phone, RefreshCcw, Smartphone, X } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import type { PhoneCheckRecord } from "@/lib/services/phone-submission.service";
@@ -9,8 +9,8 @@ import type { PointRuleItem } from "@/lib/services/point.service";
 
 type PhoneSubmissionManagerProps = {
   divisionSlug: string;
-  initialRecords: PhoneCheckRecord[];
-  phonePointRule: PointRuleItem | null;
+  initialRecords?: PhoneCheckRecord[];
+  phonePointRule?: PointRuleItem | null;
 };
 
 function getKstToday() {
@@ -27,21 +27,48 @@ function getMonthStart() {
   return `${today.slice(0, 7)}-01`;
 }
 
+function findPhonePointRule(rules: PointRuleItem[]) {
+  return (
+    rules.find(
+      (rule) =>
+        rule.isActive &&
+        rule.points < 0 &&
+        (rule.name.includes("휴대폰") ||
+          rule.name.includes("핸드폰") ||
+          rule.name.toLowerCase().includes("phone")),
+    ) ?? null
+  );
+}
+
 export function PhoneSubmissionManager({
   divisionSlug,
-  initialRecords,
-  phonePointRule,
+  initialRecords = [],
+  phonePointRule: initialPhonePointRule = null,
 }: PhoneSubmissionManagerProps) {
   const [records, setRecords] = useState<PhoneCheckRecord[]>(initialRecords);
+  const [phonePointRule, setPhonePointRule] = useState<PointRuleItem | null>(initialPhonePointRule);
   const [dateFrom, setDateFrom] = useState(getMonthStart());
   const [dateTo, setDateTo] = useState(getKstToday());
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [isGranting, setIsGranting] = useState(false);
+  const hasBootstrapped = useRef(false);
 
-  const notSubmittedList = records.filter((r) => r.status === "NOT_SUBMITTED");
+  const notSubmittedList = useMemo(
+    () => records.filter((record) => record.status === "NOT_SUBMITTED"),
+    [records],
+  );
+  const submittedCount = useMemo(
+    () => records.filter((record) => record.status === "SUBMITTED").length,
+    [records],
+  );
+  const notSubmittedCount = notSubmittedList.length;
+  const rentedCount = useMemo(
+    () => records.filter((record) => record.status === "RENTED").length,
+    [records],
+  );
 
-  async function handleSearch() {
+  const handleSearch = useCallback(async () => {
     setIsLoading(true);
     setSelectedIds(new Set());
     try {
@@ -59,7 +86,40 @@ export function PhoneSubmissionManager({
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [dateFrom, dateTo, divisionSlug]);
+
+  const loadPhonePointRule = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/${divisionSlug}/point-rules?activeOnly=true`, {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = (await response.json()) as { rules?: PointRuleItem[] };
+      setPhonePointRule(findPhonePointRule(data.rules ?? []));
+    } catch {
+      // Optional helper metadata load failure should not block the page.
+    }
+  }, [divisionSlug]);
+
+  useEffect(() => {
+    if (hasBootstrapped.current) {
+      return;
+    }
+
+    hasBootstrapped.current = true;
+
+    if (initialRecords.length === 0) {
+      void handleSearch();
+    }
+
+    if (!initialPhonePointRule) {
+      void loadPhonePointRule();
+    }
+  }, [handleSearch, initialPhonePointRule, initialRecords.length, loadPhonePointRule]);
 
   function toggleSelect(studentId: string) {
     setSelectedIds((prev) => {
@@ -119,10 +179,6 @@ export function PhoneSubmissionManager({
       setIsGranting(false);
     }
   }
-
-  const submittedCount = records.filter((r) => r.status === "SUBMITTED").length;
-  const notSubmittedCount = notSubmittedList.length;
-  const rentedCount = records.filter((r) => r.status === "RENTED").length;
 
   return (
     <div className="space-y-5">

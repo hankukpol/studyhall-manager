@@ -17,7 +17,7 @@ export async function GET(
 
   try {
     const targets = await listScoreTargets(params.division, params.id);
-    return NextResponse.json({ targets });
+    return NextResponse.json({ targets }, { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=30" } });
   } catch (error) {
     return toApiErrorResponse(error, "성적 목표를 불러오는 중 오류가 발생했습니다.");
   }

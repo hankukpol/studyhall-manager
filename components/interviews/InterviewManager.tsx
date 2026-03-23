@@ -1,7 +1,7 @@
 "use client";
 
 import { LoaderCircle, MessageSquareWarning, Plus, RefreshCcw, Save } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Modal } from "@/components/ui/Modal";
@@ -42,6 +42,10 @@ function getKstToday() {
   }).format(new Date());
 }
 
+function getCurrentMonth() {
+  return getKstToday().slice(0, 7);
+}
+
 function toFormState(studentId?: string): FormState {
   return {
     studentId: studentId ?? "",
@@ -68,6 +72,7 @@ export function InterviewManager({
   initialInterviews,
   warnInterview,
 }: InterviewManagerProps) {
+  const initialMonth = getCurrentMonth();
   const activeStudents = useMemo(
     () => students.filter((student) => student.status === "ACTIVE" || student.status === "ON_LEAVE"),
     [students],
@@ -76,9 +81,11 @@ export function InterviewManager({
   const [interviews, setInterviews] = useState(initialInterviews);
   const [form, setForm] = useState<FormState>(toFormState(defaultStudentId));
   const [filterStudentId, setFilterStudentId] = useState("");
+  const [filterMonth, setFilterMonth] = useState(initialMonth);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const hasMounted = useRef(false);
 
   const selectedStudent = activeStudents.find((student) => student.id === form.studentId) ?? null;
   const recommendedStudents = useMemo(
@@ -95,10 +102,14 @@ export function InterviewManager({
       .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
   }, [filterStudentId, interviews]);
 
-  async function refreshInterviews(showToast = false) {
+  const refreshInterviews = useCallback(async (showToast = false, month = filterMonth) => {
     setIsRefreshing(true);
     try {
-      const response = await fetch(`/api/${divisionSlug}/interviews`, { cache: "no-store" });
+      const params = new URLSearchParams();
+      params.set("month", month);
+      const response = await fetch(`/api/${divisionSlug}/interviews?${params.toString()}`, {
+        cache: "no-store",
+      });
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error ?? "면담 기록을 불러오지 못했습니다.");
@@ -112,7 +123,16 @@ export function InterviewManager({
     } finally {
       setIsRefreshing(false);
     }
-  }
+  }, [divisionSlug, filterMonth]);
+
+  useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+
+    void refreshInterviews(false, filterMonth);
+  }, [filterMonth, refreshInterviews]);
 
   function openCreatePanel(studentId?: string) {
     setForm(toFormState(studentId ?? defaultStudentId));
@@ -148,7 +168,12 @@ export function InterviewManager({
       }
 
       toast.success("면담 기록을 저장했습니다.");
-      await refreshInterviews();
+      const createdMonth = form.date.slice(0, 7);
+      if (createdMonth !== filterMonth) {
+        setFilterMonth(createdMonth);
+      } else {
+        await refreshInterviews();
+      }
       closeEditor();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "면담 기록 저장에 실패했습니다.");
@@ -169,7 +194,7 @@ export function InterviewManager({
           <article className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(15,23,42,0.06)]">
             <p className="text-sm text-slate-500">전체 면담</p>
             <p className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950">{interviews.length}</p>
-            <p className="mt-2 text-xs text-slate-500">지점 누적 면담 기록 수</p>
+            <p className="mt-2 text-xs text-slate-500">{filterMonth} 조회 월 면담 기록 수</p>
           </article>
           <article className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(14,165,233,0.10)]">
             <p className="text-sm text-sky-700">필터 결과</p>
@@ -263,12 +288,20 @@ export function InterviewManager({
                   <p className="mt-1 text-sm text-slate-500">학생별 면담 사유, 결과, 후속 조치를 확인합니다.</p>
                 </div>
 
-                <StudentSearchCombobox
-                  students={activeStudents}
-                  value={filterStudentId}
-                  onChange={setFilterStudentId}
-                  allStudentsLabel="전체 학생"
-                />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <StudentSearchCombobox
+                    students={activeStudents}
+                    value={filterStudentId}
+                    onChange={setFilterStudentId}
+                    allStudentsLabel="전체 학생"
+                  />
+                  <input
+                    type="month"
+                    value={filterMonth}
+                    onChange={(event) => setFilterMonth(event.target.value)}
+                    className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  />
+                </div>
               </div>
 
               <div className="mt-4 space-y-3">

@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarClock, LoaderCircle, Plus, RefreshCcw, Save } from "lucide-react";
-import { memo, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Modal } from "@/components/ui/Modal";
@@ -90,6 +90,7 @@ export const LeaveManager = memo(function LeaveManager({
   initialPermissions,
   settings,
 }: LeaveManagerProps) {
+  const initialMonth = getCurrentMonth();
   const activeStudents = useMemo(
     () => students.filter((student) => student.status === "ACTIVE" || student.status === "ON_LEAVE"),
     [students],
@@ -108,6 +109,33 @@ export const LeaveManager = memo(function LeaveManager({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [isSettling, setIsSettling] = useState(false);
+  const loadedMonthsRef = useRef(new Set<string>([initialMonth]));
+
+  function mergePermissionsForMonth(month: string, nextPermissions: LeavePermissionItem[]) {
+    setPermissions((current) =>
+      [
+        ...current.filter((permission) => !permission.date.startsWith(month)),
+        ...nextPermissions,
+      ].sort(
+        (left, right) =>
+          right.date.localeCompare(left.date) ||
+          right.createdAt.localeCompare(left.createdAt),
+      ),
+    );
+  }
+
+  const requestPermissionsForMonth = useCallback(async (month: string) => {
+    const response = await fetch(`/api/${divisionSlug}/leave?month=${encodeURIComponent(month)}`, {
+      cache: "no-store",
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error ?? "?몄텧/?닿? ?댁뿭??遺덈윭?ㅼ? 紐삵뻽?듬땲??");
+    }
+
+    return data.permissions as LeavePermissionItem[];
+  }, [divisionSlug]);
 
 
   const selectedSummaryStudent = activeStudents.find((student) => student.id === summaryStudentId) ?? null;
@@ -159,16 +187,23 @@ export const LeaveManager = memo(function LeaveManager({
       );
   }, [historyMonth, historyStudentId, permissions]);
 
-  async function refreshPermissions(showToast = false) {
+  async function refreshPermissions(showToast = false, months = [summaryMonth, historyMonth]) {
     setIsRefreshing(true);
 
     try {
-      const response = await fetch(`/api/${divisionSlug}/leave`, { cache: "no-store" });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error ?? "외출/휴가 내역을 불러오지 못했습니다.");
-      }
-      setPermissions(data.permissions);
+      const uniqueMonths = Array.from(new Set(months));
+      const results = await Promise.all(
+        uniqueMonths.map(async (month) => ({
+          month,
+          permissions: await requestPermissionsForMonth(month),
+        })),
+      );
+
+      results.forEach(({ month, permissions }) => {
+        mergePermissionsForMonth(month, permissions);
+        loadedMonthsRef.current.add(month);
+      });
+
       if (showToast) {
         toast.success("외출/휴가 내역을 새로 불러왔습니다.");
       }
@@ -178,6 +213,44 @@ export const LeaveManager = memo(function LeaveManager({
       setIsRefreshing(false);
     }
   }
+
+  useEffect(() => {
+    const missingMonths = Array.from(new Set([summaryMonth, historyMonth])).filter(
+      (month) => !loadedMonthsRef.current.has(month),
+    );
+
+    if (missingMonths.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void Promise.all(
+      missingMonths.map(async (month) => ({
+        month,
+        permissions: await requestPermissionsForMonth(month),
+      })),
+    )
+      .then((results) => {
+        if (cancelled) {
+          return;
+        }
+
+        results.forEach(({ month, permissions }) => {
+          mergePermissionsForMonth(month, permissions);
+          loadedMonthsRef.current.add(month);
+        });
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          toast.error(error instanceof Error ? error.message : "외출/휴가 내역을 불러오지 못했습니다.");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [historyMonth, requestPermissionsForMonth, summaryMonth]);
 
   async function loadSettlementPreview(showToast = false) {
     setIsPreviewLoading(true);
@@ -238,7 +311,7 @@ export const LeaveManager = memo(function LeaveManager({
       }
 
       toast.success(form.type === "OUTING" ? "외출 허가를 등록했습니다." : "휴가를 등록하고 출결에 반영했습니다.");
-      await refreshPermissions();
+      await refreshPermissions(false, [summaryMonth, historyMonth, form.date.slice(0, 7)]);
       setSummaryStudentId(form.studentId);
       closeEditor();
     } catch (error) {

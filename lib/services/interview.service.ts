@@ -1,7 +1,7 @@
 import { cache } from "react";
 
 import { getMockAdminSession, getMockDivisionBySlug, isMockMode } from "@/lib/mock-data";
-import { parseUtcDateFromYmd } from "@/lib/date-utils";
+import { normalizeYmMonth, parseUtcDateFromYmd } from "@/lib/date-utils";
 import {
   readMockState,
   updateMockState,
@@ -9,6 +9,7 @@ import {
 } from "@/lib/mock-store";
 import type { InterviewSchemaInput } from "@/lib/interview-schemas";
 import type { InterviewResultTypeValue } from "@/lib/interview-meta";
+import { getPrismaClient } from "@/lib/service-helpers";
 
 type InterviewActor = {
   id: string;
@@ -47,6 +48,15 @@ function parseDateString(value: string) {
 
 function toDateString(value: Date | string) {
   return typeof value === "string" ? value.slice(0, 10) : value.toISOString().slice(0, 10);
+}
+
+function getMonthRange(month: string) {
+  const normalizedMonth = normalizeYmMonth(month, "면담 조회 월");
+  const [year, monthValue] = normalizedMonth.split("-").map(Number);
+  const start = new Date(Date.UTC(year, monthValue - 1, 1));
+  const end = new Date(Date.UTC(year, monthValue, 1));
+
+  return { start, end };
 }
 
 function serializeInterviewRecord(
@@ -92,8 +102,7 @@ function serializeInterviewRecord(
 }
 
 const getDivisionOrThrow = cache(async function getDivisionOrThrow(divisionSlug: string) {
-  const { prisma } = await import("@/lib/prisma");
-
+  const prisma = await getPrismaClient();
   const division = await prisma.division.findUnique({
     where: {
       slug: divisionSlug,
@@ -111,6 +120,7 @@ export async function listInterviews(
   divisionSlug: string,
   options?: {
     studentId?: string;
+    month?: string;
   },
 ) {
   if (isMockMode()) {
@@ -121,6 +131,7 @@ export async function listInterviews(
 
     return (state.interviewsByDivision[divisionSlug] ?? [])
       .filter((record) => !options?.studentId || record.studentId === options.studentId)
+      .filter((record) => !options?.month || record.date.startsWith(options.month))
       .sort(
         (left, right) =>
           right.date.localeCompare(left.date) ||
@@ -137,7 +148,8 @@ export async function listInterviews(
   }
 
   const division = await getDivisionOrThrow(divisionSlug);
-  const { prisma } = await import("@/lib/prisma");
+  const prisma = await getPrismaClient();
+  const monthRange = options?.month ? getMonthRange(options.month) : null;
 
   const interviews = await prisma.interview.findMany({
     where: {
@@ -145,6 +157,14 @@ export async function listInterviews(
         divisionId: division.id,
       },
       ...(options?.studentId ? { studentId: options.studentId } : {}),
+      ...(monthRange
+        ? {
+            date: {
+              gte: monthRange.start,
+              lt: monthRange.end,
+            },
+          }
+        : {}),
     },
     include: {
       student: {

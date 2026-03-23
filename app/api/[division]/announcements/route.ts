@@ -20,7 +20,7 @@ export async function GET(
 
   try {
     const announcements = await listAnnouncements(params.division, { includeScheduled: true });
-    return NextResponse.json({ announcements });
+    return NextResponse.json({ announcements }, { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=30" } });
   } catch (error) {
     return toApiErrorResponse(error, "공지사항 처리 중 오류가 발생했습니다.");
   }

@@ -18,7 +18,7 @@ export async function GET(
 
   try {
     const categories = await listPaymentCategories(params.division, { activeOnly });
-    return NextResponse.json({ categories });
+    return NextResponse.json({ categories }, { headers: { "Cache-Control": "private, max-age=300, stale-while-revalidate=60" } });
   } catch (error) {
     return toApiErrorResponse(error, "납부 유형을 불러오지 못했습니다.");
   }

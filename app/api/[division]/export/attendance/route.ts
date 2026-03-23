@@ -46,6 +46,7 @@ export async function GET(
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "Content-Disposition": `attachment; filename="${params.division}-attendance.xlsx"`,
+        "Cache-Control": "private, no-store",
       },
     });
   } catch (error) {

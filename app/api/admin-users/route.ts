@@ -16,7 +16,7 @@ export async function GET() {
 
   try {
     const admins = await listManagedAdminAccounts();
-    return NextResponse.json({ admins });
+    return NextResponse.json({ admins }, { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=30" } });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "계정 목록을 불러오지 못했습니다." },

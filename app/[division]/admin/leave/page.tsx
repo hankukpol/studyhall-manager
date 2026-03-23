@@ -9,12 +9,20 @@ type AdminLeavePageProps = {
   };
 };
 
+function getCurrentMonth() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+  }).format(new Date());
+}
 
 export default async function AdminLeavePage({ params }: AdminLeavePageProps) {
+  const currentMonth = getCurrentMonth();
 
   const [students, permissions, settings] = await Promise.all([
     listStudents(params.division),
-    listLeavePermissions(params.division),
+    listLeavePermissions(params.division, { month: currentMonth }),
     getDivisionSettings(params.division),
   ]);
 

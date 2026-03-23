@@ -137,6 +137,7 @@ export function MobileCheckForm({
   const [swipeOffsets, setSwipeOffsets] = useState<Record<string, number>>({});
   const [headerHeight, setHeaderHeight] = useState(132);
   const swipeRef = useRef<SwipeContext | null>(null);
+  const swipeRafRef = useRef<number>(0);
   const initialFormState = useMemo(
     () => buildInitialState(initialStudents, initialRecords),
     [initialRecords, initialStudents],
@@ -390,7 +391,11 @@ export function MobileCheckForm({
 
     const maxOffset = Math.min(120, currentSwipe.width * 0.34);
     const bounded = Math.max(-maxOffset, Math.min(maxOffset, deltaX));
-    setSwipeOffsets((current) => ({ ...current, [studentId]: bounded }));
+
+    cancelAnimationFrame(swipeRafRef.current);
+    swipeRafRef.current = requestAnimationFrame(() => {
+      setSwipeOffsets((current) => ({ ...current, [studentId]: bounded }));
+    });
   }
 
   function handleSwipeEnd(studentId: string) {

@@ -17,7 +17,7 @@ export async function GET(
 
   try {
     const student = await getStudentDetail(params.division, params.id);
-    return NextResponse.json({ student });
+    return NextResponse.json({ student }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=15" } });
   } catch (error) {
     return toApiErrorResponse(error, "학생 처리 중 오류가 발생했습니다.");
   }

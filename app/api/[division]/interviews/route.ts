@@ -18,8 +18,9 @@ export async function GET(
   try {
     const interviews = await listInterviews(params.division, {
       studentId: request.nextUrl.searchParams.get("studentId") || undefined,
+      month: request.nextUrl.searchParams.get("month") || undefined,
     });
-    return NextResponse.json({ interviews });
+    return NextResponse.json({ interviews }, { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=30" } });
   } catch (error) {
     return toApiErrorResponse(error, "면담 기록 처리 중 오류가 발생했습니다.");
   }

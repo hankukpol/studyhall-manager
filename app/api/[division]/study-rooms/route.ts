@@ -17,7 +17,7 @@ export async function GET(
 
   try {
     const rooms = await listStudyRooms(params.division);
-    return NextResponse.json({ rooms });
+    return NextResponse.json({ rooms }, { headers: { "Cache-Control": "private, max-age=300, stale-while-revalidate=60" } });
   } catch (error) {
     return toApiErrorResponse(error, "자습실 처리에 실패했습니다.");
   }

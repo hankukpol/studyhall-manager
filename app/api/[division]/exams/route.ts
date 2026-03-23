@@ -27,7 +27,7 @@ export async function GET(
 
   try {
     const sheet = await getExamScoreSheet(params.division, examTypeId, examRound);
-    return NextResponse.json({ sheet });
+    return NextResponse.json({ sheet }, { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=30" } });
   } catch (error) {
     return toApiErrorResponse(error, "성적 처리 중 오류가 발생했습니다.");
   }

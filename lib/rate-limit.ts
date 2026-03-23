@@ -13,6 +13,22 @@ type RateLimitOptions = {
 
 const attempts = new Map<string, RateLimitEntry>();
 
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
+
+function pruneAllExpired() {
+  const now = Date.now();
+
+  attempts.forEach((entry, key) => {
+    if (now - entry.firstAttempt >= 10 * 60 * 1000) {
+      attempts.delete(key);
+    }
+  });
+}
+
+if (typeof setInterval !== "undefined") {
+  setInterval(pruneAllExpired, CLEANUP_INTERVAL_MS);
+}
+
 function getBucketKey(bucket: string, ip: string) {
   return `${bucket}:${ip}`;
 }

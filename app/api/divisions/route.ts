@@ -15,7 +15,7 @@ export async function GET() {
   }
 
   const divisions = await listManagedDivisions();
-  return NextResponse.json({ divisions });
+  return NextResponse.json({ divisions }, { headers: { "Cache-Control": "private, max-age=300, stale-while-revalidate=60" } });
 }
 
 export async function POST(request: NextRequest) {

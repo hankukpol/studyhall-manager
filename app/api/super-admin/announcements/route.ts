@@ -41,7 +41,7 @@ export async function GET() {
           publishedAt: r.publishedAt,
           isPublished: !r.publishedAt || new Date(r.publishedAt) <= getNow(),
         }));
-      return NextResponse.json({ announcements: global });
+      return NextResponse.json({ announcements: global }, { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=30" } });
     }
 
     const { prisma } = await import("@/lib/prisma");
@@ -67,7 +67,7 @@ export async function GET() {
       isPublished: !r.publishedAt || r.publishedAt <= getNow(),
     }));
 
-    return NextResponse.json({ announcements });
+    return NextResponse.json({ announcements }, { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=30" } });
   } catch (error) {
     return toApiErrorResponse(error, "전체 공지사항을 불러오지 못했습니다.");
   }

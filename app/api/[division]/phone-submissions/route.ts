@@ -26,7 +26,7 @@ export async function GET(
   try {
     if (mode === "snapshot" && date) {
       const snapshot = await getPhoneDaySnapshot(params.division, date);
-      return NextResponse.json({ snapshot });
+      return NextResponse.json({ snapshot }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=15" } });
     }
 
     const records = await listPhoneRecords(params.division, {
@@ -34,7 +34,7 @@ export async function GET(
       dateTo: searchParams.get("dateTo") ?? undefined,
       studentId: searchParams.get("studentId") ?? undefined,
     });
-    return NextResponse.json({ records });
+    return NextResponse.json({ records }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=15" } });
   } catch (error) {
     return toApiErrorResponse(error, "휴대폰 제출 현황 처리 중 오류가 발생했습니다.");
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { getSeatPositionKey } from "@/lib/seat-layout";
 import type { SeatMapSeat } from "@/lib/services/seat.service";
 import {
@@ -55,7 +55,7 @@ export const SeatMap = memo(function SeatMap({
   onCellClick,
   onSeatDrop,
 }: SeatMapProps) {
-  const seatMap = new Map(seats.map((seat) => [getSeatPositionKey(seat.positionX, seat.positionY), seat]));
+  const seatMap = useMemo(() => new Map(seats.map((seat) => [getSeatPositionKey(seat.positionX, seat.positionY), seat])), [seats]);
 
   return (
     <div className="space-y-4">

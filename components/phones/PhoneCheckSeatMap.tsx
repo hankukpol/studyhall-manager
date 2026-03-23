@@ -1,7 +1,7 @@
 "use client";
 
 import { Save } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Modal } from "@/components/ui/Modal";
 import { getSeatPositionKey } from "@/lib/seat-layout";
@@ -61,17 +61,30 @@ export function PhoneCheckSeatMap({
     initialSeatLayout.room?.id ?? null,
   );
   const [layout, setLayout] = useState<SeatLayout>(initialSeatLayout);
+  const [roomLayouts, setRoomLayouts] = useState<Record<string, SeatLayout>>(() =>
+    initialSeatLayout.room?.id ? { [initialSeatLayout.room.id]: initialSeatLayout } : {},
+  );
   const [loadingRoomId, setLoadingRoomId] = useState<string | null>(null);
   const [modalStudentId, setModalStudentId] = useState<string | null>(null);
 
   async function handleRoomChange(roomId: string) {
     if (roomId === selectedRoomId) return;
+
+    const cachedLayout = roomLayouts[roomId];
+    if (cachedLayout) {
+      setLayout(cachedLayout);
+      setSelectedRoomId(roomId);
+      return;
+    }
+
     setLoadingRoomId(roomId);
     try {
       const res = await fetch(`/api/${divisionSlug}/seats?roomId=${roomId}`);
       if (res.ok) {
         const data = await res.json();
-        setLayout(data.layout as SeatLayout);
+        const nextLayout = data.layout as SeatLayout;
+        setLayout(nextLayout);
+        setRoomLayouts((current) => ({ ...current, [roomId]: nextLayout }));
         setSelectedRoomId(roomId);
       }
     } finally {
@@ -80,11 +93,15 @@ export function PhoneCheckSeatMap({
   }
 
   const { columns, rows, aisleColumns } = layout;
-  const seatMap = new Map(
-    layout.seats.map((s) => [getSeatPositionKey(s.positionX, s.positionY), s]),
+  const seatMap = useMemo(
+    () => new Map(layout.seats.map((seat) => [getSeatPositionKey(seat.positionX, seat.positionY), seat])),
+    [layout.seats],
   );
   // layout.seats의 assignedStudent.id → PhoneDaySnapshot student 매핑
-  const studentById = new Map(students.map((s) => [s.id, s]));
+  const studentById = useMemo(
+    () => new Map(students.map((student) => [student.id, student])),
+    [students],
+  );
 
   const modalStudent = modalStudentId ? studentById.get(modalStudentId) : null;
   const modalEntry = modalStudentId
@@ -92,10 +109,19 @@ export function PhoneCheckSeatMap({
     : null;
 
   // 현재 자습실에 없는 학생 (좌석 없거나 다른 자습실)
-  const seatedStudentIds = new Set(
-    layout.seats.filter((s) => s.assignedStudent).map((s) => s.assignedStudent!.id),
+  const seatedStudentIds = useMemo(
+    () =>
+      new Set(
+        layout.seats
+          .filter((seat) => seat.assignedStudent)
+          .map((seat) => seat.assignedStudent!.id),
+      ),
+    [layout.seats],
   );
-  const unseatedStudents = students.filter((s) => !seatedStudentIds.has(s.id));
+  const unseatedStudents = useMemo(
+    () => students.filter((student) => !seatedStudentIds.has(student.id)),
+    [seatedStudentIds, students],
+  );
 
   return (
     <div className="space-y-4">

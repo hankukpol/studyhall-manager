@@ -17,7 +17,7 @@ export async function GET(
 
   try {
     const examTypes = await listExamTypes(params.division);
-    return NextResponse.json({ examTypes });
+    return NextResponse.json({ examTypes }, { headers: { "Cache-Control": "private, max-age=300, stale-while-revalidate=60" } });
   } catch (error) {
     return toApiErrorResponse(error, "시험 템플릿 처리 중 오류가 발생했습니다.");
   }

@@ -18,7 +18,7 @@ export async function GET(
     const records = await listPointRecords(params.division, {
       studentId: params.id,
     });
-    return NextResponse.json({ records });
+    return NextResponse.json({ records }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=15" } });
   } catch (error) {
     return toApiErrorResponse(error, "상벌점 기록을 불러오지 못했습니다.");
   }

@@ -26,7 +26,7 @@ export async function GET(
     }
 
     const staff = await listDivisionStaff(division.id, params.division);
-    return NextResponse.json({ staff });
+    return NextResponse.json({ staff }, { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=30" } });
   } catch (error) {
     return toApiErrorResponse(error, "직원 목록을 불러오지 못했습니다.");
   }

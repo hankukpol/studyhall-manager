@@ -18,7 +18,7 @@ export async function GET(
   try {
     const activeOnly = request.nextUrl.searchParams.get("activeOnly") === "true";
     const plans = await listTuitionPlans(params.division, { activeOnly });
-    return NextResponse.json({ plans });
+    return NextResponse.json({ plans }, { headers: { "Cache-Control": "private, max-age=300, stale-while-revalidate=60" } });
   } catch (error) {
     return toApiErrorResponse(error, "등록 플랜 처리에 실패했습니다.");
   }

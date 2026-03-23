@@ -24,7 +24,7 @@ export async function GET(
       actorId: request.nextUrl.searchParams.get("actorId"),
       actionType: (request.nextUrl.searchParams.get("actionType") as ActivityActionType | null) ?? null,
     });
-    return NextResponse.json({ activity });
+    return NextResponse.json({ activity }, { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=30" } });
   } catch (error) {
     return toApiErrorResponse(error, "활동 로그를 불러오지 못했습니다.");
   }

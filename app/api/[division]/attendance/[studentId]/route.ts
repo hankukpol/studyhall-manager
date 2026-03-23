@@ -16,7 +16,7 @@ export async function GET(
 
   try {
     const records = await listStudentAttendanceHistory(params.division, params.studentId);
-    return NextResponse.json({ records });
+    return NextResponse.json({ records }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=15" } });
   } catch (error) {
     return toApiErrorResponse(error, "출석 이력을 불러오는 중 오류가 발생했습니다.");
   }

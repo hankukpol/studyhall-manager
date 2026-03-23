@@ -19,7 +19,7 @@ export async function GET(
 
   try {
     const settings = await getDivisionRuleSettings(params.division);
-    return NextResponse.json({ settings });
+    return NextResponse.json({ settings }, { headers: { "Cache-Control": "private, max-age=300, stale-while-revalidate=60" } });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "설정 정보를 불러오지 못했습니다." },

@@ -12,7 +12,7 @@ const PhoneSubmissionManager = dynamic(
   {
     loading: () => (
       <div className="rounded-[24px] border border-dashed border-slate-300 px-4 py-16 text-center text-sm text-slate-500">
-        이력 데이터를 불러오는 중입니다.
+        휴대폰 이력 데이터를 불러오는 중입니다.
       </div>
     ),
   },
@@ -27,40 +27,20 @@ function getKstToday() {
   }).format(new Date());
 }
 
-function getMonthStart() {
-  const today = getKstToday();
-  return `${today.slice(0, 7)}-01`;
-}
-
 type PhoneSubmissionsPageProps = {
   params: {
     division: string;
   };
 };
 
-
 export default async function PhoneSubmissionsPage({ params }: PhoneSubmissionsPageProps) {
-
   const today = getKstToday();
 
-  const [snapshot, records, pointRules, seatRooms, initialSeatLayout] = await Promise.all([
+  const [snapshot, seatRooms, initialSeatLayout] = await Promise.all([
     getPhoneDaySnapshot(params.division, today),
-    listPhoneRecords(params.division, {
-      dateFrom: getMonthStart(),
-      dateTo: today,
-    }),
-    listPointRules(params.division),
     listStudyRooms(params.division),
     getSeatLayout(params.division),
   ]);
-
-  const phonePointRule =
-    pointRules.find(
-      (r) =>
-        r.isActive &&
-        r.points < 0 &&
-        (r.name.includes("휴대폰") || r.name.includes("핸드폰") || r.name.includes("phone")),
-    ) ?? null;
 
   return (
     <div className="space-y-6">
@@ -70,19 +50,20 @@ export default async function PhoneSubmissionsPage({ params }: PhoneSubmissionsP
         </p>
         <h1 className="mt-3 text-3xl font-extrabold text-slate-950">휴대폰 관리</h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-          교시별로 학생의 휴대폰 반납·미반납·대여 여부를 체크합니다.
-          미반납자에게는 벌점을 일괄 부여할 수 있습니다.
+          교시별 휴대폰 반납, 미반납, 대여 상태를 체크하고 필요한 경우 미반납 학생에게
+          벌점을 부여할 수 있습니다.
         </p>
       </section>
 
-      {/* 오늘 체크 */}
       <section className="rounded-[28px] border border-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="mb-5 flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
             <Smartphone className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Daily Check</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+              Daily Check
+            </p>
             <h2 className="text-xl font-bold text-slate-950">오늘 체크</h2>
           </div>
         </div>
@@ -95,22 +76,19 @@ export default async function PhoneSubmissionsPage({ params }: PhoneSubmissionsP
         />
       </section>
 
-      {/* 이력 조회 */}
       <section className="rounded-[28px] border border-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="mb-5 flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
             <ClipboardList className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">History</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+              History
+            </p>
             <h2 className="text-xl font-bold text-slate-950">이력 조회</h2>
           </div>
         </div>
-        <PhoneSubmissionManager
-          divisionSlug={params.division}
-          initialRecords={records}
-          phonePointRule={phonePointRule}
-        />
+        <PhoneSubmissionManager divisionSlug={params.division} />
       </section>
     </div>
   );

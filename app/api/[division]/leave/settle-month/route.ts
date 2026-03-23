@@ -27,7 +27,7 @@ export async function GET(
 
   try {
     const preview = await previewLeaveSettlement(params.division, parsed.data);
-    return NextResponse.json({ preview });
+    return NextResponse.json({ preview }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=15" } });
   } catch (error) {
     return toApiErrorResponse(error, "월말 정산 미리보기를 불러오지 못했습니다.");
   }

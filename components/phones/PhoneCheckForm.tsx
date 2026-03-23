@@ -1,12 +1,24 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import { RefreshCcw, Save } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import type { PhoneCheckStatus, PhoneDaySnapshot } from "@/lib/services/phone-submission.service";
 import type { SeatLayout, StudyRoomItem } from "@/lib/services/seat.service";
-import { PhoneCheckSeatMap } from "@/components/phones/PhoneCheckSeatMap";
+
+const PhoneCheckSeatMap = dynamic(
+  () => import("@/components/phones/PhoneCheckSeatMap").then((mod) => mod.PhoneCheckSeatMap),
+  {
+    loading: () => (
+      <div className="rounded-[24px] border border-dashed border-slate-300 px-4 py-16 text-center text-sm text-slate-500">
+        좌석 지도를 불러오는 중입니다.
+      </div>
+    ),
+  },
+);
 
 export type LocalStatus = PhoneCheckStatus | null;
 
@@ -33,9 +45,10 @@ function getKstToday() {
 function buildInitialState(snapshot: PhoneDaySnapshot): AllPeriodsState {
   const state: AllPeriodsState = {};
   for (const period of snapshot.periods) {
+    const recordByStudentId = new Map(period.records.map((record) => [record.studentId, record]));
     state[period.periodId] = {};
     for (const student of snapshot.students) {
-      const record = period.records.find((r) => r.studentId === student.id);
+      const record = recordByStudentId.get(student.id);
       state[period.periodId][student.id] = {
         status: record ? record.status : null,
         rentalNote: record?.rentalNote ?? "",
@@ -68,7 +81,10 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
   const periods = snapshot.periods;
   const students = snapshot.students;
   const activePeriod = periods.find((p) => p.periodId === activePeriodId);
-  const activePeriodState = periodsState[activePeriodId] ?? {};
+  const activePeriodState = useMemo(
+    () => periodsState[activePeriodId] ?? {},
+    [activePeriodId, periodsState],
+  );
 
   async function loadSnapshot(newDate: string) {
     setIsLoading(true);
@@ -95,8 +111,12 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
   }
 
   function handleDateChange(newDate: string) {
+    if (newDate === date) {
+      return;
+    }
+
     setDate(newDate);
-    loadSnapshot(newDate);
+    void loadSnapshot(newDate);
   }
 
   function setStudentStatus(periodId: string, studentId: string, status: LocalStatus) {
@@ -170,9 +190,12 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
         const updated = { ...prev };
         const savedPeriod = newSnapshot.periods.find((p) => p.periodId === periodId);
         if (savedPeriod) {
+          const recordByStudentId = new Map(
+            savedPeriod.records.map((record) => [record.studentId, record]),
+          );
           const newPeriodState: LocalPeriodState = {};
           for (const student of newSnapshot.students) {
-            const record = savedPeriod.records.find((r) => r.studentId === student.id);
+            const record = recordByStudentId.get(student.id);
             newPeriodState[student.id] = {
               status: record ? record.status : null,
               rentalNote: record?.rentalNote ?? "",
@@ -188,10 +211,38 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
     }
   }
 
-  const submittedCount = Object.values(activePeriodState).filter((v) => v.status === "SUBMITTED").length;
-  const notSubmittedCount = Object.values(activePeriodState).filter((v) => v.status === "NOT_SUBMITTED").length;
-  const rentedCount = Object.values(activePeriodState).filter((v) => v.status === "RENTED").length;
-  const uncheckedCount = Object.values(activePeriodState).filter((v) => v.status === null).length;
+  const activePeriodStats = useMemo(() => {
+    let submittedCount = 0;
+    let notSubmittedCount = 0;
+    let rentedCount = 0;
+    let uncheckedCount = 0;
+
+    Object.values(activePeriodState).forEach((entry) => {
+      if (entry.status === "SUBMITTED") {
+        submittedCount += 1;
+        return;
+      }
+
+      if (entry.status === "NOT_SUBMITTED") {
+        notSubmittedCount += 1;
+        return;
+      }
+
+      if (entry.status === "RENTED") {
+        rentedCount += 1;
+        return;
+      }
+
+      uncheckedCount += 1;
+    });
+
+    return {
+      submittedCount,
+      notSubmittedCount,
+      rentedCount,
+      uncheckedCount,
+    };
+  }, [activePeriodState]);
 
   return (
     <div className="space-y-5">
@@ -262,17 +313,17 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                    반납 {submittedCount}
+                    반납 {activePeriodStats.submittedCount}
                   </span>
                   <span className="inline-flex items-center rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">
-                    미반납 {notSubmittedCount}
+                    미반납 {activePeriodStats.notSubmittedCount}
                   </span>
                   <span className="inline-flex items-center rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700 ring-1 ring-inset ring-sky-700/20">
-                    대여 {rentedCount}
+                    대여 {activePeriodStats.rentedCount}
                   </span>
-                  {uncheckedCount > 0 && (
+                  {activePeriodStats.uncheckedCount > 0 && (
                     <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">
-                      미체크 {uncheckedCount}
+                      미체크 {activePeriodStats.uncheckedCount}
                     </span>
                   )}
                 </div>

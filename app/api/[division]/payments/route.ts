@@ -22,7 +22,7 @@ export async function GET(
       dateFrom: request.nextUrl.searchParams.get("dateFrom") || undefined,
       dateTo: request.nextUrl.searchParams.get("dateTo") || undefined,
     });
-    return NextResponse.json({ payments });
+    return NextResponse.json({ payments }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=15" } });
   } catch (error) {
     return toApiErrorResponse(error, "수납 처리 중 오류가 발생했습니다.");
   }

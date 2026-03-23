@@ -17,7 +17,7 @@ export async function GET(
   try {
     const roomId = request.nextUrl.searchParams.get("roomId") || undefined;
     const layout = await getSeatLayout(params.division, roomId);
-    return NextResponse.json({ layout });
+    return NextResponse.json({ layout }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=15" } });
   } catch (error) {
     return toApiErrorResponse(error, "좌석 정보를 불러오지 못했습니다.");
   }
