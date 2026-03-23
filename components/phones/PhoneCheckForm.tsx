@@ -1,15 +1,24 @@
 "use client";
 
-import { Check, Smartphone, X } from "lucide-react";
+import { RefreshCcw, Save } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import type { PhoneSubmissionSnapshot } from "@/lib/services/phone-submission.service";
+import type { PhoneCheckStatus, PhoneDaySnapshot } from "@/lib/services/phone-submission.service";
+import type { SeatLayout, StudyRoomItem } from "@/lib/services/seat.service";
+import { PhoneCheckSeatMap } from "@/components/phones/PhoneCheckSeatMap";
 
-type PhoneCheckFormProps = {
-  divisionSlug: string;
-  initialDate: string;
-  initialSnapshot: PhoneSubmissionSnapshot;
+export type LocalStatus = PhoneCheckStatus | null;
+
+export type LocalPeriodState = {
+  [studentId: string]: {
+    status: LocalStatus;
+    rentalNote: string;
+  };
+};
+
+type AllPeriodsState = {
+  [periodId: string]: LocalPeriodState;
 };
 
 function getKstToday() {
@@ -21,19 +30,45 @@ function getKstToday() {
   }).format(new Date());
 }
 
-export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot }: PhoneCheckFormProps) {
+function buildInitialState(snapshot: PhoneDaySnapshot): AllPeriodsState {
+  const state: AllPeriodsState = {};
+  for (const period of snapshot.periods) {
+    state[period.periodId] = {};
+    for (const student of snapshot.students) {
+      const record = period.records.find((r) => r.studentId === student.id);
+      state[period.periodId][student.id] = {
+        status: record ? record.status : null,
+        rentalNote: record?.rentalNote ?? "",
+      };
+    }
+  }
+  return state;
+}
+
+type PhoneCheckFormProps = {
+  divisionSlug: string;
+  initialDate: string;
+  initialSnapshot: PhoneDaySnapshot;
+  seatRooms?: StudyRoomItem[];
+  initialSeatLayout?: SeatLayout;
+};
+
+export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, seatRooms, initialSeatLayout }: PhoneCheckFormProps) {
   const [date, setDate] = useState(initialDate);
   const [snapshot, setSnapshot] = useState(initialSnapshot);
-  const [submissions, setSubmissions] = useState<Record<string, boolean>>(() => {
-    const map: Record<string, boolean> = {};
-    for (const student of initialSnapshot.students) {
-      const record = initialSnapshot.records.find((r) => r.studentId === student.id);
-      map[student.id] = record ? record.submitted : true; // 기본: 제출로 설정
-    }
-    return map;
-  });
+  const [periodsState, setPeriodsState] = useState<AllPeriodsState>(() =>
+    buildInitialState(initialSnapshot),
+  );
+  const [activePeriodId, setActivePeriodId] = useState<string>(
+    initialSnapshot.periods[0]?.periodId ?? "",
+  );
   const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [savingPeriodId, setSavingPeriodId] = useState<string | null>(null);
+
+  const periods = snapshot.periods;
+  const students = snapshot.students;
+  const activePeriod = periods.find((p) => p.periodId === activePeriodId);
+  const activePeriodState = periodsState[activePeriodId] ?? {};
 
   async function loadSnapshot(newDate: string) {
     setIsLoading(true);
@@ -45,17 +80,15 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot }: P
         toast.error("데이터를 불러오는 데 실패했습니다.");
         return;
       }
-      const { snapshot: newSnapshot } = await res.json();
+      const { snapshot: newSnapshot } = (await res.json()) as { snapshot: PhoneDaySnapshot };
       setSnapshot(newSnapshot);
-      // reset submissions from loaded records
-      const map: Record<string, boolean> = {};
-      for (const student of newSnapshot.students) {
-        const record = (newSnapshot.records as Array<{ studentId: string; submitted: boolean }>).find(
-          (r) => r.studentId === student.id,
-        );
-        map[student.id] = record ? record.submitted : true;
+      setPeriodsState(buildInitialState(newSnapshot));
+      if (
+        newSnapshot.periods.length > 0 &&
+        !newSnapshot.periods.find((p) => p.periodId === activePeriodId)
+      ) {
+        setActivePeriodId(newSnapshot.periods[0].periodId);
       }
-      setSubmissions(map);
     } finally {
       setIsLoading(false);
     }
@@ -66,151 +99,303 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot }: P
     loadSnapshot(newDate);
   }
 
-  function setAllSubmitted() {
-    setSubmissions((prev) => Object.fromEntries(Object.keys(prev).map((id) => [id, true])));
+  function setStudentStatus(periodId: string, studentId: string, status: LocalStatus) {
+    setPeriodsState((prev) => ({
+      ...prev,
+      [periodId]: {
+        ...prev[periodId],
+        [studentId]: {
+          status,
+          rentalNote: status !== "RENTED" ? "" : (prev[periodId]?.[studentId]?.rentalNote ?? ""),
+        },
+      },
+    }));
   }
 
-  function setAllNotSubmitted() {
-    setSubmissions((prev) => Object.fromEntries(Object.keys(prev).map((id) => [id, false])));
+  function setRentalNote(periodId: string, studentId: string, note: string) {
+    setPeriodsState((prev) => ({
+      ...prev,
+      [periodId]: {
+        ...prev[periodId],
+        [studentId]: { ...prev[periodId]?.[studentId], rentalNote: note },
+      },
+    }));
   }
 
-  async function handleSave() {
-    setIsSaving(true);
-    try {
-      const records = snapshot.students.map((s) => ({
-        studentId: s.id,
-        submitted: submissions[s.id] ?? true,
+  function setAllForPeriod(periodId: string, status: PhoneCheckStatus) {
+    setPeriodsState((prev) => {
+      const next: LocalPeriodState = {};
+      for (const student of students) {
+        next[student.id] = {
+          status,
+          rentalNote: status === "RENTED" ? (prev[periodId]?.[student.id]?.rentalNote ?? "") : "",
+        };
+      }
+      return { ...prev, [periodId]: next };
+    });
+  }
+
+  async function savePeriod(periodId: string) {
+    const periodStateMap = periodsState[periodId] ?? {};
+    const records = Object.entries(periodStateMap)
+      .filter(([, v]) => v.status !== null)
+      .map(([studentId, v]) => ({
+        studentId,
+        status: v.status as PhoneCheckStatus,
+        rentalNote: v.rentalNote || undefined,
       }));
 
+    if (records.length === 0) {
+      toast.error("저장할 기록이 없습니다. 최소 1명의 상태를 선택해주세요.");
+      return;
+    }
+
+    setSavingPeriodId(periodId);
+    try {
       const res = await fetch(`/api/${divisionSlug}/phone-submissions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date, records }),
+        body: JSON.stringify({ date, periodId, records }),
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
         toast.error(data.error ?? "저장에 실패했습니다.");
         return;
       }
 
-      const { snapshot: newSnapshot } = await res.json();
+      const { snapshot: newSnapshot } = (await res.json()) as { snapshot: PhoneDaySnapshot };
       setSnapshot(newSnapshot);
+      setPeriodsState((prev) => {
+        const updated = { ...prev };
+        const savedPeriod = newSnapshot.periods.find((p) => p.periodId === periodId);
+        if (savedPeriod) {
+          const newPeriodState: LocalPeriodState = {};
+          for (const student of newSnapshot.students) {
+            const record = savedPeriod.records.find((r) => r.studentId === student.id);
+            newPeriodState[student.id] = {
+              status: record ? record.status : null,
+              rentalNote: record?.rentalNote ?? "",
+            };
+          }
+          updated[periodId] = newPeriodState;
+        }
+        return updated;
+      });
       toast.success("저장되었습니다.");
     } finally {
-      setIsSaving(false);
+      setSavingPeriodId(null);
     }
   }
 
-  const notSubmittedCount = Object.values(submissions).filter((v) => !v).length;
-  const submittedCount = Object.values(submissions).filter((v) => v).length;
+  const submittedCount = Object.values(activePeriodState).filter((v) => v.status === "SUBMITTED").length;
+  const notSubmittedCount = Object.values(activePeriodState).filter((v) => v.status === "NOT_SUBMITTED").length;
+  const rentedCount = Object.values(activePeriodState).filter((v) => v.status === "RENTED").length;
+  const uncheckedCount = Object.values(activePeriodState).filter((v) => v.status === null).length;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="sticky top-0 z-10 border-b border-slate-200 bg-white px-4 py-4 shadow-sm">
-        <div className="flex items-center gap-3">
-          <Smartphone className="h-5 w-5 text-slate-700" />
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-              Phone Check
-            </p>
-            <h1 className="text-lg font-bold text-slate-950">휴대폰 제출 체크</h1>
-          </div>
-        </div>
-
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <input
-            type="date"
-            value={date}
-            max={getKstToday()}
-            onChange={(e) => handleDateChange(e.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
-          />
-          <div className="flex gap-2 text-xs">
-            <span className="rounded-full bg-green-100 px-2 py-1 font-semibold text-green-700">
-              제출 {submittedCount}명
-            </span>
-            <span className="rounded-full bg-red-100 px-2 py-1 font-semibold text-red-600">
-              미제출 {notSubmittedCount}명
-            </span>
-          </div>
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={setAllSubmitted}
-            className="rounded-lg border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100 transition"
-          >
-            전원 제출
-          </button>
-          <button
-            type="button"
-            onClick={setAllNotSubmitted}
-            className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 transition"
-          >
-            전원 미제출
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={isSaving || isLoading}
-            className="ml-auto rounded-lg bg-slate-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition"
-          >
-            {isSaving ? "저장 중..." : "저장"}
-          </button>
-        </div>
+    <div className="space-y-5">
+      {/* 날짜 선택 */}
+      <div className="flex flex-wrap items-center gap-3">
+        <input
+          type="date"
+          value={date}
+          max={getKstToday()}
+          onChange={(e) => handleDateChange(e.target.value)}
+          className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
+        />
+        <button
+          type="button"
+          onClick={() => loadSnapshot(date)}
+          disabled={isLoading}
+          className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+        >
+          <RefreshCcw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+          새로고침
+        </button>
       </div>
 
-      <div className="px-4 py-4">
-        {isLoading ? (
-          <div className="py-16 text-center text-sm text-slate-400">불러오는 중...</div>
-        ) : snapshot.students.length === 0 ? (
-          <div className="py-16 text-center text-sm text-slate-400">재원 학생이 없습니다.</div>
-        ) : (
-          <div className="space-y-2">
-            {snapshot.students.map((student) => {
-              const isSubmitted = submissions[student.id] ?? true;
-              return (
-                <button
-                  key={student.id}
-                  type="button"
-                  onClick={() =>
-                    setSubmissions((prev) => ({ ...prev, [student.id]: !prev[student.id] }))
-                  }
-                  className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
-                    isSubmitted
-                      ? "border-green-200 bg-green-50"
-                      : "border-red-200 bg-red-50"
-                  }`}
-                >
-                  <div
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                      isSubmitted ? "bg-green-200 text-green-700" : "bg-red-200 text-red-600"
+      {periods.length === 0 ? (
+        <div className="rounded-[24px] border border-dashed border-slate-300 px-4 py-16 text-center text-sm text-slate-500">
+          활성화된 교시가 없습니다.
+        </div>
+      ) : (
+        <>
+          {/* 교시 탭 */}
+          <div className="overflow-x-auto">
+            <div className="flex min-w-max gap-1 rounded-2xl border border-slate-200 bg-slate-50 p-1.5">
+              {periods.map((period) => {
+                const isActive = period.periodId === activePeriodId;
+                return (
+                  <button
+                    key={period.periodId}
+                    type="button"
+                    onClick={() => setActivePeriodId(period.periodId)}
+                    className={`shrink-0 rounded-[10px] px-4 py-2.5 text-sm font-medium transition ${
+                      isActive
+                        ? "bg-[var(--division-color)] text-white shadow-sm"
+                        : "text-slate-500 hover:text-slate-700"
                     }`}
                   >
-                    {isSubmitted ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-900">{student.name}</p>
-                    <p className="text-xs text-slate-500">
-                      {student.studentNumber}
-                      {student.studyTrack && ` · ${student.studyTrack}`}
-                    </p>
-                  </div>
-                  <span
-                    className={`text-xs font-semibold ${
-                      isSubmitted ? "text-green-700" : "text-red-600"
-                    }`}
-                  >
-                    {isSubmitted ? "제출" : "미제출"}
+                    {period.periodName}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 선택된 교시 내용 */}
+          {activePeriod && (
+            <div className="space-y-4">
+              {/* 교시 정보 + 통계 */}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {activePeriod.periodName}
+                    {activePeriod.periodLabel && (
+                      <span className="ml-1.5 text-slate-500">({activePeriod.periodLabel})</span>
+                    )}
+                    <span className="ml-2 text-xs font-normal text-slate-400">
+                      {activePeriod.startTime}–{activePeriod.endTime}
+                    </span>
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                    반납 {submittedCount}
                   </span>
+                  <span className="inline-flex items-center rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">
+                    미반납 {notSubmittedCount}
+                  </span>
+                  <span className="inline-flex items-center rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700 ring-1 ring-inset ring-sky-700/20">
+                    대여 {rentedCount}
+                  </span>
+                  {uncheckedCount > 0 && (
+                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">
+                      미체크 {uncheckedCount}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* 빠른 설정 + 저장 */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAllForPeriod(activePeriodId, "SUBMITTED")}
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  전원 반납
                 </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                <button
+                  type="button"
+                  onClick={() => setAllForPeriod(activePeriodId, "NOT_SUBMITTED")}
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  전원 미반납
+                </button>
+                <button
+                  type="button"
+                  onClick={() => savePeriod(activePeriodId)}
+                  disabled={savingPeriodId === activePeriodId || isLoading}
+                  className="ml-auto inline-flex items-center gap-2 rounded-full bg-[var(--division-color)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
+                >
+                  <Save className="h-4 w-4" />
+                  {savingPeriodId === activePeriodId ? "저장 중..." : "저장"}
+                </button>
+              </div>
+
+              {/* 학생 목록 */}
+              {students.length === 0 ? (
+                <div className="rounded-[24px] border border-dashed border-slate-300 px-4 py-12 text-center text-sm text-slate-500">
+                  재원 학생이 없습니다.
+                </div>
+              ) : seatRooms && seatRooms.length > 0 && initialSeatLayout ? (
+                <PhoneCheckSeatMap
+                  divisionSlug={divisionSlug}
+                  rooms={seatRooms}
+                  initialSeatLayout={initialSeatLayout}
+                  students={students}
+                  periodState={activePeriodState}
+                  onStatusChange={(studentId, status) => setStudentStatus(activePeriodId, studentId, status)}
+                  onRentalNoteChange={(studentId, note) => setRentalNote(activePeriodId, studentId, note)}
+                />
+              ) : (
+                <div className="space-y-2">
+                  {students.map((student) => {
+                    const entry = activePeriodState[student.id] ?? { status: null, rentalNote: "" };
+                    const { status, rentalNote } = entry;
+
+                    const cardBg =
+                      status === "SUBMITTED"
+                        ? "border-green-100 bg-green-50/30"
+                        : status === "NOT_SUBMITTED"
+                          ? "border-red-100 bg-red-50/30"
+                          : status === "RENTED"
+                            ? "border-sky-100 bg-sky-50/30"
+                            : "border-slate-100 bg-white";
+
+                    return (
+                      <div
+                        key={student.id}
+                        className={`rounded-[20px] border p-3 transition ${cardBg}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-slate-900">{student.name}</p>
+                            <p className="text-xs text-slate-500">
+                              {student.studentNumber}
+                              {student.studyTrack && ` · ${student.studyTrack}`}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 gap-1">
+                            {(
+                              [
+                                { s: "SUBMITTED" as const, label: "반납", active: "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20" },
+                                { s: "NOT_SUBMITTED" as const, label: "미반납", active: "bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20" },
+                                { s: "RENTED" as const, label: "대여", active: "bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-700/20" },
+                              ]
+                            ).map(({ s, label, active }) => (
+                              <button
+                                key={s}
+                                type="button"
+                                onClick={() =>
+                                  setStudentStatus(activePeriodId, student.id, status === s ? null : s)
+                                }
+                                className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
+                                  status === s
+                                    ? active
+                                    : "bg-white text-slate-500 ring-1 ring-inset ring-slate-200 hover:bg-slate-50"
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        {status === "RENTED" && (
+                          <div className="mt-2">
+                            <input
+                              type="text"
+                              value={rentalNote}
+                              onChange={(e) =>
+                                setRentalNote(activePeriodId, student.id, e.target.value)
+                              }
+                              placeholder="대여 사유 (예: 인강 수강)"
+                              maxLength={200}
+                              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs outline-none transition focus:border-slate-400 placeholder:text-slate-400"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

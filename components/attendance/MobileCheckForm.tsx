@@ -133,8 +133,9 @@ export function MobileCheckForm({
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showOnlyUnchecked, setShowOnlyUnchecked] = useState(false);
-  const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(false);
+  const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(true);
   const [swipeOffsets, setSwipeOffsets] = useState<Record<string, number>>({});
+  const [headerHeight, setHeaderHeight] = useState(132);
   const swipeRef = useRef<SwipeContext | null>(null);
 
   const selectedPeriod = useMemo(
@@ -180,6 +181,16 @@ export function MobileCheckForm({
   }, [formState, showOnlyUnchecked, students]);
 
   const progressPercentage = students.length > 0 ? Math.round((summary.checkedCount / students.length) * 100) : 0;
+
+  useEffect(() => {
+    const header = document.querySelector("header");
+    if (!header) return;
+    const update = () => setHeaderHeight(header.getBoundingClientRect().height);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!selectedPeriodId) {
@@ -350,6 +361,7 @@ export function MobileCheckForm({
     const deltaY = touch.clientY - currentSwipe.startY;
 
     if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 10) {
+      swipeRef.current = null;
       setSwipeOffsets((current) => ({ ...current, [studentId]: 0 }));
       return;
     }
@@ -379,80 +391,90 @@ export function MobileCheckForm({
 
   return (
     <div className="space-y-4">
-      <div className="sticky top-[88px] z-30 -mx-1 bg-[linear-gradient(180deg,#eef3f8_0%,#eef3f8_82%,rgba(238,243,248,0)_100%)] px-1 pb-4">
+      <div className="sticky z-30 -mx-1 bg-[linear-gradient(180deg,#eef3f8_0%,#eef3f8_82%,rgba(238,243,248,0)_100%)] px-1 pb-4" style={{ top: `${headerHeight}px` }}>
         <section className="overflow-hidden rounded-[28px] border border-black/5 bg-white">
-          <div className="border-b border-slate-100 bg-[linear-gradient(135deg,var(--division-color-light)_0%,#ffffff_76%)] px-4 py-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--division-color)]">
-                  Mobile Attendance
-                </p>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl font-bold text-slate-950">
-                    {selectedPeriod ? selectedPeriod.name : "교시 선택"}
-                  </h1>
-                  <span className="rounded-full border border-white bg-white px-3 py-1 text-xs font-semibold text-slate-600">
-                    {selectedDate}
-                  </span>
-                </div>
-                <p className="mt-2 text-sm text-slate-600">
-                  {selectedPeriod
-                    ? `${selectedPeriod.startTime} - ${selectedPeriod.endTime} · 오른쪽 스와이프 출석, 왼쪽 스와이프 결석`
-                    : "날짜와 교시를 먼저 선택해 주세요."}
-                </p>
-              </div>
-
-              <div className="shrink-0 rounded-[22px] border border-white bg-white px-3 py-2 text-right">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">진행률</p>
-                <p className="mt-1 text-lg font-bold text-slate-950">
-                  {summary.checkedCount}/{students.length}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <div className="h-2 rounded-full bg-white">
-                <div
-                  className="h-full rounded-full bg-[var(--division-color)] transition-[width] duration-200"
-                  style={{ width: `${progressPercentage}%` }}
-                />
-              </div>
-              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1">
-                  <Users className="h-3.5 w-3.5" />
-                  대상 {students.length}명
+          {/* 항상 표시되는 컴팩트 헤더 바 */}
+          <button
+            type="button"
+            onClick={() => setIsSummaryCollapsed((current) => !current)}
+            className="flex w-full items-center gap-3 px-4 py-3 text-left"
+          >
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--division-color)]">
+                Mobile Attendance
+              </p>
+              <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                <span className="text-base font-bold text-slate-950">
+                  {selectedPeriod ? selectedPeriod.name : "교시 선택"}
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1">
-                  <Clock3 className="h-3.5 w-3.5" />
-                  미처리 {summary.uncheckedCount}명
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                  {selectedDate}
                 </span>
               </div>
+              {selectedPeriod && (
+                <p className="mt-0.5 text-[11px] text-slate-400">
+                  {selectedPeriod.startTime} – {selectedPeriod.endTime}
+                </p>
+              )}
             </div>
-          </div>
 
+            <div className="shrink-0 text-right">
+              <p className="text-lg font-bold text-slate-950">
+                {summary.checkedCount}/{students.length}
+              </p>
+              <p className="text-[10px] text-slate-400">
+                {summary.uncheckedCount > 0 ? `미처리 ${summary.uncheckedCount}명` : "완료"}
+              </p>
+            </div>
+
+            <div className="shrink-0 rounded-xl bg-slate-100 p-1.5 text-slate-500">
+              {isSummaryCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+            </div>
+          </button>
+
+          {/* 펼쳐지는 상세 정보 + 컨트롤 */}
           <div
             className={`grid overflow-hidden transition-[grid-template-rows,opacity] duration-300 ${
               isSummaryCollapsed ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr] opacity-100"
             }`}
           >
             <div className="min-h-0 overflow-hidden">
+              <div className="border-t border-slate-100 px-4 pt-3 pb-2">
+                <div className="h-2 rounded-full bg-slate-100">
+                  <div
+                    className="h-full rounded-full bg-[var(--division-color)] transition-[width] duration-200"
+                    style={{ width: `${progressPercentage}%` }}
+                  />
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2.5 py-1">
+                    <Users className="h-3.5 w-3.5" />
+                    대상 {students.length}명
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2.5 py-1">
+                    <Clock3 className="h-3.5 w-3.5" />
+                    미처리 {summary.uncheckedCount}명
+                  </span>
+                </div>
+              </div>
+
               <div className="grid gap-4 px-4 py-4">
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-3 py-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">대상</p>
-                    <p className="mt-1 text-lg font-bold text-slate-950">{students.length}</p>
+                <div className="grid grid-cols-4 gap-2">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-2 py-2.5 text-center">
+                    <p className="text-[10px] font-semibold text-slate-400">대상</p>
+                    <p className="mt-0.5 text-base font-bold text-slate-950">{students.length}</p>
                   </div>
-                  <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-3 py-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">미처리</p>
-                    <p className="mt-1 text-lg font-bold text-slate-950">{summary.uncheckedCount}</p>
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-2 py-2.5 text-center">
+                    <p className="text-[10px] font-semibold text-slate-400">미처리</p>
+                    <p className="mt-0.5 text-base font-bold text-slate-950">{summary.uncheckedCount}</p>
                   </div>
-                  <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-3 py-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">출석</p>
-                    <p className="mt-1 text-lg font-bold text-emerald-600">{summary.presentCount}</p>
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-2 py-2.5 text-center">
+                    <p className="text-[10px] font-semibold text-slate-400">출석</p>
+                    <p className="mt-0.5 text-base font-bold text-emerald-600">{summary.presentCount}</p>
                   </div>
-                  <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-3 py-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">결석</p>
-                    <p className="mt-1 text-lg font-bold text-rose-600">{summary.absentCount}</p>
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-2 py-2.5 text-center">
+                    <p className="text-[10px] font-semibold text-slate-400">결석</p>
+                    <p className="mt-0.5 text-base font-bold text-rose-600">{summary.absentCount}</p>
                   </div>
                 </div>
 
@@ -530,17 +552,6 @@ export function MobileCheckForm({
               </div>
             </div>
           </div>
-
-          <div className="border-t border-slate-100 px-4 py-3">
-            <button
-              type="button"
-              onClick={() => setIsSummaryCollapsed((current) => !current)}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100"
-            >
-              {isSummaryCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-              {isSummaryCollapsed ? "상단 요약 펼치기" : "상단 요약 숨기기"}
-            </button>
-          </div>
         </section>
       </div>
 
@@ -576,7 +587,7 @@ export function MobileCheckForm({
           return (
             <div
               key={student.id}
-              className="relative overflow-hidden rounded-[26px] border border-black/5 bg-[linear-gradient(135deg,#eef4ff_0%,#f8fafc_48%,#ffffff_100%)]"
+              className="relative overflow-hidden rounded-[26px] border border-black/5 bg-[linear-gradient(135deg,#eef4ff_0%,#f8fafc_48%,#ffffff_100%)] touch-pan-y"
               onTouchStart={(event) => handleSwipeStart(student.id, event)}
               onTouchMove={(event) => handleSwipeMove(student.id, event)}
               onTouchEnd={() => handleSwipeEnd(student.id)}
@@ -590,10 +601,11 @@ export function MobileCheckForm({
               </div>
 
               <article
-                className={`relative rounded-[26px] border bg-white p-4 transition-transform duration-150 ${getStudentCardClasses(
-                  state.status,
-                )}`}
-                style={{ transform: `translateX(${swipeOffset}px)` }}
+                className={`relative rounded-[26px] border bg-white p-4 ${getStudentCardClasses(state.status)}`}
+                style={{
+                  transform: `translateX(${swipeOffset}px)`,
+                  transition: swipeOffset === 0 ? "transform 150ms" : "none",
+                }}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">

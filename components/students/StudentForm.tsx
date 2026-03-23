@@ -25,6 +25,8 @@ type StudentFormProps = {
   initialStudent?: StudentDetail;
   canEdit?: boolean;
   showAdvancedFields?: boolean;
+  hideSeatSection?: boolean;
+  showSeatSectionOnly?: boolean;
   studyTrackOptions?: string[];
   seatOptions?: SeatOptionItem[];
   tuitionPlans?: TuitionPlanItem[];
@@ -61,6 +63,8 @@ export function StudentForm({
   initialStudent,
   canEdit = true,
   showAdvancedFields = false,
+  hideSeatSection = false,
+  showSeatSectionOnly = false,
   studyTrackOptions = [],
   seatOptions = [],
   tuitionPlans = [],
@@ -308,7 +312,7 @@ export function StudentForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+      {!showSeatSectionOnly && (<><section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">
             <UserRound className="h-5 w-5" />
@@ -509,9 +513,9 @@ export function StudentForm({
         <p className="mt-3 text-xs text-slate-500">
           시작일과 기간이 있는 등록 플랜을 함께 선택하면 종료일이 자동 계산됩니다.
         </p>
-      </section>
+      </section></>)}
 
-      <section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+      {!hideSeatSection && <section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-sky-600">
             <MapPinned className="h-5 w-5" />
@@ -661,7 +665,7 @@ export function StudentForm({
             </div>
           )}
         </div>
-      </section>
+      </section>}
 
       <div className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4 sm:flex sm:items-center sm:justify-between">
         <div>

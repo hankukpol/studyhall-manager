@@ -12,8 +12,10 @@ import {
   ClipboardList,
   Copy,
   CreditCard,
+  DoorOpen,
   LoaderCircle,
   MapPin,
+  MessageSquare,
   Phone,
   RefreshCcw,
   Star,
@@ -32,6 +34,19 @@ type AdminDashboardProps = {
 };
 
 // ─── 헬퍼 ────────────────────────────────────────────────────────────────────
+
+const LEAVE_TYPE_LABEL: Record<string, string> = {
+  HOLIDAY: "휴가",
+  HALF_DAY: "반차",
+  HEALTH: "병가",
+  OUTING: "외출",
+};
+
+const LEAVE_STATUS_LABEL: Record<string, { label: string; cls: string }> = {
+  PENDING: { label: "대기", cls: "bg-slate-100 text-slate-600" },
+  APPROVED: { label: "승인", cls: "bg-emerald-50 text-emerald-700" },
+  USED: { label: "사용됨", cls: "bg-slate-100 text-slate-500" },
+};
 
 function formatDelta(value: number) {
   if (value === 0) return "전일과 동일";
@@ -407,10 +422,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
         href: `/${divisionSlug}/admin/attendance`,
         cta: "출석부로 이동",
         icon: CalendarClock,
-        iconClass:
-          data.summary.uncheckedPeriodCount > 0
-            ? "bg-amber-100 text-amber-600"
-            : "bg-slate-100 text-slate-600",
+        iconClass: "bg-slate-100 text-slate-600",
         badgeClass:
           data.summary.uncheckedPeriodCount > 0
             ? "bg-amber-50 text-amber-700"
@@ -428,10 +440,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
         href: `/${divisionSlug}/admin/attendance`,
         cta: "출결 현황 보기",
         icon: AlertTriangle,
-        iconClass:
-          data.attentionStudents.length > 0
-            ? "bg-amber-100 text-amber-600"
-            : "bg-slate-100 text-slate-600",
+        iconClass: "bg-slate-100 text-slate-600",
         badgeClass:
           data.attentionStudents.length > 0
             ? "bg-amber-50 text-amber-700"
@@ -449,10 +458,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
         href: `/${divisionSlug}/admin/warnings`,
         cta: "경고 관리로 이동",
         icon: Phone,
-        iconClass:
-          data.summary.riskStudentCount > 0
-            ? "bg-rose-100 text-rose-600"
-            : "bg-slate-100 text-slate-600",
+        iconClass: "bg-slate-100 text-slate-600",
         badgeClass:
           data.summary.riskStudentCount > 0
             ? "bg-rose-50 text-rose-700"
@@ -470,10 +476,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
         href: `/${divisionSlug}/admin/students`,
         cta: "학생 관리로 이동",
         icon: CalendarX,
-        iconClass:
-          data.expiringStudents.length > 0
-            ? "bg-rose-100 text-rose-600"
-            : "bg-slate-100 text-slate-600",
+        iconClass: "bg-slate-100 text-slate-600",
         badgeClass:
           data.expiringStudents.length > 0
             ? "bg-rose-50 text-rose-700"
@@ -569,37 +572,51 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
       {/* 교시 타이머 */}
       <PeriodTimerWidget schedules={data.periodSchedules} />
 
-      {/* D-Day 배너 */}
-      {data.upcomingExamSchedule && (
-        <section className="flex items-center gap-4 rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-[0_8px_24px_rgba(18,32,56,0.06)]">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-white"
-            style={{ backgroundColor: data.division.color }}
-          >
-            <CalendarDays className="h-5 w-5" />
+      {/* 시험 일정 D-Day */}
+      {data.upcomingExamSchedules.length > 0 && (
+        <section className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+                <CalendarDays className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
+                  Exam Schedule
+                </p>
+                <h2 className="mt-1 text-2xl font-bold text-slate-950">시험 일정</h2>
+              </div>
+            </div>
+            <Link
+              href={`/${divisionSlug}/admin/settings/exam-schedules`}
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              일정 관리
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Upcoming Exam</p>
-            <p className="mt-0.5 font-bold text-slate-950 truncate">{data.upcomingExamSchedule.name}</p>
-            <p className="mt-0.5 text-xs text-slate-500">{data.upcomingExamSchedule.examDate}</p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {data.upcomingExamSchedules.map((exam) => (
+              <div
+                key={exam.id}
+                className="rounded-[20px] border border-slate-100 bg-slate-50 p-4"
+              >
+                <span
+                  className={`inline-block rounded-full px-3 py-1 text-sm font-extrabold ${
+                    exam.dDayValue === 0
+                      ? "bg-red-100 text-red-600"
+                      : exam.dDayValue < 0
+                        ? "bg-slate-200 text-slate-500"
+                        : "bg-blue-50 text-blue-600"
+                  }`}
+                >
+                  {exam.dDayLabel}
+                </span>
+                <p className="mt-3 text-base font-bold text-slate-900 truncate">{exam.name}</p>
+                <p className="mt-1 text-xs text-slate-500">{exam.examDate}</p>
+              </div>
+            ))}
           </div>
-          <span
-            className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-extrabold ${
-              data.upcomingExamSchedule.dDayValue === 0
-                ? "bg-red-100 text-red-600"
-                : data.upcomingExamSchedule.dDayValue < 0
-                  ? "bg-slate-100 text-slate-500"
-                  : "bg-blue-50 text-blue-600"
-            }`}
-          >
-            {data.upcomingExamSchedule.dDayLabel}
-          </span>
-          <Link
-            href={`/${divisionSlug}/admin/settings/exam-schedules`}
-            className="shrink-0 text-xs text-slate-500 hover:text-slate-800 transition"
-          >
-            일정 관리 →
-          </Link>
         </section>
       )}
 
@@ -1159,6 +1176,136 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
             ) : (
               <div className="rounded-[24px] border border-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
                 최근 수납 내역이 없습니다.
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+
+      {/* 오늘 외출/휴가 현황 + 면담 필요 학생 */}
+      <div className="grid gap-6 xl:grid-cols-2">
+        {/* 오늘 외출/휴가 현황 */}
+        <section className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+                <DoorOpen className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
+                  Today Leave
+                </p>
+                <h2 className="mt-1 text-2xl font-bold text-slate-950">오늘 외출/휴가</h2>
+              </div>
+            </div>
+            <Link
+              href={`/${divisionSlug}/admin/leave`}
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              외출/휴가 관리
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="mt-5">
+            {data.todayLeaveStudents.length > 0 ? (
+              <div className="divide-y divide-slate-100">
+                {data.todayLeaveStudents.map((leave) => {
+                  const statusInfo = LEAVE_STATUS_LABEL[leave.status] ?? { label: leave.status, cls: "bg-slate-100 text-slate-600" };
+                  return (
+                    <div key={leave.id} className="flex items-center gap-3 py-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Link
+                            href={`/${divisionSlug}/admin/students/${leave.studentId}`}
+                            className="text-sm font-semibold text-slate-900 transition hover:text-slate-600"
+                          >
+                            {leave.studentName}
+                          </Link>
+                          <span className="text-xs text-slate-400">{leave.studentNumber}</span>
+                          <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">
+                            {LEAVE_TYPE_LABEL[leave.type] ?? leave.type}
+                          </span>
+                        </div>
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          {leave.seatLabel || "좌석 미배정"}
+                        </p>
+                      </div>
+                      <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${statusInfo.cls}`}>
+                        {statusInfo.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="rounded-[24px] border border-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
+                오늘 외출/휴가 학생이 없습니다.
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* 면담 필요 학생 */}
+        <section className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+                <MessageSquare className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
+                  Interview
+                </p>
+                <h2 className="mt-1 text-2xl font-bold text-slate-950">면담 필요 학생</h2>
+              </div>
+            </div>
+            <Link
+              href={`/${divisionSlug}/admin/interviews`}
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              면담 기록
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="mt-5">
+            {data.interviewNeededStudents.length > 0 ? (
+              <div className="divide-y divide-slate-100">
+                {data.interviewNeededStudents.slice(0, 5).map((student) => (
+                  <div key={student.id} className="flex items-center gap-3 py-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <Link
+                          href={`/${divisionSlug}/admin/students/${student.id}`}
+                          className="text-sm font-semibold text-slate-900 transition hover:text-slate-600"
+                        >
+                          {student.name}
+                        </Link>
+                        <span className="text-xs text-slate-400">{student.studentNumber}</span>
+                      </div>
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        벌점 {student.netPoints}p ·{" "}
+                        {student.lastInterviewDate
+                          ? `최근 면담: ${student.lastInterviewDate}`
+                          : "면담 기록 없음"}{" "}
+                        · {student.seatLabel || "좌석 미배정"}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void copyPhone(student.phone)}
+                      className="shrink-0 rounded-lg border border-slate-200 p-1.5 text-slate-500 transition hover:bg-slate-50"
+                      title="연락처 복사"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-[24px] border border-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
+                면담이 필요한 학생이 없습니다.
               </div>
             )}
           </div>

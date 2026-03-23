@@ -62,6 +62,11 @@ export const adminAccountUpdateSchema = z
     }
   });
 
+export const adminPasswordResetSchema = z.object({
+  password: z.string().min(8, "비밀번호는 8자 이상이어야 합니다."),
+});
+
+export type AdminPasswordResetInput = z.infer<typeof adminPasswordResetSchema>;
 export type DivisionCreateInput = z.infer<typeof divisionCreateSchema>;
 export type DivisionUpdateInput = z.infer<typeof divisionUpdateSchema>;
 export type AdminAccountCreateInput = z.infer<typeof adminAccountCreateSchema>;

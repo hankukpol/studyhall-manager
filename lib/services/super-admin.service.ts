@@ -15,6 +15,7 @@ import {
   createSupabaseManagedUser,
   deleteSupabaseManagedUser,
   listSupabaseUsersByIds,
+  updateSupabaseManagedUserPassword,
 } from "@/lib/supabase/admin";
 
 export type ManagedDivision = {
@@ -472,6 +473,50 @@ export async function createManagedAdminAccount(input: AdminAccountCreateInput) 
     await deleteSupabaseManagedUser(user.id).catch(() => undefined);
     throw error;
   }
+}
+
+export async function deleteManagedAdminAccount(id: string) {
+  if (isMockMode()) {
+    return updateMockState(async (state) => {
+      const target = state.admins.find((admin) => admin.id === id);
+      if (!target) {
+        throw new Error("계정 정보를 찾을 수 없습니다.");
+      }
+      state.admins = state.admins.map((admin) =>
+        admin.id === id ? { ...admin, isActive: false, updatedAt: new Date().toISOString() } : admin,
+      );
+      return { id: target.id, name: target.name };
+    });
+  }
+
+  const prisma = await getPrismaClient();
+  const admin = await prisma.admin.findUnique({ where: { id }, select: { id: true, name: true, userId: true } });
+  if (!admin) {
+    throw new Error("계정 정보를 찾을 수 없습니다.");
+  }
+
+  await prisma.admin.update({ where: { id }, data: { isActive: false } });
+  return { id: admin.id, name: admin.name };
+}
+
+export async function resetManagedAdminPassword(id: string, password: string) {
+  if (isMockMode()) {
+    const state = await readMockState();
+    const target = state.admins.find((admin) => admin.id === id);
+    if (!target) {
+      throw new Error("계정 정보를 찾을 수 없습니다.");
+    }
+    return { id: target.id, name: target.name };
+  }
+
+  const prisma = await getPrismaClient();
+  const admin = await prisma.admin.findUnique({ where: { id }, select: { id: true, name: true, userId: true } });
+  if (!admin) {
+    throw new Error("계정 정보를 찾을 수 없습니다.");
+  }
+
+  await updateSupabaseManagedUserPassword(admin.userId, password);
+  return { id: admin.id, name: admin.name };
 }
 
 export async function updateManagedAdminAccount(id: string, input: AdminAccountUpdateInput) {

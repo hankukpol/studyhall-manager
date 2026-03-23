@@ -21,6 +21,7 @@ type DivisionFormState = {
   color: string;
   displayOrder: string;
   isActive: boolean;
+  copyFromSlug: string;
 };
 
 type AdminFormState = {
@@ -40,6 +41,7 @@ function toDivisionFormState(division?: ManagedDivision | null): DivisionFormSta
     color: division?.color ?? "#1B4FBB",
     displayOrder: division ? String(division.displayOrder) : "0",
     isActive: division?.isActive ?? true,
+    copyFromSlug: "",
   };
 }
 
@@ -80,6 +82,9 @@ export function SuperAdminManager({
   const [isSavingDivision, setIsSavingDivision] = useState(false);
   const [isDeletingDivisionSlug, setIsDeletingDivisionSlug] = useState<string | null>(null);
   const [isSavingAdmin, setIsSavingAdmin] = useState(false);
+  const [isDeletingAdminId, setIsDeletingAdminId] = useState<string | null>(null);
+  const [resetPasswordValue, setResetPasswordValue] = useState("");
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   async function refreshAll(showToast = false) {
     setIsRefreshing(true);
@@ -124,6 +129,7 @@ export function SuperAdminManager({
   function resetAdminForm() {
     setEditingAdminId(null);
     setAdminForm(toAdminFormState());
+    setResetPasswordValue("");
   }
 
   async function handleDivisionSubmit(event: FormEvent<HTMLFormElement>) {
@@ -154,7 +160,28 @@ export function SuperAdminManager({
         throw new Error(data.error ?? "지점 저장에 실패했습니다.");
       }
 
-      toast.success(editingDivisionSlug ? "지점 정보를 수정했습니다." : "지점을 추가했습니다.");
+      // 신규 생성 + 설정 복사 선택 시 설정 복사 API 호출
+      if (!editingDivisionSlug && divisionForm.copyFromSlug) {
+        const copyRes = await fetch("/api/super-admin/copy-division-settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sourceSlug: divisionForm.copyFromSlug,
+            targetSlug: divisionForm.slug,
+          }),
+        });
+        const copyData = await copyRes.json();
+        if (!copyRes.ok) {
+          toast.warning(`지점은 추가됐지만 설정 복사에 실패했습니다: ${copyData.error ?? ""}`);
+        } else {
+          toast.success(
+            `지점을 추가하고 설정을 복사했습니다. (교시 ${copyData.periodsCount}개, 규칙 ${copyData.rulesCount}개)`,
+          );
+        }
+      } else {
+        toast.success(editingDivisionSlug ? "지점 정보를 수정했습니다." : "지점을 추가했습니다.");
+      }
+
       resetDivisionForm();
       await refreshAll();
     } catch (error) {
@@ -206,6 +233,50 @@ export function SuperAdminManager({
       toast.error(error instanceof Error ? error.message : "지점 삭제에 실패했습니다.");
     } finally {
       setIsDeletingDivisionSlug(null);
+    }
+  }
+
+  async function handleAdminDelete(admin: ManagedAdminAccount) {
+    const confirmed = window.confirm(
+      [`'${admin.name}' 계정을 비활성화하시겠습니까?`, "", "비활성화 후에도 데이터는 유지되며, 해당 계정으로 로그인이 불가능해집니다."].join("\n"),
+    );
+    if (!confirmed) return;
+
+    setIsDeletingAdminId(admin.id);
+    try {
+      const response = await fetch(`/api/admin-users/${admin.id}`, { method: "DELETE" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "계정 비활성화에 실패했습니다.");
+      toast.success(`${admin.name} 계정을 비활성화했습니다.`);
+      if (editingAdminId === admin.id) resetAdminForm();
+      await refreshAll();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "계정 비활성화에 실패했습니다.");
+    } finally {
+      setIsDeletingAdminId(null);
+    }
+  }
+
+  async function handlePasswordReset(adminId: string) {
+    if (!resetPasswordValue || resetPasswordValue.length < 8) {
+      toast.error("비밀번호는 8자 이상이어야 합니다.");
+      return;
+    }
+    setIsResettingPassword(true);
+    try {
+      const response = await fetch(`/api/admin-users/${adminId}/password`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: resetPasswordValue }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "비밀번호 변경에 실패했습니다.");
+      toast.success("비밀번호를 변경했습니다.");
+      setResetPasswordValue("");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "비밀번호 변경에 실패했습니다.");
+    } finally {
+      setIsResettingPassword(false);
     }
   }
 
@@ -386,6 +457,34 @@ export function SuperAdminManager({
               활성 지점으로 운영
             </label>
 
+            {!editingDivisionSlug && divisions.length > 0 && (
+              <label className="block">
+                <span className="mb-2 block text-sm font-medium text-slate-700">
+                  설정 복사 (선택)
+                </span>
+                <select
+                  value={divisionForm.copyFromSlug}
+                  onChange={(event) =>
+                    setDivisionForm((current) => ({
+                      ...current,
+                      copyFromSlug: event.target.value,
+                    }))
+                  }
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                >
+                  <option value="">복사 안 함</option>
+                  {divisions.map((division) => (
+                    <option key={division.id} value={division.slug}>
+                      {division.name} (/{division.slug}) — 교시·상벌점·운영설정 복사
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1.5 text-xs text-slate-400">
+                  선택 시 해당 지점의 교시, 상벌점 규칙, 운영 설정이 새 지점으로 복사됩니다.
+                </p>
+              </label>
+            )}
+
             <button
               type="submit"
               disabled={isSavingDivision}
@@ -521,21 +620,20 @@ export function SuperAdminManager({
                 />
               </label>
 
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-slate-700">
-                  {editingAdminId ? "비밀번호 변경은 Supabase에서 처리" : "초기 비밀번호"}
-                </span>
-                <input
-                  type="password"
-                  value={adminForm.password}
-                  onChange={(event) =>
-                    setAdminForm((current) => ({ ...current, password: event.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
-                  disabled={Boolean(editingAdminId)}
-                  required={!editingAdminId}
-                />
-              </label>
+              {!editingAdminId ? (
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-slate-700">초기 비밀번호</span>
+                  <input
+                    type="password"
+                    value={adminForm.password}
+                    onChange={(event) =>
+                      setAdminForm((current) => ({ ...current, password: event.target.value }))
+                    }
+                    className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                    required
+                  />
+                </label>
+              ) : null}
             </div>
 
             <label className="block">
@@ -583,6 +681,30 @@ export function SuperAdminManager({
             </button>
           </form>
 
+          {editingAdminId ? (
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-medium text-slate-700">비밀번호 재설정</p>
+              <div className="mt-2 flex gap-2">
+                <input
+                  type="password"
+                  placeholder="새 비밀번호 (8자 이상)"
+                  value={resetPasswordValue}
+                  onChange={(event) => setResetPasswordValue(event.target.value)}
+                  className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
+                />
+                <button
+                  type="button"
+                  disabled={isResettingPassword}
+                  onClick={() => handlePasswordReset(editingAdminId)}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
+                >
+                  {isResettingPassword ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  변경
+                </button>
+              </div>
+            </div>
+          ) : null}
+
           <div className="mt-8 space-y-3">
             {admins.map((admin) => (
               <div key={admin.id} className="rounded-3xl border border-slate-200-slate-200 bg-white p-4">
@@ -606,17 +728,33 @@ export function SuperAdminManager({
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingAdminId(admin.id);
-                      setAdminForm(toAdminFormState(admin));
-                    }}
-                    className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-white"
-                  >
-                    <Pencil className="h-4 w-4" />
-                    수정
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingAdminId(admin.id);
+                        setAdminForm(toAdminFormState(admin));
+                        setResetPasswordValue("");
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-white"
+                    >
+                      <Pencil className="h-4 w-4" />
+                      수정
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAdminDelete(admin)}
+                      disabled={isDeletingAdminId === admin.id}
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-white disabled:opacity-60"
+                    >
+                      {isDeletingAdminId === admin.id ? (
+                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                      비활성화
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

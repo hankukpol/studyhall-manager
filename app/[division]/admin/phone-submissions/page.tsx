@@ -1,7 +1,11 @@
+import { ClipboardList, Smartphone } from "lucide-react";
+
+import { PhoneCheckForm } from "@/components/phones/PhoneCheckForm";
 import { PhoneSubmissionManager } from "@/components/phones/PhoneSubmissionManager";
 import { requireDivisionAdminAccess } from "@/lib/auth";
-import { listPhoneSubmissions } from "@/lib/services/phone-submission.service";
+import { getPhoneDaySnapshot, listPhoneRecords } from "@/lib/services/phone-submission.service";
 import { listPointRules } from "@/lib/services/point.service";
+import { getSeatLayout, listStudyRooms } from "@/lib/services/seat.service";
 
 function getKstToday() {
   return new Intl.DateTimeFormat("en-CA", {
@@ -28,15 +32,19 @@ export const dynamic = "force-dynamic";
 export default async function PhoneSubmissionsPage({ params }: PhoneSubmissionsPageProps) {
   await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
 
-  const [submissions, pointRules] = await Promise.all([
-    listPhoneSubmissions(params.division, {
+  const today = getKstToday();
+
+  const [snapshot, records, pointRules, seatRooms, initialSeatLayout] = await Promise.all([
+    getPhoneDaySnapshot(params.division, today),
+    listPhoneRecords(params.division, {
       dateFrom: getMonthStart(),
-      dateTo: getKstToday(),
+      dateTo: today,
     }),
     listPointRules(params.division),
+    listStudyRooms(params.division),
+    getSeatLayout(params.division),
   ]);
 
-  // 휴대폰 관련 벌점 규칙 자동 탐지 (이름에 "휴대폰" 포함, 벌점)
   const phonePointRule =
     pointRules.find(
       (r) =>
@@ -47,20 +55,51 @@ export default async function PhoneSubmissionsPage({ params }: PhoneSubmissionsP
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_50px_rgba(18,32,56,0.08)]">
+      <section className="rounded-[28px] border border-black/5 bg-white p-6 shadow-[0_18px_50px_rgba(18,32,56,0.08)]">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-          Phone Submissions
+          Phone Management
         </p>
-        <h1 className="mt-3 text-3xl font-extrabold text-slate-950">휴대폰 제출 관리</h1>
+        <h1 className="mt-3 text-3xl font-extrabold text-slate-950">휴대폰 관리</h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-          조교가 기록한 휴대폰 제출 현황을 조회합니다. 미제출자를 선택해 벌점을 일괄 부여할 수 있습니다.
+          교시별로 학생의 휴대폰 반납·미반납·대여 여부를 체크합니다.
+          미반납자에게는 벌점을 일괄 부여할 수 있습니다.
         </p>
       </section>
 
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      {/* 오늘 체크 */}
+      <section className="rounded-[28px] border border-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+        <div className="mb-5 flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+            <Smartphone className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Daily Check</p>
+            <h2 className="text-xl font-bold text-slate-950">오늘 체크</h2>
+          </div>
+        </div>
+        <PhoneCheckForm
+          divisionSlug={params.division}
+          initialDate={today}
+          initialSnapshot={snapshot}
+          seatRooms={seatRooms}
+          initialSeatLayout={initialSeatLayout}
+        />
+      </section>
+
+      {/* 이력 조회 */}
+      <section className="rounded-[28px] border border-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+        <div className="mb-5 flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+            <ClipboardList className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">History</p>
+            <h2 className="text-xl font-bold text-slate-950">이력 조회</h2>
+          </div>
+        </div>
         <PhoneSubmissionManager
           divisionSlug={params.division}
-          initialSubmissions={submissions}
+          initialRecords={records}
           phonePointRule={phonePointRule}
         />
       </section>

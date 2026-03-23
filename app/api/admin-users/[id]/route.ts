@@ -2,7 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { requireApiSuperAdminAuth } from "@/lib/api-auth";
 import { adminAccountUpdateSchema } from "@/lib/super-admin-schemas";
-import { updateManagedAdminAccount } from "@/lib/services/super-admin.service";
+import { deleteManagedAdminAccount, updateManagedAdminAccount } from "@/lib/services/super-admin.service";
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: { id: string } },
+) {
+  const auth = await requireApiSuperAdminAuth();
+
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
+  try {
+    const result = await deleteManagedAdminAccount(params.id);
+    return NextResponse.json({ result });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "계정 비활성화에 실패했습니다." },
+      { status: 400 },
+    );
+  }
+}
 
 export async function PATCH(
   request: NextRequest,

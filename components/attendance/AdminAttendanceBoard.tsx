@@ -1,14 +1,16 @@
 "use client";
 
-import { LoaderCircle, RefreshCcw, Save } from "lucide-react";
+import { LayoutGrid, LoaderCircle, RefreshCcw, Save, Table2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { AttendanceSeatView } from "@/components/attendance/AttendanceSeatView";
 import {
   ATTENDANCE_STATUS_OPTIONS,
   getAttendanceStatusClasses,
   type AttendanceOptionValue,
 } from "@/lib/attendance-meta";
+import type { SeatLayout, StudyRoomItem } from "@/lib/services/seat.service";
 
 type PeriodItem = {
   id: string;
@@ -47,6 +49,8 @@ export type AdminAttendanceBoardProps = {
   initialStudents: StudentItem[];
   initialRecords: AttendanceRecordItem[];
   initialStats: StatsPayload;
+  seatRooms?: StudyRoomItem[];
+  initialSeatLayout?: SeatLayout;
 };
 
 type MatrixState = Record<
@@ -89,6 +93,8 @@ export function AdminAttendanceBoard({
   initialStudents,
   initialRecords,
   initialStats,
+  seatRooms,
+  initialSeatLayout,
 }: AdminAttendanceBoardProps) {
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [students, setStudents] = useState(initialStudents);
@@ -97,6 +103,8 @@ export function AdminAttendanceBoard({
   const [stats, setStats] = useState(initialStats);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const hasSeatLayout = Boolean(seatRooms && seatRooms.length > 0 && initialSeatLayout);
+  const [viewMode, setViewMode] = useState<"table" | "seat">("table");
 
   const summaryCards = useMemo(
     () => [
@@ -181,51 +189,62 @@ export function AdminAttendanceBoard({
     });
   }
 
+  async function savePeriodsForStudents(targetStudentIds?: string[]) {
+    const targetStudents = targetStudentIds
+      ? students.filter((s) => targetStudentIds.includes(s.id))
+      : students;
+
+    for (const period of periods) {
+      const unresolved = targetStudents.find((student) => !matrix[student.id]?.[period.id]?.status);
+      if (unresolved) {
+        throw new Error(`${period.name}에서 ${unresolved.name} 학생 상태가 비어 있습니다.`);
+      }
+
+      const response = await fetch(`/api/${divisionSlug}/attendance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          periodId: period.id,
+          date: selectedDate,
+          records: targetStudents.map((student) => ({
+            studentId: student.id,
+            status: matrix[student.id][period.id].status,
+            reason: matrix[student.id][period.id].reason || null,
+          })),
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error ?? `${period.name} 저장에 실패했습니다.`);
+      }
+    }
+
+    const statsResponse = await fetch(
+      `/api/${divisionSlug}/attendance/stats?dateFrom=${selectedDate}&dateTo=${selectedDate}`,
+      { cache: "no-store" },
+    );
+    const statsData = await statsResponse.json();
+    if (statsResponse.ok) {
+      setStats(statsData);
+    }
+  }
+
   async function handleSaveAll() {
     setIsSaving(true);
-
     try {
-      for (const period of periods) {
-        const unresolved = students.find((student) => !matrix[student.id]?.[period.id]?.status);
-        if (unresolved) {
-          throw new Error(`${period.name}에서 ${unresolved.name} 학생 상태가 비어 있습니다.`);
-        }
-
-        const response = await fetch(`/api/${divisionSlug}/attendance`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            periodId: period.id,
-            date: selectedDate,
-            records: students.map((student) => ({
-              studentId: student.id,
-              status: matrix[student.id][period.id].status,
-              reason: matrix[student.id][period.id].reason || null,
-            })),
-          }),
-        });
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error ?? `${period.name} 저장에 실패했습니다.`);
-        }
-      }
-
+      await savePeriodsForStudents();
       toast.success("출석부를 저장했습니다.");
-      const statsResponse = await fetch(
-        `/api/${divisionSlug}/attendance/stats?dateFrom=${selectedDate}&dateTo=${selectedDate}`,
-        { cache: "no-store" },
-      );
-      const statsData = await statsResponse.json();
-
-      if (statsResponse.ok) {
-        setStats(statsData);
-      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "출석부 저장에 실패했습니다.");
     } finally {
       setIsSaving(false);
     }
+  }
+
+  async function handleSaveStudent(studentId: string) {
+    await savePeriodsForStudents([studentId]);
+    toast.success("저장되었습니다.");
   }
 
   return (
@@ -238,21 +257,51 @@ export function AdminAttendanceBoard({
           </div>
 
           <div className="flex items-center gap-2">
+            {hasSeatLayout && (
+              <div className="flex gap-1 rounded-2xl border border-slate-200 bg-slate-50 p-1">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("table")}
+                  className={`rounded-[10px] px-3 py-1.5 text-xs font-medium transition ${
+                    viewMode === "table"
+                      ? "bg-white text-slate-900 shadow-sm"
+                      : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  <Table2 className="inline h-3.5 w-3.5 mr-1" />
+                  테이블
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("seat")}
+                  className={`rounded-[10px] px-3 py-1.5 text-xs font-medium transition ${
+                    viewMode === "seat"
+                      ? "bg-white text-slate-900 shadow-sm"
+                      : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  <LayoutGrid className="inline h-3.5 w-3.5 mr-1" />
+                  좌석
+                </button>
+              </div>
+            )}
             <input
               type="date"
               value={selectedDate}
               onChange={(event) => setSelectedDate(event.target.value)}
               className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none"
             />
-            <button
-              type="button"
-              onClick={handleSaveAll}
-              disabled={isSaving || isLoading}
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--division-color)] px-4 py-3 text-sm font-medium text-white disabled:opacity-60"
-            >
-              {isSaving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              전체 저장
-            </button>
+            {viewMode === "table" && (
+              <button
+                type="button"
+                onClick={handleSaveAll}
+                disabled={isSaving || isLoading}
+                className="inline-flex items-center gap-2 rounded-full bg-[var(--division-color)] px-4 py-3 text-sm font-medium text-white disabled:opacity-60"
+              >
+                {isSaving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                전체 저장
+              </button>
+            )}
           </div>
         </div>
 
@@ -270,7 +319,22 @@ export function AdminAttendanceBoard({
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[28px] border border-slate-200-black/5 bg-white shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      {viewMode === "seat" && hasSeatLayout && seatRooms && initialSeatLayout ? (
+        <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+          <AttendanceSeatView
+            divisionSlug={divisionSlug}
+            rooms={seatRooms}
+            initialSeatLayout={initialSeatLayout}
+            students={students}
+            periods={periods}
+            matrix={matrix}
+            onUpdateCell={(studentId, periodId, value) => updateCell(studentId, periodId, value)}
+            onSaveStudent={handleSaveStudent}
+          />
+        </section>
+      ) : null}
+
+      <section className={`overflow-hidden rounded-[28px] border border-slate-200-black/5 bg-white shadow-[0_16px_40px_rgba(18,32,56,0.06)] ${viewMode === "seat" ? "hidden" : ""}`}>
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
           <p className="text-sm font-medium text-slate-700">학생 x 교시 매트릭스</p>
           {isLoading ? (

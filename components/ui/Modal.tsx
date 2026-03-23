@@ -72,7 +72,7 @@ export function Modal({
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className={`relative z-10 flex w-full flex-col border border-slate-200-slate-200 bg-white ${widthClassName}`}
+            className={`relative z-10 flex w-full flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white ${widthClassName}`}
             style={{ maxHeight: "calc(100vh - 2rem)" }}
           >
             {/* 헤더 */}

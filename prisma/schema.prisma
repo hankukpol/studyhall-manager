@@ -68,6 +68,12 @@ enum ExamScheduleType {
   OTHER
 }
 
+enum PhoneSubmissionStatus {
+  SUBMITTED
+  NOT_SUBMITTED
+  RENTED
+}
+
 model Division {
   id                String            @id @default(cuid())
   name              String
@@ -143,8 +149,9 @@ model Period {
   isActive          Boolean      @default(true) @map("is_active")
   createdAt         DateTime     @default(now()) @map("created_at")
   updatedAt         DateTime     @updatedAt @map("updated_at")
-  division          Division     @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+  division          Division          @relation(fields: [divisionId], references: [id], onDelete: Cascade)
   attendanceRecords Attendance[]
+  phoneSubmissions  PhoneSubmission[]
 
   @@unique([divisionId, displayOrder])
   @@index([divisionId])
@@ -503,19 +510,22 @@ model ExamSchedule {
 }
 
 model PhoneSubmission {
-  id           String   @id @default(cuid())
-  divisionId   String   @map("division_id")
-  studentId    String   @map("student_id")
-  date         DateTime @db.Date
-  submitted    Boolean  @default(true)
-  recordedById String   @map("recorded_by_id")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-  division     Division @relation(fields: [divisionId], references: [id], onDelete: Cascade)
-  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  recordedBy   Admin    @relation("PhoneSubmissionRecordedBy", fields: [recordedById], references: [id], onDelete: Restrict)
+  id           String                @id @default(cuid())
+  divisionId   String                @map("division_id")
+  studentId    String                @map("student_id")
+  periodId     String                @map("period_id")
+  date         DateTime              @db.Date
+  status       PhoneSubmissionStatus @default(SUBMITTED)
+  rentalNote   String?               @map("rental_note")
+  recordedById String                @map("recorded_by_id")
+  createdAt    DateTime              @default(now()) @map("created_at")
+  updatedAt    DateTime              @updatedAt @map("updated_at")
+  division     Division              @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+  student      Student               @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  period       Period                @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  recordedBy   Admin                 @relation("PhoneSubmissionRecordedBy", fields: [recordedById], references: [id], onDelete: Restrict)
 
-  @@unique([studentId, date])
+  @@unique([studentId, date, periodId])
   @@index([divisionId, date])
   @@map("phone_submissions")
 }

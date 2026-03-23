@@ -7,7 +7,9 @@ import {
   detectRepeatedAbsent,
   detectRepeatedTardy,
 } from "@/lib/services/attendance-pattern.service";
-import { getNextExamSchedule, type ExamScheduleItem } from "@/lib/services/exam-schedule.service";
+import { listExamSchedules, type ExamScheduleItem } from "@/lib/services/exam-schedule.service";
+import { listLeavePermissions } from "@/lib/services/leave.service";
+import { listInterviews } from "@/lib/services/interview.service";
 
 export type AdminDashboardData = {
   division: {
@@ -97,7 +99,7 @@ export type AdminDashboardData = {
     courseEndDate: string;
     daysRemaining: number;
   }>;
-  upcomingExamSchedule: ExamScheduleItem | null;
+  upcomingExamSchedules: ExamScheduleItem[];
   newStudents: Array<{
     id: string;
     name: string;
@@ -107,6 +109,25 @@ export type AdminDashboardData = {
     seatLabel: string | null;
     enrolledAt: string;
     daysAgo: number;
+  }>;
+  todayLeaveStudents: Array<{
+    id: string;
+    studentId: string;
+    studentName: string;
+    studentNumber: string;
+    seatLabel: string | null;
+    type: string;
+    status: string;
+  }>;
+  interviewNeededStudents: Array<{
+    id: string;
+    name: string;
+    studentNumber: string;
+    seatLabel: string | null;
+    phone: string | null;
+    netPoints: number;
+    warningStage: string;
+    lastInterviewDate: string | null;
   }>;
 };
 
@@ -319,13 +340,15 @@ export async function getAdminDashboardData(divisionSlug: string): Promise<Admin
   const snapshotDates = Array.from(new Set([today, yesterday, ...weekDates]));
   const firstDayOfMonth = today.slice(0, 7) + "-01";
 
-  const [division, settings, students, snapshots, recentPoints, thisMonthPayments] = await Promise.all([
+  const [division, settings, students, snapshots, recentPoints, thisMonthPayments, todayLeaves, allInterviews] = await Promise.all([
     getDivisionTheme(divisionSlug),
     getDivisionSettings(divisionSlug),
     listStudents(divisionSlug),
     getAttendanceSnapshots(divisionSlug, snapshotDates),
     listPointRecords(divisionSlug, { limit: 5 }),
     listPayments(divisionSlug, { dateFrom: firstDayOfMonth, dateTo: today }),
+    listLeavePermissions(divisionSlug, { month: today.slice(0, 7) }),
+    listInterviews(divisionSlug),
   ]);
   const snapshotMap = new Map(snapshots.map((snapshot) => [snapshot.date, snapshot]));
   const todaySnapshot = getSnapshotOrThrow(snapshotMap, today);
@@ -428,6 +451,47 @@ export async function getAdminDashboardData(divisionSlug: string): Promise<Admin
       daysAgo: s.daysAgo,
     }));
 
+  // ── 오늘 외출/휴가 학생 ────────────────────────────────────────────────────
+  const studentSeatMap = new Map(students.map((s) => [s.id, s.seatLabel]));
+  const todayLeaveStudents = todayLeaves
+    .filter((l) => l.date === today && l.status !== "REJECTED")
+    .map((l) => ({
+      id: l.id,
+      studentId: l.studentId,
+      studentName: l.studentName,
+      studentNumber: l.studentNumber,
+      seatLabel: studentSeatMap.get(l.studentId) ?? null,
+      type: l.type,
+      status: l.status,
+    }));
+
+  // ── 면담 필요 학생 (면담 기준 벌점 이상 + 30일 내 면담 없음) ─────────────
+  const thirtyDaysAgo = getKstDateFromString(today, -30);
+  const latestInterviewByStudent = new Map<string, string>();
+  for (const interview of allInterviews) {
+    if (!latestInterviewByStudent.has(interview.studentId)) {
+      latestInterviewByStudent.set(interview.studentId, interview.date);
+    }
+  }
+  const interviewNeededStudents = students
+    .filter((s) => s.status === "ACTIVE" && s.netPoints >= settings.warnInterview)
+    .filter((s) => {
+      const lastDate = latestInterviewByStudent.get(s.id) ?? null;
+      if (!lastDate) return true;
+      return lastDate < thirtyDaysAgo;
+    })
+    .map((s) => ({
+      id: s.id,
+      name: s.name,
+      studentNumber: s.studentNumber,
+      seatLabel: s.seatLabel,
+      phone: s.phone,
+      netPoints: s.netPoints,
+      warningStage: s.warningStage,
+      lastInterviewDate: latestInterviewByStudent.get(s.id) ?? null,
+    }))
+    .sort((a, b) => b.netPoints - a.netPoints);
+
   return {
     division: {
       slug: divisionSlug,
@@ -470,6 +534,8 @@ export async function getAdminDashboardData(divisionSlug: string): Promise<Admin
     paymentStats,
     expiringStudents,
     newStudents,
-    upcomingExamSchedule: await getNextExamSchedule(divisionSlug),
+    upcomingExamSchedules: await listExamSchedules(divisionSlug, { onlyActive: true }),
+    todayLeaveStudents,
+    interviewNeededStudents,
   };
 }

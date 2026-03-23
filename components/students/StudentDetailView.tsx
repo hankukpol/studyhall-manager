@@ -383,8 +383,8 @@ export function StudentDetailView({
         </section>
       ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-        <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <div className="grid gap-6 xl:grid-cols-2 xl:items-start">
+        <section className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -397,7 +397,7 @@ export function StudentDetailView({
               <button
                 type="button"
                 onClick={() => setIsWithdrawOpen(true)}
-                className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-white"
+                className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
               >
                 <Ban className="h-4 w-4" />
                 퇴실 처리
@@ -412,6 +412,7 @@ export function StudentDetailView({
               initialStudent={initialStudent}
               canEdit={canEdit && initialStudent.status !== "WITHDRAWN"}
               showAdvancedFields
+              hideSeatSection
               studyTrackOptions={studyTrackOptions}
               seatOptions={seatOptions}
               tuitionPlans={tuitionPlans}
@@ -419,7 +420,7 @@ export function StudentDetailView({
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+        <section className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
           <div className="flex flex-wrap gap-2">
             {tabs.map((tab) => (
               <button
@@ -462,6 +463,21 @@ export function StudentDetailView({
           </div>
         </section>
       </div>
+
+      {/* 좌석 및 운영 정보 — full width */}
+      <section className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+        <StudentForm
+          divisionSlug={divisionSlug}
+          mode="edit"
+          initialStudent={initialStudent}
+          canEdit={canEdit && initialStudent.status !== "WITHDRAWN"}
+          showAdvancedFields
+          showSeatSectionOnly
+          studyTrackOptions={studyTrackOptions}
+          seatOptions={seatOptions}
+          tuitionPlans={tuitionPlans}
+        />
+      </section>
 
       <Modal
         open={isWithdrawOpen}

@@ -98,3 +98,12 @@ export async function deleteSupabaseManagedUser(userId: string) {
     throw new Error(error.message);
   }
 }
+
+export async function updateSupabaseManagedUserPassword(userId: string, password: string) {
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase.auth.admin.updateUserById(userId, { password });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}

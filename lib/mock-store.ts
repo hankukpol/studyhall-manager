@@ -283,12 +283,16 @@ export type MockExamScheduleRecord = {
   updatedAt: string;
 };
 
+export type MockPhoneSubmissionStatus = "SUBMITTED" | "NOT_SUBMITTED" | "RENTED";
+
 export type MockPhoneSubmissionRecord = {
   id: string;
   divisionId: string;
   studentId: string;
+  periodId: string;
   date: string;
-  submitted: boolean;
+  status: MockPhoneSubmissionStatus;
+  rentalNote: string | null;
   recordedById: string;
   createdAt: string;
   updatedAt: string;
@@ -1704,7 +1708,22 @@ function normalizeMockState(rawState: Partial<MockState> | null | undefined) {
     getDivisionSlugs({ ...state, divisions: normalizedDivisions, deletedDivisionSlugs }).map((divisionSlug) => [
       divisionSlug,
       Array.isArray(state.phoneSubmissionsByDivision?.[divisionSlug])
-        ? state.phoneSubmissionsByDivision[divisionSlug]
+        ? state.phoneSubmissionsByDivision[divisionSlug].map((record) => {
+            const r = record as Record<string, unknown>;
+            const status: MockPhoneSubmissionStatus =
+              typeof r.status === "string" &&
+              (r.status === "SUBMITTED" || r.status === "NOT_SUBMITTED" || r.status === "RENTED")
+                ? (r.status as MockPhoneSubmissionStatus)
+                : r.submitted === false
+                  ? "NOT_SUBMITTED"
+                  : "SUBMITTED";
+            return {
+              ...record,
+              periodId: typeof r.periodId === "string" ? r.periodId : "",
+              status,
+              rentalNote: typeof r.rentalNote === "string" ? r.rentalNote : null,
+            } satisfies MockPhoneSubmissionRecord;
+          })
         : [],
     ]),
   );

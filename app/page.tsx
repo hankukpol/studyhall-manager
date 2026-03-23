@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, BookOpenCheck, Building2, Flame, LogIn, Shield, TestTube2 } from "lucide-react";
+import { ArrowRight, BookOpenCheck, Building2, Flame, LogIn, Shield } from "lucide-react";
 
-import { isMockMode } from "@/lib/mock-data";
 import { getDivisions } from "@/lib/services/division.service";
 
 const divisionIcons = {
@@ -15,7 +14,6 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const divisions = await getDivisions();
-  const mockMode = isMockMode();
 
   return (
     <main className="min-h-screen bg-white px-4 py-10 md:px-8 lg:px-12">
@@ -45,12 +43,6 @@ export default async function HomePage() {
                   <LogIn className="h-4 w-4" />
                   관리자 로그인
                 </Link>
-                {mockMode ? (
-                  <span className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 bg-white px-4 py-3 text-sm font-medium text-emerald-700">
-                    <TestTube2 className="h-4 w-4" />
-                    MOCK_MODE 로컬 테스트 활성화
-                  </span>
-                ) : null}
               </div>
             </div>
 
@@ -66,8 +58,8 @@ export default async function HomePage() {
                   <p className="mt-2 text-lg font-bold">직렬 완전 분리 · 설정 하드코딩 금지</p>
                 </div>
                 <div className="rounded-2xl border border-slate-200-white/10 bg-white/5 p-4">
-                  <p className="text-sm text-white/70">로컬 테스트</p>
-                  <p className="mt-2 text-lg font-bold">bat 실행 + mock 모드 지원</p>
+                  <p className="text-sm text-white/70">운영 환경</p>
+                  <p className="mt-2 text-lg font-bold">Vercel + Supabase 배포</p>
                 </div>
               </div>
             </div>

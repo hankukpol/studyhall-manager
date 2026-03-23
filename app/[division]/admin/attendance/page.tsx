@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { ResponsiveAttendanceBoard } from "@/components/attendance/ResponsiveAttendanceBoard";
 import { getAttendanceSnapshot, getAttendanceStats } from "@/lib/services/attendance.service";
 import { getCurrentPeriod } from "@/lib/services/period.service";
+import { getSeatLayout, listStudyRooms } from "@/lib/services/seat.service";
 
 function getTodayInKst() {
   return new Intl.DateTimeFormat("en-CA", {
@@ -33,10 +34,12 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminAttendancePage({ params }: AdminAttendancePageProps) {
   const today = getTodayInKst();
-  const [snapshot, stats, currentPeriod] = await Promise.all([
+  const [snapshot, stats, currentPeriod, seatRooms, initialSeatLayout] = await Promise.all([
     getAttendanceSnapshot(params.division, today),
     getAttendanceStats(params.division, today, today),
     getCurrentPeriod(params.division),
+    listStudyRooms(params.division),
+    getSeatLayout(params.division),
   ]);
 
   const mobilePeriodId = currentPeriod?.id ?? snapshot.periods[0]?.id ?? null;
@@ -61,6 +64,8 @@ export default async function AdminAttendancePage({ params }: AdminAttendancePag
           initialStudents: snapshot.students,
           initialRecords: snapshot.records,
           initialStats: stats,
+          seatRooms,
+          initialSeatLayout,
         }}
         mobileProps={{
           divisionSlug: params.division,

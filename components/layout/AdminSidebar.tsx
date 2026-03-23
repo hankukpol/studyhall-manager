@@ -6,7 +6,6 @@ import {
   Bell,
   BookOpenCheck,
   CalendarClock,
-  CalendarDays,
   CreditCard,
   FileSpreadsheet,
   GraduationCap,
@@ -42,7 +41,6 @@ const navSections: NavSection[] = [
       { href: "leave", label: "외출/휴가", icon: CalendarClock },
       { href: "warnings", label: "경고 대상자", icon: ShieldAlert },
       { href: "interviews", label: "면담 기록", icon: MessageSquareWarning },
-      { href: "settings/exam-schedules", label: "시험 일정", icon: CalendarDays },
     ],
   },
   {

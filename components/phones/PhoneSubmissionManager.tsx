@@ -1,15 +1,15 @@
 "use client";
 
-import { AlertTriangle, Check, RefreshCcw, Smartphone, X } from "lucide-react";
+import { AlertTriangle, Check, Phone, RefreshCcw, Smartphone, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import type { PhoneSubmissionItem } from "@/lib/services/phone-submission.service";
+import type { PhoneCheckRecord } from "@/lib/services/phone-submission.service";
 import type { PointRuleItem } from "@/lib/services/point.service";
 
 type PhoneSubmissionManagerProps = {
   divisionSlug: string;
-  initialSubmissions: PhoneSubmissionItem[];
+  initialRecords: PhoneCheckRecord[];
   phonePointRule: PointRuleItem | null;
 };
 
@@ -29,17 +29,17 @@ function getMonthStart() {
 
 export function PhoneSubmissionManager({
   divisionSlug,
-  initialSubmissions,
+  initialRecords,
   phonePointRule,
 }: PhoneSubmissionManagerProps) {
-  const [submissions, setSubmissions] = useState<PhoneSubmissionItem[]>(initialSubmissions);
+  const [records, setRecords] = useState<PhoneCheckRecord[]>(initialRecords);
   const [dateFrom, setDateFrom] = useState(getMonthStart());
   const [dateTo, setDateTo] = useState(getKstToday());
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [isGranting, setIsGranting] = useState(false);
 
-  const notSubmittedList = submissions.filter((s) => !s.submitted);
+  const notSubmittedList = records.filter((r) => r.status === "NOT_SUBMITTED");
 
   async function handleSearch() {
     setIsLoading(true);
@@ -54,27 +54,24 @@ export function PhoneSubmissionManager({
         toast.error("데이터를 불러오는 데 실패했습니다.");
         return;
       }
-      const { submissions: data } = await res.json();
-      setSubmissions(data);
+      const { records: data } = (await res.json()) as { records: PhoneCheckRecord[] };
+      setRecords(data);
     } finally {
       setIsLoading(false);
     }
   }
 
-  function toggleSelect(id: string) {
+  function toggleSelect(studentId: string) {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
+      if (next.has(studentId)) next.delete(studentId);
+      else next.add(studentId);
       return next;
     });
   }
 
   function selectAllNotSubmitted() {
-    setSelectedIds(new Set(notSubmittedList.map((s) => s.studentId)));
+    setSelectedIds(new Set(notSubmittedList.map((r) => r.studentId)));
   }
 
   function clearSelection() {
@@ -91,7 +88,7 @@ export function PhoneSubmissionManager({
     const points = phonePointRule ? phonePointRule.points : -1;
     const confirmMsg = phonePointRule
       ? `선택한 ${studentIds.length}명에게 "${phonePointRule.name}" 규칙으로 ${points}점을 부여하시겠습니까?`
-      : `선택한 ${studentIds.length}명에게 벌점 1점을 부여하시겠습니까?\n(휴대폰 미제출 규칙이 없어 직접 부여됩니다.)`;
+      : `선택한 ${studentIds.length}명에게 벌점 1점을 부여하시겠습니까?\n(휴대폰 미반납 규칙이 없어 직접 부여됩니다.)`;
 
     if (!confirm(confirmMsg)) return;
 
@@ -105,13 +102,13 @@ export function PhoneSubmissionManager({
           studentIds,
           ruleId: phonePointRule?.id ?? null,
           points: phonePointRule ? undefined : points,
-          notes: "휴대폰 미제출",
+          notes: "휴대폰 미반납",
           date: today,
         }),
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
         toast.error(data.error ?? "벌점 부여에 실패했습니다.");
         return;
       }
@@ -123,8 +120,9 @@ export function PhoneSubmissionManager({
     }
   }
 
-  const submittedCount = submissions.filter((s) => s.submitted).length;
+  const submittedCount = records.filter((r) => r.status === "SUBMITTED").length;
   const notSubmittedCount = notSubmittedList.length;
+  const rentedCount = records.filter((r) => r.status === "RENTED").length;
 
   return (
     <div className="space-y-5">
@@ -136,7 +134,7 @@ export function PhoneSubmissionManager({
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
-            className="mt-1 block rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+            className="mt-1 block rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
           />
         </div>
         <div>
@@ -145,60 +143,59 @@ export function PhoneSubmissionManager({
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
-            className="mt-1 block rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+            className="mt-1 block rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
           />
         </div>
         <button
           type="button"
           onClick={handleSearch}
           disabled={isLoading}
-          className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition"
+          className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
         >
           <RefreshCcw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
           조회
         </button>
       </div>
 
-      {/* 요약 */}
-      <div className="flex flex-wrap gap-3">
-        <div className="rounded-2xl bg-green-50 px-4 py-3 text-sm">
-          <span className="font-semibold text-green-700">제출 {submittedCount}건</span>
-        </div>
-        <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm">
-          <span className="font-semibold text-red-600">미제출 {notSubmittedCount}건</span>
-        </div>
+      {/* 요약 통계 */}
+      <div className="flex flex-wrap gap-2">
+        <span className="inline-flex items-center rounded-full bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+          반납 {submittedCount}건
+        </span>
+        <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 ring-1 ring-inset ring-red-600/20">
+          미반납 {notSubmittedCount}건
+        </span>
+        <span className="inline-flex items-center rounded-full bg-sky-50 px-3 py-1.5 text-sm font-medium text-sky-700 ring-1 ring-inset ring-sky-700/20">
+          대여 {rentedCount}건
+        </span>
       </div>
 
-      {/* 미제출자 벌점 부여 */}
+      {/* 미반납자 벌점 부여 */}
       {notSubmittedCount > 0 && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 space-y-3">
+        <div className="rounded-[22px] border border-rose-200 bg-rose-50 p-4">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-red-500" />
-            <p className="text-sm font-semibold text-red-700">미제출자 벌점 부여</p>
+            <AlertTriangle className="h-4 w-4 text-rose-500" />
+            <p className="text-sm font-semibold text-rose-700">미반납자 벌점 부여</p>
           </div>
-          {phonePointRule ? (
-            <p className="text-xs text-red-600">
-              규칙: &ldquo;{phonePointRule.name}&rdquo; ({phonePointRule.points}점) · 선택 후 일괄 부여
-            </p>
-          ) : (
-            <p className="text-xs text-red-600">
-              휴대폰 미제출 벌점 규칙이 설정되지 않았습니다. 벌점 -1점이 직접 부여됩니다.
-            </p>
-          )}
-          <div className="flex flex-wrap gap-2">
+          <p className="mt-2 text-xs text-rose-600">
+            {phonePointRule
+              ? `규칙: "${phonePointRule.name}" (${phonePointRule.points}점) · 선택 후 일괄 부여`
+              : "휴대폰 미반납 벌점 규칙이 설정되지 않았습니다. 벌점 -1점이 직접 부여됩니다."}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"
               onClick={selectAllNotSubmitted}
-              className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 transition"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--division-color)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
             >
-              미제출자 전체 선택 ({notSubmittedCount}명)
+              미반납자 전체 선택 ({notSubmittedCount}명)
             </button>
             {selectedIds.size > 0 && (
               <>
                 <button
                   type="button"
                   onClick={clearSelection}
-                  className="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 transition"
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                 >
                   선택 해제
                 </button>
@@ -206,7 +203,7 @@ export function PhoneSubmissionManager({
                   type="button"
                   onClick={handleGrantPoints}
                   disabled={isGranting}
-                  className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50 transition"
+                  className="inline-flex items-center gap-2 rounded-full border border-rose-300 bg-white px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50 disabled:opacity-60"
                 >
                   {isGranting ? "처리 중..." : `선택 ${selectedIds.size}명 벌점 부여`}
                 </button>
@@ -216,32 +213,40 @@ export function PhoneSubmissionManager({
         </div>
       )}
 
-      {/* 목록 */}
-      {submissions.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-16 text-slate-400">
-          <Smartphone className="h-10 w-10" />
-          <p className="text-sm">해당 기간의 기록이 없습니다.</p>
+      {/* 기록 목록 */}
+      {records.length === 0 ? (
+        <div className="rounded-[24px] border border-dashed border-slate-300 px-4 py-16 text-center">
+          <Smartphone className="mx-auto h-8 w-8 text-slate-300" />
+          <p className="mt-3 text-sm text-slate-500">해당 기간의 기록이 없습니다.</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 text-left">
-                <th className="pb-3 pr-4 font-semibold text-slate-600 w-10">선택</th>
+                <th className="pb-3 pr-4 font-semibold text-slate-600" style={{ width: "2.5rem" }}>
+                  선택
+                </th>
                 <th className="pb-3 pr-4 font-semibold text-slate-600">날짜</th>
+                <th className="pb-3 pr-4 font-semibold text-slate-600">교시</th>
                 <th className="pb-3 pr-4 font-semibold text-slate-600">이름</th>
                 <th className="pb-3 pr-4 font-semibold text-slate-600">수험번호</th>
-                <th className="pb-3 font-semibold text-slate-600">제출 여부</th>
+                <th className="pb-3 pr-4 font-semibold text-slate-600">상태</th>
+                <th className="pb-3 font-semibold text-slate-600">대여 사유</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {submissions.map((item) => (
+              {records.map((item) => (
                 <tr
                   key={item.id}
-                  className={`transition ${!item.submitted && selectedIds.has(item.studentId) ? "bg-red-50" : ""}`}
+                  className={
+                    item.status === "NOT_SUBMITTED" && selectedIds.has(item.studentId)
+                      ? "bg-rose-50"
+                      : ""
+                  }
                 >
                   <td className="py-3 pr-4">
-                    {!item.submitted && (
+                    {item.status === "NOT_SUBMITTED" && (
                       <input
                         type="checkbox"
                         checked={selectedIds.has(item.studentId)}
@@ -250,24 +255,36 @@ export function PhoneSubmissionManager({
                       />
                     )}
                   </td>
-                  <td className="py-3 pr-4 text-slate-700">{item.date}</td>
+                  <td className="py-3 pr-4 text-slate-600">{item.date}</td>
+                  <td className="py-3 pr-4 text-slate-600">{item.periodName}</td>
                   <td className="py-3 pr-4 font-medium text-slate-900">{item.studentName}</td>
                   <td className="py-3 pr-4 text-slate-600">{item.studentNumber}</td>
-                  <td className="py-3">
+                  <td className="py-3 pr-4">
                     <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        item.submitted
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-600"
+                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${
+                        item.status === "SUBMITTED"
+                          ? "bg-green-50 text-green-700 ring-green-600/20"
+                          : item.status === "NOT_SUBMITTED"
+                            ? "bg-red-50 text-red-700 ring-red-600/20"
+                            : "bg-sky-50 text-sky-700 ring-sky-700/20"
                       }`}
                     >
-                      {item.submitted ? (
-                        <><Check className="h-3 w-3" />제출</>
+                      {item.status === "SUBMITTED" ? (
+                        <>
+                          <Check className="h-3 w-3" />반납
+                        </>
+                      ) : item.status === "NOT_SUBMITTED" ? (
+                        <>
+                          <X className="h-3 w-3" />미반납
+                        </>
                       ) : (
-                        <><X className="h-3 w-3" />미제출</>
+                        <>
+                          <Phone className="h-3 w-3" />대여
+                        </>
                       )}
                     </span>
                   </td>
+                  <td className="py-3 text-xs text-slate-500">{item.rentalNote ?? ""}</td>
                 </tr>
               ))}
             </tbody>

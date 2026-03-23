@@ -8,46 +8,68 @@ import {
 import type { PhoneSubmissionBatchSchemaInput } from "@/lib/phone-submission-schemas";
 import { getPrismaClient, getDivisionBySlugOrThrow } from "@/lib/service-helpers";
 import { listStudents, type StudentListItem } from "@/lib/services/student.service";
+import { getPeriods, type PeriodRecord } from "@/lib/services/period.service";
 
 type PhoneActor = {
   id: string;
   role: "SUPER_ADMIN" | "ADMIN" | "ASSISTANT";
 };
 
-export type PhoneSubmissionItem = {
+export type PhoneCheckStatus = "SUBMITTED" | "NOT_SUBMITTED" | "RENTED";
+
+export type PhoneCheckRecord = {
   id: string;
   divisionId: string;
   studentId: string;
   studentName: string;
   studentNumber: string;
+  periodId: string;
+  periodName: string;
   date: string;
-  submitted: boolean;
+  status: PhoneCheckStatus;
+  rentalNote: string | null;
   recordedById: string;
   createdAt: string;
   updatedAt: string;
 };
 
-export type PhoneSubmissionSnapshot = {
-  date: string;
-  students: StudentListItem[];
-  records: PhoneSubmissionItem[];
+export type PhonePeriodSnapshot = {
+  periodId: string;
+  periodName: string;
+  periodLabel: string | null;
+  displayOrder: number;
+  startTime: string;
+  endTime: string;
+  records: PhoneCheckRecord[];
   submittedCount: number;
   notSubmittedCount: number;
+  rentedCount: number;
   uncheckedCount: number;
+  totalStudents: number;
 };
 
-function serializeRecord(
+export type PhoneDaySnapshot = {
+  date: string;
+  periods: PhonePeriodSnapshot[];
+  students: StudentListItem[];
+};
+
+function serializeMockRecord(
   record: MockPhoneSubmissionRecord,
   student: StudentListItem,
-): PhoneSubmissionItem {
+  period: PeriodRecord,
+): PhoneCheckRecord {
   return {
     id: record.id,
     divisionId: record.divisionId,
     studentId: record.studentId,
     studentName: student.name,
     studentNumber: student.studentNumber,
+    periodId: record.periodId,
+    periodName: period.name,
     date: record.date,
-    submitted: record.submitted,
+    status: record.status as PhoneCheckStatus,
+    rentalNote: record.rentalNote,
     recordedById: record.recordedById,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
@@ -59,53 +81,94 @@ function serializeDbRecord(
     id: string;
     divisionId: string;
     studentId: string;
+    periodId: string;
     date: Date;
-    submitted: boolean;
+    status: string;
+    rentalNote: string | null;
     recordedById: string;
     createdAt: Date;
     updatedAt: Date;
   },
   student: StudentListItem,
-): PhoneSubmissionItem {
+  period: PeriodRecord,
+): PhoneCheckRecord {
   return {
     id: record.id,
     divisionId: record.divisionId,
     studentId: record.studentId,
     studentName: student.name,
     studentNumber: student.studentNumber,
+    periodId: record.periodId,
+    periodName: period.name,
     date: record.date.toISOString().slice(0, 10),
-    submitted: record.submitted,
+    status: record.status as PhoneCheckStatus,
+    rentalNote: record.rentalNote,
     recordedById: record.recordedById,
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),
   };
 }
 
-export async function getPhoneSubmissionSnapshot(
+function buildPeriodSnapshot(
+  period: PeriodRecord,
+  records: PhoneCheckRecord[],
+  totalStudents: number,
+): PhonePeriodSnapshot {
+  const periodRecords = records.filter((r) => r.periodId === String(period.id));
+  const submittedCount = periodRecords.filter((r) => r.status === "SUBMITTED").length;
+  const notSubmittedCount = periodRecords.filter((r) => r.status === "NOT_SUBMITTED").length;
+  const rentedCount = periodRecords.filter((r) => r.status === "RENTED").length;
+  const uncheckedCount = Math.max(totalStudents - periodRecords.length, 0);
+
+  return {
+    periodId: String(period.id),
+    periodName: period.name,
+    periodLabel: period.label ?? null,
+    displayOrder: period.displayOrder,
+    startTime: period.startTime,
+    endTime: period.endTime,
+    records: periodRecords,
+    submittedCount,
+    notSubmittedCount,
+    rentedCount,
+    uncheckedCount,
+    totalStudents,
+  };
+}
+
+export async function getPhoneDaySnapshot(
   divisionSlug: string,
   date: string,
-): Promise<PhoneSubmissionSnapshot> {
-  const allStudents = await listStudents(divisionSlug);
+): Promise<PhoneDaySnapshot> {
+  const [allStudents, allPeriods] = await Promise.all([
+    listStudents(divisionSlug),
+    getPeriods(divisionSlug),
+  ]);
   const students = allStudents.filter((s) => s.status === "ACTIVE" || s.status === "ON_LEAVE");
+  const activePeriods = allPeriods.filter((p) => p.isActive);
 
   if (isMockMode()) {
     const state = await readMockState();
-    const records = (state.phoneSubmissionsByDivision[divisionSlug] ?? []).filter(
+    const dayRecords = (state.phoneSubmissionsByDivision[divisionSlug] ?? []).filter(
       (r) => r.date === date,
     );
+
     const studentMap = new Map(students.map((s) => [s.id, s]));
-    const items = records
+    const periodMap = new Map(activePeriods.map((p) => [String(p.id), p]));
+
+    const allRecords: PhoneCheckRecord[] = dayRecords
       .map((r) => {
         const student = studentMap.get(r.studentId);
-        return student ? serializeRecord(r, student) : null;
+        const period = periodMap.get(r.periodId);
+        return student && period ? serializeMockRecord(r, student, period) : null;
       })
-      .filter((item): item is PhoneSubmissionItem => item !== null);
+      .filter((item): item is PhoneCheckRecord => item !== null);
 
-    const submittedCount = items.filter((i) => i.submitted).length;
-    const notSubmittedCount = items.filter((i) => !i.submitted).length;
-    const uncheckedCount = students.length - items.length;
+    const periods = activePeriods.map((period) =>
+      buildPeriodSnapshot(period, allRecords, students.length),
+    );
 
-    return { date, students, records: items, submittedCount, notSubmittedCount, uncheckedCount };
+    return { date, periods, students };
   }
 
   const division = await getDivisionBySlugOrThrow(divisionSlug);
@@ -113,32 +176,35 @@ export async function getPhoneSubmissionSnapshot(
   const [y, m, d] = date.split("-").map(Number);
   const targetDate = new Date(Date.UTC(y, m - 1, d));
 
-  const records = await prisma.phoneSubmission.findMany({
+  const dbRecords = await prisma.phoneSubmission.findMany({
     where: { divisionId: division.id, date: targetDate },
     orderBy: { createdAt: "asc" },
   });
 
   const studentMap = new Map(students.map((s) => [s.id, s]));
-  const items = records
+  const periodMap = new Map(activePeriods.map((p) => [p.id, p]));
+
+  const allRecords: PhoneCheckRecord[] = dbRecords
     .map((r) => {
       const student = studentMap.get(r.studentId);
-      return student ? serializeDbRecord(r, student) : null;
+      const period = periodMap.get(r.periodId);
+      return student && period ? serializeDbRecord(r, student, period) : null;
     })
-    .filter((item): item is PhoneSubmissionItem => item !== null);
+    .filter((item): item is PhoneCheckRecord => item !== null);
 
-  const submittedCount = items.filter((i) => i.submitted).length;
-  const notSubmittedCount = items.filter((i) => !i.submitted).length;
-  const uncheckedCount = students.length - items.length;
+  const periods = activePeriods.map((period) =>
+    buildPeriodSnapshot(period, allRecords, students.length),
+  );
 
-  return { date, students, records: items, submittedCount, notSubmittedCount, uncheckedCount };
+  return { date, periods, students };
 }
 
-export async function upsertPhoneSubmissionBatch(
+export async function upsertPhoneCheckBatch(
   divisionSlug: string,
   actor: PhoneActor,
   input: PhoneSubmissionBatchSchemaInput,
-): Promise<PhoneSubmissionSnapshot> {
-  const { date, records } = input;
+): Promise<PhoneDaySnapshot> {
+  const { date, periodId, records } = input;
 
   if (isMockMode()) {
     const division = getMockDivisionBySlug(divisionSlug);
@@ -149,14 +215,19 @@ export async function upsertPhoneSubmissionBatch(
       const now = new Date().toISOString();
 
       for (const r of records) {
-        const idx = existing.findIndex((e) => e.studentId === r.studentId && e.date === date);
+        const idx = existing.findIndex(
+          (e) => e.studentId === r.studentId && e.date === date && e.periodId === periodId,
+        );
+
         if (idx === -1) {
           existing.push({
-            id: `mock-phone-${divisionSlug}-${r.studentId}-${date}-${Date.now()}`,
+            id: `mock-phone-${divisionSlug}-${r.studentId}-${date}-${periodId}-${Date.now()}`,
             divisionId: division.id,
             studentId: r.studentId,
+            periodId,
             date,
-            submitted: r.submitted,
+            status: r.status,
+            rentalNote: r.rentalNote?.trim() || null,
             recordedById: actor.id,
             createdAt: now,
             updatedAt: now,
@@ -164,7 +235,8 @@ export async function upsertPhoneSubmissionBatch(
         } else {
           existing[idx] = {
             ...existing[idx],
-            submitted: r.submitted,
+            status: r.status,
+            rentalNote: r.rentalNote?.trim() || null,
             recordedById: actor.id,
             updatedAt: now,
           };
@@ -175,7 +247,7 @@ export async function upsertPhoneSubmissionBatch(
       return null;
     });
 
-    return getPhoneSubmissionSnapshot(divisionSlug, date);
+    return getPhoneDaySnapshot(divisionSlug, date);
   }
 
   const division = await getDivisionBySlugOrThrow(divisionSlug);
@@ -187,37 +259,48 @@ export async function upsertPhoneSubmissionBatch(
     records.map((r) =>
       prisma.phoneSubmission.upsert({
         where: {
-          studentId_date: { studentId: r.studentId, date: targetDate },
+          studentId_date_periodId: {
+            studentId: r.studentId,
+            date: targetDate,
+            periodId,
+          },
         },
         create: {
           divisionId: division.id,
           studentId: r.studentId,
+          periodId,
           date: targetDate,
-          submitted: r.submitted,
+          status: r.status,
+          rentalNote: r.rentalNote?.trim() || null,
           recordedById: actor.id,
         },
         update: {
-          submitted: r.submitted,
+          status: r.status,
+          rentalNote: r.rentalNote?.trim() || null,
           recordedById: actor.id,
         },
       }),
     ),
   );
 
-  return getPhoneSubmissionSnapshot(divisionSlug, date);
+  return getPhoneDaySnapshot(divisionSlug, date);
 }
 
-export async function listPhoneSubmissions(
+export async function listPhoneRecords(
   divisionSlug: string,
   options?: {
     dateFrom?: string;
     dateTo?: string;
     studentId?: string;
-    onlyNotSubmitted?: boolean;
+    status?: PhoneCheckStatus;
   },
-): Promise<PhoneSubmissionItem[]> {
-  const students = await listStudents(divisionSlug);
+): Promise<PhoneCheckRecord[]> {
+  const [students, allPeriods] = await Promise.all([
+    listStudents(divisionSlug),
+    getPeriods(divisionSlug),
+  ]);
   const studentMap = new Map(students.map((s) => [s.id, s]));
+  const periodMap = new Map(allPeriods.map((p) => [String(p.id), p]));
 
   if (isMockMode()) {
     const state = await readMockState();
@@ -225,14 +308,15 @@ export async function listPhoneSubmissions(
     if (options?.dateFrom) records = records.filter((r) => r.date >= options.dateFrom!);
     if (options?.dateTo) records = records.filter((r) => r.date <= options.dateTo!);
     if (options?.studentId) records = records.filter((r) => r.studentId === options.studentId);
-    if (options?.onlyNotSubmitted) records = records.filter((r) => !r.submitted);
+    if (options?.status) records = records.filter((r) => r.status === options.status);
 
     return records
       .map((r) => {
         const student = studentMap.get(r.studentId);
-        return student ? serializeRecord(r, student) : null;
+        const period = periodMap.get(r.periodId);
+        return student && period ? serializeMockRecord(r, student, period) : null;
       })
-      .filter((item): item is PhoneSubmissionItem => item !== null)
+      .filter((item): item is PhoneCheckRecord => item !== null)
       .sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
   }
 
@@ -249,17 +333,18 @@ export async function listPhoneSubmissions(
     where.date = { ...(where.date as object ?? {}), lte: new Date(Date.UTC(y, m - 1, d)) };
   }
   if (options?.studentId) where.studentId = options.studentId;
-  if (options?.onlyNotSubmitted) where.submitted = false;
+  if (options?.status) where.status = options.status;
 
-  const records = await prisma.phoneSubmission.findMany({
+  const dbRecords = await prisma.phoneSubmission.findMany({
     where,
     orderBy: [{ date: "desc" }, { createdAt: "asc" }],
   });
 
-  return records
+  return dbRecords
     .map((r) => {
       const student = studentMap.get(r.studentId);
-      return student ? serializeDbRecord(r, student) : null;
+      const period = periodMap.get(r.periodId);
+      return student && period ? serializeDbRecord(r, student, period) : null;
     })
-    .filter((item): item is PhoneSubmissionItem => item !== null);
+    .filter((item): item is PhoneCheckRecord => item !== null);
 }

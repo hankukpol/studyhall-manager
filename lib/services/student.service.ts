@@ -166,16 +166,24 @@ function validateCourseRange(startDate: string | null, endDate: string | null) {
   }
 }
 
-function sortBySeatAndName<T extends { seatDisplay: string | null; name: string; studentNumber: string }>(students: T[]) {
+function sortBySeatAndName<T extends { seatDisplay: string | null; studyRoomName: string | null; seatLabel: string | null; name: string; studentNumber: string }>(students: T[]) {
   return [...students].sort((left, right) => {
-    const leftSeat = left.seatDisplay ?? "ZZZ";
-    const rightSeat = right.seatDisplay ?? "ZZZ";
-
-    return (
-      leftSeat.localeCompare(rightSeat, "ko") ||
-      left.name.localeCompare(right.name, "ko") ||
-      left.studentNumber.localeCompare(right.studentNumber, "ko")
-    );
+    const hasLeftSeat = left.seatLabel != null;
+    const hasRightSeat = right.seatLabel != null;
+    // 좌석 없는 학생은 맨 뒤로
+    if (hasLeftSeat !== hasRightSeat) return hasLeftSeat ? -1 : 1;
+    if (!hasLeftSeat && !hasRightSeat) {
+      return (
+        left.name.localeCompare(right.name, "ko") ||
+        left.studentNumber.localeCompare(right.studentNumber, "ko")
+      );
+    }
+    // 자습실 이름 우선 정렬
+    const roomCmp = (left.studyRoomName ?? "").localeCompare(right.studyRoomName ?? "", "ko");
+    if (roomCmp !== 0) return roomCmp;
+    // 자습실 같으면 좌석번호 숫자 자연 정렬
+    const seatCmp = (left.seatLabel ?? "").localeCompare(right.seatLabel ?? "", "ko", { numeric: true });
+    return seatCmp || left.name.localeCompare(right.name, "ko");
   });
 }
 

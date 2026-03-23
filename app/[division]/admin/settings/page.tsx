@@ -8,6 +8,8 @@ import {
   GraduationCap,
   LayoutTemplate,
   MapPinned,
+  Star,
+  UserCog,
 } from "lucide-react";
 
 import { requireDivisionAdminAccess } from "@/lib/auth";
@@ -71,6 +73,20 @@ const sections = [
     label: "시험 일정",
     description: "실제 시험 일정을 등록하고 학생 포털에 D-Day 카운트다운을 표시합니다.",
     icon: CalendarDays,
+  },
+  {
+    key: "point-rules",
+    href: "points/rules",
+    label: "상벌점 규칙",
+    description: "상점·벌점 규칙 목록을 지점별로 관리합니다. 출석·휴대폰 등 자동 벌점 규칙을 여기서 설정합니다.",
+    icon: Star,
+  },
+  {
+    key: "staff",
+    href: "staff",
+    label: "직원 관리",
+    description: "본 지점의 관리자와 조교 계정을 추가·수정·비활성화하고 비밀번호를 재설정합니다.",
+    icon: UserCog,
   },
 ] as const;
 
@@ -146,19 +162,6 @@ export default async function SettingsHubPage({ params }: SettingsHubPageProps) 
         })}
       </section>
 
-      <section className="rounded-[28px] border border-slate-200-dashed border-slate-300 bg-white p-5">
-        <p className="text-sm font-semibold text-slate-900">연계 설정</p>
-        <p className="mt-2 text-sm leading-6 text-slate-600">
-          상벌점 규칙은 별도 화면에서 관리합니다.
-        </p>
-        <Link
-          href={`/${params.division}/admin/points/rules`}
-          className="mt-4 inline-flex items-center gap-2 rounded-full border border-slate-200-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-100"
-        >
-          상벌점 규칙 설정으로 이동
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-      </section>
     </div>
   );
 }

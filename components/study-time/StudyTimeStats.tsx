@@ -25,6 +25,7 @@ function formatMinutes(minutes: number) {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   if (h === 0) return `${m}분`;
+  if (m === 0) return `${h}시간`;
   return `${h}시간 ${m}분`;
 }
 
@@ -63,11 +64,15 @@ export function StudyTimeStats({ divisionSlug, studentId }: StudyTimeStatsProps)
   }
 
   const maxMinutes = Math.max(...byDate.map((d) => d.minutes), 1);
+  const avgMinutes = byDate.length > 0
+    ? Math.round(byDate.filter((d) => d.minutes > 0).reduce((acc, d) => acc + d.minutes, 0) / (byDate.filter((d) => d.minutes > 0).length || 1))
+    : 0;
+  const studyDays = byDate.filter((d) => d.minutes > 0).length;
 
   return (
-    <div className="space-y-6">
-      {/* 월 선택 및 요약 */}
-      <div className="flex flex-wrap items-center gap-4">
+    <div className="space-y-5">
+      {/* 헤더: 월 선택 */}
+      <div className="flex flex-wrap items-center gap-3">
         <div>
           <label className="text-xs font-medium text-slate-700">조회 월</label>
           <input
@@ -75,46 +80,66 @@ export function StudyTimeStats({ divisionSlug, studentId }: StudyTimeStatsProps)
             value={month}
             max={getKstMonth()}
             onChange={(e) => handleMonthChange(e.target.value)}
-            className="mt-1 block rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+            className="mt-1 block rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
           />
         </div>
-        <div className="rounded-2xl bg-blue-50 px-5 py-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-500">Total</p>
-          <p className="mt-1 text-2xl font-extrabold text-blue-700">
-            {isLoading || !stats ? "..." : formatMinutes(stats.totalMinutes)}
+      </div>
+
+      {/* 요약 카드 3개 */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-[20px] border border-slate-100 bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Total</p>
+          <p className="mt-2 text-2xl font-extrabold text-slate-950">
+            {isLoading ? "—" : stats ? formatMinutes(stats.totalMinutes) : "0분"}
           </p>
-          <p className="mt-0.5 text-xs text-blue-500">{month} 기준</p>
+          <p className="mt-1 text-xs text-slate-500">{month} 기준</p>
+        </div>
+        <div className="rounded-[20px] border border-slate-100 bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">학습일</p>
+          <p className="mt-2 text-2xl font-extrabold text-slate-950">
+            {isLoading ? "—" : `${studyDays}일`}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">출석 기록 있는 날</p>
+        </div>
+        <div className="rounded-[20px] border border-slate-100 bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">일평균</p>
+          <p className="mt-2 text-2xl font-extrabold text-slate-950">
+            {isLoading ? "—" : formatMinutes(avgMinutes)}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">학습일 기준 평균</p>
         </div>
       </div>
 
       {/* 일별 막대 차트 */}
-      {!stats || isLoading ? (
-        <div className="flex flex-col items-center gap-3 py-12 text-slate-400">
-          <Clock className="h-8 w-8 animate-pulse" />
+      {isLoading ? (
+        <div className="flex flex-col items-center gap-3 py-10 text-slate-400">
+          <Clock className="h-7 w-7 animate-pulse" />
           <p className="text-sm">불러오는 중...</p>
         </div>
       ) : byDate.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-12 text-slate-400">
-          <Clock className="h-8 w-8" />
+        <div className="flex flex-col items-center gap-3 rounded-[24px] border border-dashed border-slate-300 py-12 text-slate-400">
+          <Clock className="h-7 w-7" />
           <p className="text-sm">해당 월의 학습 기록이 없습니다.</p>
         </div>
       ) : (
-        <div>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+        <div className="rounded-[20px] border border-slate-100 bg-white p-4">
+          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
             일별 학습 시간
           </p>
-          <div className="flex items-end gap-1 overflow-x-auto pb-2">
+          <div className="flex items-end gap-1.5 overflow-x-auto pb-2" style={{ minHeight: "100px" }}>
             {byDate.map(({ date, minutes }) => {
-              const heightPct = maxMinutes > 0 ? Math.round((minutes / maxMinutes) * 100) : 0;
+              const heightPx = maxMinutes > 0 ? Math.max(Math.round((minutes / maxMinutes) * 80), minutes > 0 ? 4 : 2) : 2;
               return (
-                <div key={date} className="flex flex-col items-center gap-1 shrink-0" style={{ minWidth: "28px" }}>
-                  <span className="text-[10px] text-slate-500">{formatMinutes(minutes)}</span>
+                <div key={date} className="flex flex-col items-center gap-1 shrink-0" style={{ minWidth: "26px" }}>
+                  {minutes > 0 && (
+                    <span className="text-[9px] font-medium text-slate-500">{Math.floor(minutes / 60) > 0 ? `${Math.floor(minutes / 60)}h` : `${minutes}m`}</span>
+                  )}
                   <div
-                    className="w-5 rounded-t-sm bg-blue-400 transition-all"
-                    style={{ height: `${Math.max(heightPct, 2)}px`, maxHeight: "80px" }}
+                    className={`w-4 rounded-t transition-all ${minutes > 0 ? "bg-[var(--division-color)]" : "bg-slate-100"}`}
+                    style={{ height: `${heightPx}px` }}
                     title={`${date}: ${formatMinutes(minutes)}`}
                   />
-                  <span className="text-[10px] text-slate-500">{date.slice(8)}</span>
+                  <span className="text-[9px] text-slate-400">{date.slice(8)}</span>
                 </div>
               );
             })}
@@ -124,25 +149,25 @@ export function StudyTimeStats({ divisionSlug, studentId }: StudyTimeStatsProps)
 
       {/* 교시별 평균 */}
       {byPeriod.filter((p) => p.avgMinutes > 0).length > 0 && (
-        <div>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+        <div className="rounded-[20px] border border-slate-100 bg-white p-4">
+          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
             교시별 평균 학습 시간
           </p>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {byPeriod
               .filter((p) => p.avgMinutes > 0)
               .map((p) => (
                 <div key={p.periodId} className="flex items-center gap-3">
-                  <span className="w-16 shrink-0 text-xs text-slate-600">{p.periodName}</span>
+                  <span className="w-14 shrink-0 text-xs font-medium text-slate-600">{p.periodName}</span>
                   <div className="flex-1 rounded-full bg-slate-100 h-2">
                     <div
-                      className="h-2 rounded-full bg-blue-400"
+                      className="h-2 rounded-full bg-[var(--division-color)] opacity-70"
                       style={{
                         width: `${Math.min(100, Math.round((p.avgMinutes / 300) * 100))}%`,
                       }}
                     />
                   </div>
-                  <span className="w-16 text-right text-xs font-medium text-slate-700">
+                  <span className="w-16 shrink-0 text-right text-xs font-medium text-slate-700">
                     {formatMinutes(p.avgMinutes)}
                   </span>
                 </div>
