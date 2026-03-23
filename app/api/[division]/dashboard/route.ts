@@ -16,7 +16,9 @@ export async function GET(
 
   try {
     const data = await getAdminDashboardData(params.division);
-    return NextResponse.json({ data });
+    return NextResponse.json({ data }, {
+      headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=30" },
+    });
   } catch (error) {
     return toApiErrorResponse(error, "대시보드 데이터를 불러오지 못했습니다.", 500);
   }

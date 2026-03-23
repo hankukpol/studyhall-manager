@@ -16,7 +16,9 @@ export async function GET(
   }
 
   const students = await listStudents(params.division);
-  return NextResponse.json({ students });
+  return NextResponse.json({ students }, {
+    headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=15" },
+  });
 }
 
 export async function POST(

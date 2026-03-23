@@ -38,6 +38,7 @@ export default async function HomePage() {
               <div className="flex flex-wrap items-center gap-3">
                 <Link
                   href="/login"
+                  prefetch={false}
                   className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
                 >
                   <LogIn className="h-4 w-4" />
@@ -74,6 +75,7 @@ export default async function HomePage() {
               <Link
                 key={division.id}
                 href={`/${division.slug}/admin`}
+                prefetch={false}
                 className="group overflow-hidden rounded-[28px] border border-slate-200-black/5 bg-white shadow-[0_18px_40px_rgba(18,32,56,0.08)] transition hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(18,32,56,0.12)]"
               >
                 <div

@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import NextLink from "next/link";
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -32,6 +32,10 @@ type AdminDashboardProps = {
   divisionSlug: string;
   initialData: AdminDashboardData;
 };
+
+function Link({ prefetch = false, ...props }: ComponentProps<typeof NextLink>) {
+  return <NextLink {...props} prefetch={prefetch} />;
+}
 
 // ─── 헬퍼 ────────────────────────────────────────────────────────────────────
 
@@ -190,16 +194,18 @@ function PeriodTimerWidget({
 }: {
   schedules: AdminDashboardData["periodSchedules"];
 }) {
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
   const prevTypeRef = useRef<PeriodInfo["type"] | null>(null);
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(timer);
+    const updateNow = () => setNow(new Date());
+    updateNow();
+    const timer = window.setInterval(updateNow, 1000);
+    return () => window.clearInterval(timer);
   }, []);
 
   useEffect(() => {
-    if (schedules.length === 0) return;
+    if (!now || schedules.length === 0) return;
     const info = getCurrentPeriodInfo(schedules, now);
     const prev = prevTypeRef.current;
     if (prev !== null && prev !== info.type) {
@@ -218,7 +224,7 @@ function PeriodTimerWidget({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [now]);
 
-  if (schedules.length === 0) return null;
+  if (!now || schedules.length === 0) return null;
 
   const info = getCurrentPeriodInfo(schedules, now);
 
@@ -314,8 +320,8 @@ function PeriodTimerWidget({
 export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProps) {
   const [data, setData] = useState(initialData);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastUpdatedAt, setLastUpdatedAt] = useState(() => new Date().toISOString());
-  const mountedRef = useRef(true);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
+  const mountedRef = useRef(false);
 
   const refreshDashboard = useCallback(
     async (showToast: boolean) => {
@@ -344,12 +350,11 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
 
   useEffect(() => {
     mountedRef.current = true;
-    const timer = window.setInterval(() => void refreshDashboard(false), 30_000);
+    setLastUpdatedAt(new Date().toISOString());
     return () => {
       mountedRef.current = false;
-      window.clearInterval(timer);
     };
-  }, [refreshDashboard]);
+  }, []);
 
   async function copyPhone(value: string | null) {
     if (!value) {
@@ -492,6 +497,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
   const newStudentsPreview = data.newStudents.slice(0, 5);
   const recentPointPreview = data.recentPoints.slice(0, 5);
   const recentPaymentPreview = data.paymentStats.recentPayments.slice(0, 5);
+  const lastUpdatedLabel = lastUpdatedAt ? formatUpdatedAt(lastUpdatedAt) : "방금";
 
   return (
     <div className="space-y-6">
@@ -504,7 +510,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
                 Admin Dashboard
               </p>
               <span className="text-xs text-slate-500">
-                마지막 업데이트: {formatUpdatedAt(lastUpdatedAt)}
+                마지막 업데이트: {lastUpdatedLabel}
               </span>
               {isRefreshing ? (
                 <span className="inline-flex items-center gap-1 text-xs text-slate-500">

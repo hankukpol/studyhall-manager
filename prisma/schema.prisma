@@ -133,6 +133,7 @@ model Student {
 
   @@unique([divisionId, studentNumber])
   @@index([divisionId])
+  @@index([divisionId, status])
   @@index([tuitionPlanId])
   @@map("students")
 }
@@ -176,7 +177,6 @@ model Attendance {
   @@unique([studentId, periodId, date])
   @@index([studentId, date])
   @@index([periodId, date])
-  @@index([date, studentId])
   @@map("attendance")
 }
 
@@ -229,7 +229,6 @@ model LeavePermission {
   approvedBy   Admin       @relation("LeaveApprovedBy", fields: [approvedById], references: [id], onDelete: Restrict)
 
   @@index([studentId, date])
-  @@index([date, studentId])
   @@index([approvedById])
   @@map("leave_permissions")
 }

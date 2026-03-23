@@ -162,6 +162,17 @@ function createDbDefaultSettingsCreateInput(divisionId: string, studyTracks?: un
   };
 }
 
+function createDefaultSettingsRecord(divisionId: string, studyTracks?: unknown) {
+  return serializeSettingsRecord({
+    divisionId,
+    ...DEFAULT_RULE_VALUES,
+    ...getDefaultWarningTemplates(),
+    operatingDays: normalizeOperatingDays(undefined),
+    studyTracks: normalizeStudyTracks(studyTracks),
+    updatedAt: new Date(),
+  });
+}
+
 function validateWarningThresholdOrder(
   input: Pick<RulesSettingsInput, "warnLevel1" | "warnLevel2" | "warnInterview" | "warnWithdraw">,
 ) {
@@ -269,15 +280,15 @@ async function ensureDbDivisionSettings(divisionSlug: string) {
     throw notFound(DIVISION_NOT_FOUND_ERROR);
   }
 
-  const settings = await prisma.divisionSettings.upsert({
+  const settings = await prisma.divisionSettings.findUnique({
     where: { divisionId: division.id },
-    update: {},
-    create: createDbDefaultSettingsCreateInput(division.id),
   });
 
   return {
     division,
-    settings: serializeSettingsRecord(settings),
+    settings: settings
+      ? serializeSettingsRecord(settings)
+      : createDefaultSettingsRecord(division.id),
   };
 }
 

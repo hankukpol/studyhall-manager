@@ -44,6 +44,7 @@ export default function SuperAdminLayout({ children }: SuperAdminLayoutProps) {
                 <Link
                   key={tab.href}
                   href={tab.href}
+                  prefetch={false}
                   className={`relative px-5 py-3 text-sm font-semibold transition ${
                     isActive
                       ? "text-blue-700 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-700 after:content-['']"

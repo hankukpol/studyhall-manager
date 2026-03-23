@@ -47,6 +47,15 @@ export type ManagedAdminAccount = {
   createdAt: string;
 };
 
+export type ManagedAdminAssignment = {
+  id: string;
+  role: "SUPER_ADMIN" | "ADMIN" | "ASSISTANT";
+  divisionId: string | null;
+  divisionSlug: string | null;
+  divisionName: string | null;
+  isActive: boolean;
+};
+
 async function getPrismaClient() {
   const { prisma } = await import("@/lib/prisma");
   return prisma;
@@ -402,6 +411,52 @@ export async function listManagedAdminAccounts() {
   })) satisfies ManagedAdminAccount[];
 }
 
+export async function listManagedAdminAssignments() {
+  if (isMockMode()) {
+    const state = await readMockState();
+    const divisionNameBySlug = new Map(
+      state.divisions.map((division) => [division.slug, division.name]),
+    );
+
+    return [...state.admins]
+      .sort((left, right) => left.createdAt.localeCompare(right.createdAt))
+      .map((admin) => ({
+        id: admin.id,
+        role: admin.role,
+        divisionId: admin.divisionId,
+        divisionSlug: admin.divisionSlug,
+        divisionName: admin.divisionSlug ? divisionNameBySlug.get(admin.divisionSlug) ?? null : null,
+        isActive: admin.isActive,
+      })) satisfies ManagedAdminAssignment[];
+  }
+
+  const prisma = await getPrismaClient();
+  const admins = await prisma.admin.findMany({
+    select: {
+      id: true,
+      role: true,
+      divisionId: true,
+      isActive: true,
+      division: {
+        select: {
+          name: true,
+          slug: true,
+        },
+      },
+    },
+    orderBy: [{ role: "asc" }, { createdAt: "asc" }],
+  });
+
+  return admins.map((admin) => ({
+    id: admin.id,
+    role: admin.role,
+    divisionId: admin.divisionId,
+    divisionSlug: admin.division?.slug ?? null,
+    divisionName: admin.division?.name ?? null,
+    isActive: admin.isActive,
+  })) satisfies ManagedAdminAssignment[];
+}
+
 export async function createManagedAdminAccount(input: AdminAccountCreateInput) {
   const divisionContext = await resolveDivisionForAdmin(input.divisionSlug ?? null, input.role);
 
@@ -585,4 +640,3 @@ export async function updateManagedAdminAccount(id: string, input: AdminAccountU
     createdAt: admin.createdAt.toISOString(),
   } satisfies ManagedAdminAccount;
 }
-

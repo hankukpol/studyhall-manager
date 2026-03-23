@@ -111,6 +111,7 @@ export function AdminSidebar({
                   <Link
                     key={href}
                     href={href}
+                    prefetch={false}
                     onClick={onNavigate}
                     className={`flex items-center gap-3 rounded-2xl px-3 py-3 text-sm transition ${
                       isActive

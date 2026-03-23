@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import NextLink from "next/link";
 import {
   AlertTriangle,
   ArrowRight,
@@ -12,7 +12,7 @@ import {
   UserCheck,
   Users,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ComponentProps } from "react";
 import {
   Bar,
   BarChart,
@@ -30,6 +30,10 @@ import type { DivisionOverviewSummary } from "@/lib/services/super-admin-overvie
 type SuperAdminOverviewProps = {
   initialDivisions: DivisionOverviewSummary[];
 };
+
+function Link({ prefetch = false, ...props }: ComponentProps<typeof NextLink>) {
+  return <NextLink {...props} prefetch={prefetch} />;
+}
 
 // ─── 원형 게이지 ──────────────────────────────────────────────────────────────
 
@@ -395,8 +399,9 @@ function AggCard({
 export function SuperAdminOverview({ initialDivisions }: SuperAdminOverviewProps) {
   const [divisions, setDivisions] = useState(initialDivisions);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastUpdatedAt, setLastUpdatedAt] = useState(() => new Date().toISOString());
-  const mountedRef = useRef(true);
+  const [isMounted, setIsMounted] = useState(false);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
+  const mountedRef = useRef(false);
 
   const refresh = useCallback(async (showToast = false) => {
     setIsRefreshing(true);
@@ -417,12 +422,12 @@ export function SuperAdminOverview({ initialDivisions }: SuperAdminOverviewProps
 
   useEffect(() => {
     mountedRef.current = true;
-    const interval = window.setInterval(() => void refresh(false), 30_000);
+    setIsMounted(true);
+    setLastUpdatedAt(new Date().toISOString());
     return () => {
       mountedRef.current = false;
-      window.clearInterval(interval);
     };
-  }, [refresh]);
+  }, []);
 
   const totalStudents = divisions.reduce((s, d) => s + d.studentCount, 0);
   const totalRisk = divisions.reduce((s, d) => s + d.riskStudentCount, 0);
@@ -430,11 +435,13 @@ export function SuperAdminOverview({ initialDivisions }: SuperAdminOverviewProps
   const totalExpiring = divisions.reduce((s, d) => s + d.expiringCount, 0);
   const activeCount = divisions.filter((d) => d.isActive).length;
 
-  const lastUpdatedLabel = new Intl.DateTimeFormat("ko-KR", {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-  }).format(new Date(lastUpdatedAt));
+  const lastUpdatedLabel = lastUpdatedAt
+    ? new Intl.DateTimeFormat("ko-KR", {
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+      }).format(new Date(lastUpdatedAt))
+    : "방금";
 
   return (
     <div className="space-y-6">
@@ -482,7 +489,7 @@ export function SuperAdminOverview({ initialDivisions }: SuperAdminOverviewProps
       </section>
 
       {/* 지점별 출석률 비교 차트 */}
-      <AttendanceComparisonChart divisions={divisions} />
+      {isMounted ? <AttendanceComparisonChart divisions={divisions} /> : null}
 
       {/* 지점 카드 2단 그리드 */}
       <section>

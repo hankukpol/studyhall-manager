@@ -326,56 +326,44 @@ async function getMockStudentsWithMetrics(divisionSlug: string) {
 
 async function getDbStudentsWithMetrics(divisionSlug: string) {
   const prisma = await getPrismaClient();
-  const [settings, students] = await Promise.all([
+  const division = await prisma.division.findUnique({
+    where: { slug: divisionSlug },
+    select: { id: true },
+  });
+  const divisionId = division?.id;
+
+  const [settings, students, pointAggregates] = await Promise.all([
     getDivisionSettings(divisionSlug),
     prisma.student.findMany({
-      where: {
-        division: { slug: divisionSlug },
-      },
+      where: { division: { slug: divisionSlug } },
       include: {
         seat: {
           select: {
             id: true,
             label: true,
-            studyRoom: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
+            studyRoom: { select: { id: true, name: true } },
           },
         },
-        tuitionPlan: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        tuitionPlan: { select: { id: true, name: true } },
       },
     }),
+    divisionId
+      ? prisma.pointRecord.groupBy({
+          by: ["studentId"],
+          where: { student: { divisionId } },
+          _sum: { points: true },
+        })
+      : Promise.resolve([] as { studentId: string; _sum: { points: number | null } }[]),
   ]);
 
-  const studentIds = students.map((student) => student.id);
-  const pointRecords =
-    studentIds.length > 0
-      ? await prisma.pointRecord.findMany({
-          where: {
-            studentId: {
-              in: studentIds,
-            },
-          },
-          select: {
-            studentId: true,
-            points: true,
-          },
-        })
-      : [];
+  const pointRecords = pointAggregates.map((a) => ({
+    studentId: a.studentId,
+    points: a._sum.points ?? 0,
+  }));
 
-  const pointTotals = new Map<string, number>();
-
-  for (const record of pointRecords) {
-    pointTotals.set(record.studentId, (pointTotals.get(record.studentId) ?? 0) + record.points);
-  }
+  const pointTotals = new Map<string, number>(
+    pointRecords.map((r) => [r.studentId, r.points]),
+  );
 
   return sortBySeatAndName(
     students.map((student) => {

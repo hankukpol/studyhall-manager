@@ -9,7 +9,7 @@ import {
 } from "@/lib/services/attendance-pattern.service";
 import { listExamSchedules, type ExamScheduleItem } from "@/lib/services/exam-schedule.service";
 import { listLeavePermissions } from "@/lib/services/leave.service";
-import { listInterviews } from "@/lib/services/interview.service";
+import { getPrismaClient } from "@/lib/service-helpers";
 
 export type AdminDashboardData = {
   division: {
@@ -340,7 +340,16 @@ export async function getAdminDashboardData(divisionSlug: string): Promise<Admin
   const snapshotDates = Array.from(new Set([today, yesterday, ...weekDates]));
   const firstDayOfMonth = today.slice(0, 7) + "-01";
 
-  const [division, settings, students, snapshots, recentPoints, thisMonthPayments, todayLeaves, allInterviews] = await Promise.all([
+  const thirtyDaysAgo = getKstDateFromString(today, -30);
+
+  const prismaClient = await getPrismaClient();
+  const divisionRow = await prismaClient.division.findUnique({
+    where: { slug: divisionSlug },
+    select: { id: true },
+  });
+  const divisionId = divisionRow?.id;
+
+  const results = await Promise.allSettled([
     getDivisionTheme(divisionSlug),
     getDivisionSettings(divisionSlug),
     listStudents(divisionSlug),
@@ -348,8 +357,34 @@ export async function getAdminDashboardData(divisionSlug: string): Promise<Admin
     listPointRecords(divisionSlug, { limit: 5 }),
     listPayments(divisionSlug, { dateFrom: firstDayOfMonth, dateTo: today }),
     listLeavePermissions(divisionSlug, { month: today.slice(0, 7) }),
-    listInterviews(divisionSlug),
+    divisionId
+      ? prismaClient.interview.groupBy({
+          by: ["studentId"],
+          where: {
+            student: { divisionId },
+            date: { gte: new Date(thirtyDaysAgo + "T00:00:00Z") },
+          },
+          _max: { date: true },
+        })
+      : Promise.resolve([]),
   ]);
+
+  const [division, settings, students, snapshots, recentPoints, thisMonthPayments, todayLeaves, interviewGroups] = results.map(
+    (r) => (r.status === "fulfilled" ? r.value : null),
+  ) as [
+    Awaited<ReturnType<typeof getDivisionTheme>>,
+    Awaited<ReturnType<typeof getDivisionSettings>>,
+    Awaited<ReturnType<typeof listStudents>>,
+    Awaited<ReturnType<typeof getAttendanceSnapshots>>,
+    Awaited<ReturnType<typeof listPointRecords>>,
+    Awaited<ReturnType<typeof listPayments>>,
+    Awaited<ReturnType<typeof listLeavePermissions>>,
+    { studentId: string; _max: { date: Date | null } }[],
+  ];
+
+  if (!division || !settings || !students || !snapshots) {
+    throw new Error("Failed to load required dashboard data");
+  }
   const snapshotMap = new Map(snapshots.map((snapshot) => [snapshot.date, snapshot]));
   const todaySnapshot = getSnapshotOrThrow(snapshotMap, today);
   const yesterdaySnapshot = getSnapshotOrThrow(snapshotMap, yesterday);
@@ -363,10 +398,12 @@ export async function getAdminDashboardData(divisionSlug: string): Promise<Admin
   const yesterdaySummary = buildRateSummary(yesterdaySnapshot, activeStudents.length);
   const periodRows = buildPeriodRows(todaySnapshot, activeStudents.length);
   const weeklyIssues = countWeeklyIssues(weeklySnapshots);
-  const [repeatedTardy, repeatedAbsent] = await Promise.all([
+  const [repeatedTardyResult, repeatedAbsentResult] = await Promise.allSettled([
     detectRepeatedTardy(divisionSlug),
     detectRepeatedAbsent(divisionSlug),
   ]);
+  const repeatedTardy = repeatedTardyResult.status === "fulfilled" ? repeatedTardyResult.value : [];
+  const repeatedAbsent = repeatedAbsentResult.status === "fulfilled" ? repeatedAbsentResult.value : [];
   const attentionStudentMap = new Map(
     [...repeatedAbsent, ...repeatedTardy].map((student) => [student.studentId, student]),
   );
@@ -466,13 +503,11 @@ export async function getAdminDashboardData(divisionSlug: string): Promise<Admin
     }));
 
   // ── 면담 필요 학생 (면담 기준 벌점 이상 + 30일 내 면담 없음) ─────────────
-  const thirtyDaysAgo = getKstDateFromString(today, -30);
-  const latestInterviewByStudent = new Map<string, string>();
-  for (const interview of allInterviews) {
-    if (!latestInterviewByStudent.has(interview.studentId)) {
-      latestInterviewByStudent.set(interview.studentId, interview.date);
-    }
-  }
+  const latestInterviewByStudent = new Map<string, string>(
+    (interviewGroups ?? [])
+      .filter((g) => g._max.date != null)
+      .map((g) => [g.studentId, g._max.date!.toISOString().slice(0, 10)]),
+  );
   const interviewNeededStudents = students
     .filter((s) => s.status === "ACTIVE" && s.netPoints >= settings.warnInterview)
     .filter((s) => {

@@ -18,7 +18,6 @@ import {
   type SessionAdminRole,
 } from "@/lib/session-tokens";
 import { findStudentSessionById } from "@/lib/services/student.service";
-import { createServerClient } from "@/lib/supabase/server";
 
 export type AdminSessionRole = SessionAdminRole;
 
@@ -59,20 +58,20 @@ export async function createStudentSessionToken(session: StudentSession) {
 }
 
 export async function getCurrentAdminSession(): Promise<AdminSession | null> {
+  const cookieStore = cookies();
+  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
+
+  if (!token) {
+    return null;
+  }
+
+  const adminSession = await verifyAdminSessionToken(token);
+
+  if (!adminSession) {
+    return null;
+  }
+
   if (isMockMode()) {
-    const cookieStore = cookies();
-    const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
-
-    if (!token) {
-      return null;
-    }
-
-    const adminSession = await verifyAdminSessionToken(token);
-
-    if (!adminSession) {
-      return null;
-    }
-
     const state = await import("@/lib/mock-store").then((module) => module.readMockState());
     const matchedAdmin = state.admins.find((admin) => {
       if (
@@ -101,19 +100,10 @@ export async function getCurrentAdminSession(): Promise<AdminSession | null> {
     };
   }
 
-  const supabase = createServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return null;
-  }
-
   const prisma = await getPrismaClient();
 
   const admin = await prisma.admin.findUnique({
-    where: { userId: user.id },
+    where: { id: adminSession.id },
     include: {
       division: {
         select: {
@@ -124,7 +114,7 @@ export async function getCurrentAdminSession(): Promise<AdminSession | null> {
     },
   });
 
-  if (!admin || !admin.isActive) {
+  if (!admin || !admin.isActive || admin.userId !== adminSession.userId) {
     return null;
   }
 

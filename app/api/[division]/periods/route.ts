@@ -24,7 +24,9 @@ export async function GET(
   }
 
   const periods = await getPeriods(params.division);
-  return NextResponse.json({ periods });
+  return NextResponse.json({ periods }, {
+    headers: { "Cache-Control": "private, max-age=300, stale-while-revalidate=60" },
+  });
 }
 
 export async function POST(
