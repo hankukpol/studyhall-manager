@@ -1,3 +1,4 @@
+import { revalidateTag, unstable_cache } from "next/cache";
 import { isMockMode } from "@/lib/mock-data";
 import { conflict, notFound } from "@/lib/errors";
 import {
@@ -120,7 +121,7 @@ async function ensureDefaultTuitionPlans(divisionId: string, divisionSlug: strin
   });
 }
 
-export async function listTuitionPlans(
+async function listTuitionPlansUncached(
   divisionSlug: string,
   options?: { activeOnly?: boolean },
 ) {
@@ -138,6 +139,31 @@ export async function listTuitionPlans(
   return plans
     .filter((plan) => !options?.activeOnly || plan.isActive)
     .map((plan) => serializePlan(plan));
+}
+
+function listTuitionPlansCached(
+  divisionSlug: string,
+  options?: { activeOnly?: boolean },
+) {
+  const activeOnlyKey = options?.activeOnly ? "active" : "all";
+
+  return unstable_cache(
+    async () => listTuitionPlansUncached(divisionSlug, options),
+    ["tuition-plans", divisionSlug, activeOnlyKey],
+    {
+      revalidate: 300,
+      tags: [`tuition-plans:${divisionSlug}`],
+    },
+  )();
+}
+
+export async function listTuitionPlans(
+  divisionSlug: string,
+  options?: { activeOnly?: boolean },
+) {
+  return isMockMode()
+    ? listTuitionPlansUncached(divisionSlug, options)
+    : listTuitionPlansCached(divisionSlug, options);
 }
 
 export async function getTuitionPlanById(divisionSlug: string, planId: string) {
@@ -217,6 +243,7 @@ export async function createTuitionPlan(divisionSlug: string, input: TuitionPlan
     },
   });
 
+  revalidateTag(`tuition-plans:${divisionSlug}`);
   return serializePlan(plan);
 }
 
@@ -310,6 +337,7 @@ export async function updateTuitionPlan(
     },
   });
 
+  revalidateTag(`tuition-plans:${divisionSlug}`);
   return serializePlan(plan);
 }
 
@@ -356,6 +384,6 @@ export async function deleteTuitionPlan(divisionSlug: string, planId: string) {
     },
   });
 
+  revalidateTag(`tuition-plans:${divisionSlug}`);
   return { id: planId };
 }
-

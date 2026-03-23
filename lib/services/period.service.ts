@@ -1,5 +1,6 @@
 ﻿import { cache } from "react";
 
+import { revalidateTag, unstable_cache } from "next/cache";
 import { readMockState, type MockPeriodRecord, updateMockState } from "@/lib/mock-store";
 import { getMockDivisionBySlug, isMockMode } from "@/lib/mock-data";
 
@@ -88,7 +89,7 @@ function timeToMinutes(value: string) {
   return hours * 60 + minutes;
 }
 
-export const getPeriods = cache(async function getPeriods(divisionSlug: string) {
+async function getPeriodsUncached(divisionSlug: string) {
   if (isMockMode()) {
     const state = await readMockState();
     return sortPeriods(state.periodsByDivision[divisionSlug] ?? []);
@@ -101,6 +102,21 @@ export const getPeriods = cache(async function getPeriods(divisionSlug: string) 
     where: { divisionId: division.id },
     orderBy: { displayOrder: "asc" },
   });
+}
+
+function getPeriodsCached(divisionSlug: string) {
+  return unstable_cache(
+    async () => getPeriodsUncached(divisionSlug),
+    ["periods", divisionSlug],
+    {
+      revalidate: 300,
+      tags: [`periods:${divisionSlug}`],
+    },
+  )();
+}
+
+export const getPeriods = cache(async function getPeriods(divisionSlug: string) {
+  return isMockMode() ? getPeriodsUncached(divisionSlug) : getPeriodsCached(divisionSlug);
 });
 
 export async function createPeriod(divisionSlug: string, input: PeriodInput) {
@@ -133,7 +149,7 @@ export async function createPeriod(divisionSlug: string, input: PeriodInput) {
   const division = await getDivisionOrThrow(divisionSlug);
   const count = await prisma.period.count({ where: { divisionId: division.id } });
 
-  return prisma.period.create({
+  const createdPeriod = await prisma.period.create({
     data: {
       divisionId: division.id,
       name: input.name,
@@ -145,6 +161,9 @@ export async function createPeriod(divisionSlug: string, input: PeriodInput) {
       isActive: input.isActive,
     },
   });
+
+  revalidateTag(`periods:${divisionSlug}`);
+  return createdPeriod;
 }
 
 export async function updatePeriod(
@@ -184,7 +203,9 @@ export async function updatePeriod(
   const division = await getDivisionOrThrow(divisionSlug);
 
   if (input.reorderIds?.length) {
-    return reorderDivisionPeriodsInDb(division.id, input.reorderIds);
+    const reorderedPeriods = await reorderDivisionPeriodsInDb(division.id, input.reorderIds);
+    revalidateTag(`periods:${divisionSlug}`);
+    return reorderedPeriods;
   }
 
   const period = await prisma.period.findFirst({
@@ -198,7 +219,7 @@ export async function updatePeriod(
     throw new Error("Period not found.");
   }
 
-  return prisma.period.update({
+  const updatedPeriod = await prisma.period.update({
     where: { id: periodId },
     data: {
       name: input.name ?? undefined,
@@ -214,6 +235,9 @@ export async function updatePeriod(
       isActive: input.isActive ?? undefined,
     },
   });
+
+  revalidateTag(`periods:${divisionSlug}`);
+  return updatedPeriod;
 }
 
 export async function deletePeriod(divisionSlug: string, periodId: string) {
@@ -251,10 +275,13 @@ export async function deletePeriod(divisionSlug: string, periodId: string) {
     select: { id: true },
   });
 
-  return reorderDivisionPeriodsInDb(
+  const reorderedPeriods = await reorderDivisionPeriodsInDb(
     division.id,
     remaining.map((item) => item.id),
   );
+
+  revalidateTag(`periods:${divisionSlug}`);
+  return reorderedPeriods;
 }
 
 export async function getCurrentPeriod(divisionSlug: string, now = new Date()) {
@@ -272,4 +299,3 @@ export async function getCurrentPeriod(divisionSlug: string, now = new Date()) {
     return currentMinutes >= start && currentMinutes <= end;
   }) ?? null;
 }
-

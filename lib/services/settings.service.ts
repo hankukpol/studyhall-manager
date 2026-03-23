@@ -1,3 +1,4 @@
+import { revalidateTag, unstable_cache } from "next/cache";
 import { cache } from "react";
 
 import { getMockDivisionBySlug, isMockMode } from "@/lib/mock-data";
@@ -294,7 +295,7 @@ async function ensureDbDivisionSettings(divisionSlug: string) {
   };
 }
 
-export const getDivisionSettings = cache(async function getDivisionSettings(divisionSlug: string): Promise<DivisionSettingsRecord> {
+async function getDivisionSettingsUncached(divisionSlug: string): Promise<DivisionSettingsRecord> {
   if (isMockMode()) {
     const { settings } = await ensureMockDivisionSettings(divisionSlug);
     return settings;
@@ -302,9 +303,28 @@ export const getDivisionSettings = cache(async function getDivisionSettings(divi
 
   const { settings } = await ensureDbDivisionSettings(divisionSlug);
   return settings;
+}
+
+function getDivisionSettingsCached(divisionSlug: string) {
+  return unstable_cache(
+    async () => getDivisionSettingsUncached(divisionSlug),
+    ["division-settings", divisionSlug],
+    {
+      revalidate: 300,
+      tags: [`division-settings:${divisionSlug}`],
+    },
+  )();
+}
+
+export const getDivisionSettings = cache(async function getDivisionSettings(
+  divisionSlug: string,
+): Promise<DivisionSettingsRecord> {
+  return isMockMode()
+    ? getDivisionSettingsUncached(divisionSlug)
+    : getDivisionSettingsCached(divisionSlug);
 });
 
-export const getDivisionTheme = cache(async function getDivisionTheme(divisionSlug: string) {
+async function getDivisionThemeUncached(divisionSlug: string) {
   if (isMockMode()) {
     const state = await readMockState();
     const division =
@@ -336,6 +356,23 @@ export const getDivisionTheme = cache(async function getDivisionTheme(divisionSl
   }
 
   return division;
+}
+
+function getDivisionThemeCached(divisionSlug: string) {
+  return unstable_cache(
+    async () => getDivisionThemeUncached(divisionSlug),
+    ["division-theme", divisionSlug],
+    {
+      revalidate: 300,
+      tags: [`division-theme:${divisionSlug}`],
+    },
+  )();
+}
+
+export const getDivisionTheme = cache(async function getDivisionTheme(divisionSlug: string) {
+  return isMockMode()
+    ? getDivisionThemeUncached(divisionSlug)
+    : getDivisionThemeCached(divisionSlug);
 });
 
 export async function getDivisionRuleSettings(
@@ -488,6 +525,7 @@ export async function updateDivisionRuleSettings(
     },
   });
 
+  revalidateTag(`division-settings:${divisionSlug}`);
   return getDivisionRuleSettings(divisionSlug);
 }
 
@@ -564,5 +602,7 @@ export async function updateDivisionGeneralSettings(
     }),
   ]);
 
+  revalidateTag(`division-settings:${divisionSlug}`);
+  revalidateTag(`division-theme:${divisionSlug}`);
   return getDivisionGeneralSettings(divisionSlug);
 }
