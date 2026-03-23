@@ -324,8 +324,8 @@ function AttendanceComparisonChart({ divisions }: { divisions: DivisionOverviewS
               tickLine={false}
             />
             <Tooltip
-              formatter={(value: number, _name: string, props: { payload?: { attended?: number; expected?: number } }) => [
-                `${value}% (${props.payload?.attended ?? 0}/${props.payload?.expected ?? 0}명)`,
+              formatter={(value, _name, props) => [
+                `${value}% (${(props as { payload?: { attended?: number; expected?: number } }).payload?.attended ?? 0}/${(props as { payload?: { attended?: number; expected?: number } }).payload?.expected ?? 0}명)`,
                 "출석률",
               ]}
               contentStyle={{ borderRadius: 8, fontSize: 13, border: "1px solid #e2e8f0" }}

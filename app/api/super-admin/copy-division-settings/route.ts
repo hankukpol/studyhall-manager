@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
             healthLimit: sourceSettings.healthLimit,
             holidayUnusedPts: sourceSettings.holidayUnusedPts,
             halfDayUnusedPts: sourceSettings.halfDayUnusedPts,
-            operatingDays: sourceSettings.operatingDays,
+            operatingDays: sourceSettings.operatingDays as never,
           },
           create: {
             divisionId: targetDivision.id,
@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
             healthLimit: sourceSettings.healthLimit,
             holidayUnusedPts: sourceSettings.holidayUnusedPts,
             halfDayUnusedPts: sourceSettings.halfDayUnusedPts,
-            operatingDays: sourceSettings.operatingDays,
+            operatingDays: sourceSettings.operatingDays as never,
           },
         });
       }

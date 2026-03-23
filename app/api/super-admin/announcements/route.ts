@@ -104,6 +104,7 @@ export async function POST(request: NextRequest) {
           isPinned,
           createdById: auth.session.id,
           createdAt: now,
+          updatedAt: now,
           publishedAt: publishedAt ?? null,
         });
         return state;
