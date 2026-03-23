@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { portalCardClass } from "@/components/student-view/StudentPortalUi";
+
 type StudentPortalTabsProps = {
   divisionSlug: string;
   current: "dashboard" | "attendance" | "points" | "exams";
@@ -17,25 +19,31 @@ export function StudentPortalTabs({
   current,
 }: StudentPortalTabsProps) {
   return (
-    <div className="flex flex-wrap gap-2">
-      {items.map((item) => {
-        const isActive = current === item.key;
-        const href = `/${divisionSlug}/student${item.href ? `/${item.href}` : ""}`;
+    <nav className={`${portalCardClass} overflow-hidden px-4`}>
+      <div className="flex gap-5 overflow-x-auto">
+        {items.map((item) => {
+          const isActive = current === item.key;
+          const href = `/${divisionSlug}/student${item.href ? `/${item.href}` : ""}`;
 
-        return (
-          <Link
-            key={item.key}
-            href={href}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-              isActive
-                ? "bg-slate-950 text-white shadow-[0_14px_30px_rgba(15,23,42,0.18)]"
-                : "border border-slate-200-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            {item.label}
-          </Link>
-        );
-      })}
-    </div>
+          return (
+            <Link
+              key={item.key}
+              href={href}
+              className={`relative shrink-0 whitespace-nowrap py-4 text-sm font-semibold transition ${
+                isActive ? "text-slate-950" : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              {item.label}
+              <span
+                className={`absolute inset-x-0 bottom-0 h-[3px] rounded-full transition ${
+                  isActive ? "opacity-100" : "opacity-0"
+                }`}
+                style={{ backgroundColor: "var(--division-color)" }}
+              />
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
   );
 }

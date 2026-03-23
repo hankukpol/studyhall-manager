@@ -8,7 +8,7 @@ import {
 export function StudentStatusBadge({ status }: { status: string }) {
   return (
     <span
-      className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${getStudentStatusClasses(status)}`}
+      className={`inline-flex items-center rounded-[10px] border px-2.5 py-1.5 text-xs font-semibold ${getStudentStatusClasses(status)}`}
     >
       {getStudentStatusLabel(status)}
     </span>
@@ -18,7 +18,7 @@ export function StudentStatusBadge({ status }: { status: string }) {
 export function WarningStageBadge({ stage }: { stage: string }) {
   return (
     <span
-      className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${getWarningStageClasses(stage)}`}
+      className={`inline-flex items-center rounded-[10px] border px-2.5 py-1.5 text-xs font-semibold ${getWarningStageClasses(stage)}`}
     >
       {getWarningStageLabel(stage)}
     </span>

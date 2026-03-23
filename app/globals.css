@@ -11,8 +11,19 @@
   --border: #e2e8f0;
   --card: #ffffff;
   --division-color: #1b4fbb;
+  --division-color-rgb: 27 79 187;
   --division-color-light: #ebf0fb;
   --division-color-dark: #0d2d6b;
+  --division-color-soft: #eef4ff;
+  --division-color-muted: #f8faff;
+  --division-color-strong: #183f92;
+  --division-hero-end: #2858c9;
+  --division-on-accent: #ffffff;
+  --division-on-accent-muted: rgb(255 255 255 / 0.72);
+  --division-accent-surface: rgb(255 255 255 / 0.12);
+  --division-accent-surface-soft: rgb(255 255 255 / 0.08);
+  --division-accent-border: rgb(255 255 255 / 0.18);
+  --division-accent-outline: rgb(255 255 255 / 0.1);
 }
 
 * {

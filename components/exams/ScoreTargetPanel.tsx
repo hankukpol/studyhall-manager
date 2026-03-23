@@ -4,6 +4,12 @@ import { LoaderCircle, Target, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import {
+  PortalEmptyState,
+  PortalSectionHeader,
+  portalInsetClass,
+  portalSectionClass,
+} from "@/components/student-view/StudentPortalUi";
 import type { ExamTypeItem } from "@/lib/services/exam.service";
 import type { ScoreTargetItem } from "@/lib/services/score-target.service";
 
@@ -25,14 +31,14 @@ function formatDate(value: string | null) {
 
 function getStatusTone(target: ScoreTargetItem) {
   if (target.isAchieved) {
-    return "border-slate-200 bg-white text-emerald-700";
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
   }
 
   if (target.latestScore === null) {
-    return "border-slate-200 bg-white text-slate-600";
+    return "border-slate-200 bg-slate-50 text-slate-600";
   }
 
-  return "border-slate-200 bg-white text-amber-700";
+  return "border-amber-200 bg-amber-50 text-amber-700";
 }
 
 export function ScoreTargetPanel({
@@ -84,7 +90,7 @@ export function ScoreTargetPanel({
 
     const parsedScore = Number(targetScore);
     if (!Number.isInteger(parsedScore) || parsedScore < 0) {
-      toast.error("목표 점수는 0 이상의 정수로 입력해 주세요.");
+      toast.error("목표 점수는 0 이상의 정수만 입력할 수 있습니다.");
       return;
     }
 
@@ -143,21 +149,23 @@ export function ScoreTargetPanel({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 text-slate-700">
-        <Target className="h-4 w-4" />
-        <h3 className="text-sm font-semibold">성적 목표</h3>
-      </div>
+    <section className={portalSectionClass}>
+      <PortalSectionHeader
+        eyebrow="Score Targets"
+        title="성적 목표"
+        description="시험 종류별로 목표 점수를 확인하고, 관리자 권한이 있을 때만 수정할 수 있습니다."
+        icon={<Target className="h-4 w-4" />}
+      />
 
       {canEdit ? (
-        <div className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+        <div className={`mt-5 ${portalInsetClass}`}>
           <div className="grid gap-3 md:grid-cols-[1.3fr_0.8fr]">
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-700">시험 종류</span>
+              <span className="mb-2 block text-sm font-semibold text-slate-700">시험 종류</span>
               <select
                 value={selectedExamTypeId}
                 onChange={(event) => setSelectedExamTypeId(event.target.value)}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none"
+                className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-[var(--division-color)]"
               >
                 {availableExamTypes.length > 0 ? (
                   availableExamTypes.map((examType) => (
@@ -173,26 +181,26 @@ export function ScoreTargetPanel({
             </label>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-700">목표 점수</span>
+              <span className="mb-2 block text-sm font-semibold text-slate-700">목표 점수</span>
               <input
                 type="number"
                 min={0}
                 step={1}
                 value={targetScore}
                 onChange={(event) => setTargetScore(event.target.value)}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none"
+                className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-[var(--division-color)]"
                 placeholder="예: 420"
               />
             </label>
           </div>
 
           <label className="mt-3 block">
-            <span className="mb-2 block text-sm font-medium text-slate-700">메모</span>
+            <span className="mb-2 block text-sm font-semibold text-slate-700">메모</span>
             <textarea
               value={note}
               onChange={(event) => setNote(event.target.value)}
-              className="min-h-[96px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none"
-              placeholder="예: 4월 말까지 주간 모의고사 420점 이상"
+              className="min-h-[96px] w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-[var(--division-color)]"
+              placeholder="예: 4월까지 주간 모의고사 420점 이상 유지"
             />
           </label>
 
@@ -204,9 +212,17 @@ export function ScoreTargetPanel({
               type="button"
               onClick={handleSave}
               disabled={isSaving || availableExamTypes.length === 0}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--division-color)] px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-[10px] px-4 py-2.5 text-sm font-semibold disabled:opacity-60"
+              style={{
+                backgroundColor: "var(--division-color)",
+                color: "var(--division-on-accent)",
+              }}
             >
-              {isSaving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Target className="h-4 w-4" />}
+              {isSaving ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : (
+                <Target className="h-4 w-4" />
+              )}
               목표 저장
             </button>
           </div>
@@ -214,40 +230,52 @@ export function ScoreTargetPanel({
       ) : null}
 
       {targets.length > 0 ? (
-        <div className="grid gap-3 xl:grid-cols-2">
+        <div className="mt-5 grid gap-3 xl:grid-cols-2">
           {targets.map((target) => (
-            <article key={target.id} className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+            <article key={target.id} className={portalInsetClass}>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
                     {target.studyTrack || "공통"}
                   </p>
-                  <h4 className="mt-2 text-xl font-bold text-slate-950">{target.examTypeName}</h4>
+                  <h4 className="mt-2 text-lg font-semibold tracking-[-0.03em] text-slate-950">
+                    {target.examTypeName}
+                  </h4>
                 </div>
 
                 <span
-                  className={`rounded-full border px-3 py-1 text-xs font-semibold ${getStatusTone(target)}`}
+                  className={`rounded-[10px] border px-3 py-1.5 text-xs font-semibold ${getStatusTone(target)}`}
                 >
                   {target.isAchieved
                     ? "달성"
                     : target.latestScore === null
                       ? "미응시"
-                      : `${target.gapToTarget ?? 0}점 남음`}
+                      : `${target.gapToTarget ?? 0}점 차이`}
                 </span>
               </div>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3">
-                  <p className="text-xs text-slate-500">목표 점수</p>
-                  <p className="mt-2 text-xl font-bold text-slate-950">{target.targetScore}</p>
+                <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    목표 점수
+                  </p>
+                  <p className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
+                    {target.targetScore}
+                  </p>
                 </div>
-                <div className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3">
-                  <p className="text-xs text-slate-500">최신 점수</p>
-                  <p className="mt-2 text-xl font-bold text-slate-950">{target.latestScore ?? "-"}</p>
+                <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    최신 점수
+                  </p>
+                  <p className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
+                    {target.latestScore ?? "-"}
+                  </p>
                 </div>
-                <div className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3">
-                  <p className="text-xs text-slate-500">최신 회차</p>
-                  <p className="mt-2 text-xl font-bold text-slate-950">
+                <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    최신 회차
+                  </p>
+                  <p className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
                     {target.latestExamRound ? `${target.latestExamRound}회차` : "-"}
                   </p>
                 </div>
@@ -266,7 +294,7 @@ export function ScoreTargetPanel({
                     type="button"
                     onClick={() => void handleDelete(target.id)}
                     disabled={deletingTargetId === target.id}
-                    className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-3 py-2 text-sm font-medium text-rose-700 disabled:opacity-60"
+                    className="inline-flex items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-rose-700 disabled:opacity-60"
                   >
                     {deletingTargetId === target.id ? (
                       <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -281,10 +309,13 @@ export function ScoreTargetPanel({
           ))}
         </div>
       ) : (
-        <div className="rounded-[22px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
-          등록된 성적 목표가 없습니다.
+        <div className="mt-5">
+          <PortalEmptyState
+            title="등록된 성적 목표가 없습니다."
+            description="시험별 목표 점수가 설정되면 최신 시험 결과와 함께 이 영역에 표시됩니다."
+          />
         </div>
       )}
-    </div>
+    </section>
   );
 }

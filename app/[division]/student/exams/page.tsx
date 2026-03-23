@@ -1,8 +1,16 @@
 import { notFound } from "next/navigation";
+import { ChartNoAxesColumn } from "lucide-react";
 
 import { ExamScoreChart } from "@/components/exams/ExamScoreChart";
 import { ScoreTargetPanel } from "@/components/exams/ScoreTargetPanel";
 import { StudentPortalFrame } from "@/components/student-view/StudentPortalFrame";
+import {
+  PortalEmptyState,
+  PortalMetricCard,
+  PortalSectionHeader,
+  portalInsetClass,
+  portalSectionClass,
+} from "@/components/student-view/StudentPortalUi";
 import { requireDivisionStudentAccess } from "@/lib/auth";
 import { isNotFoundError } from "@/lib/errors";
 import { listStudentExamResults } from "@/lib/services/exam.service";
@@ -41,28 +49,24 @@ export default async function StudentExamsPage({ params }: StudentExamsPageProps
         student={student}
         current="exams"
         title="성적 상세"
-        description="본인 모의고사 회차별 총점, 반 석차, 과목 점수를 확인합니다."
+        description="본인 모의고사 회차별 총점, 반 석차, 과목별 점수를 한 화면에서 확인할 수 있습니다."
       >
-        <section className="grid gap-4 md:grid-cols-3">
-          <article className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_18px_50px_rgba(18,32,56,0.08)]">
-            <p className="text-sm font-semibold text-slate-500">응시 회차</p>
-            <p className="mt-3 text-3xl font-extrabold text-slate-950">{exams.length}회</p>
-            <p className="mt-2 text-sm text-slate-600">현재 등록된 전체 시험 수</p>
-          </article>
-          <article className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_18px_50px_rgba(18,32,56,0.08)]">
-            <p className="text-sm font-semibold text-slate-500">최신 총점</p>
-            <p className="mt-3 text-3xl font-extrabold text-slate-950">
-              {exams[0]?.totalScore ?? "-"}
-            </p>
-            <p className="mt-2 text-sm text-slate-600">가장 최근 시험 기준</p>
-          </article>
-          <article className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_18px_50px_rgba(18,32,56,0.08)]">
-            <p className="text-sm font-semibold text-slate-500">최신 반 석차</p>
-            <p className="mt-3 text-3xl font-extrabold text-slate-950">
-              {exams[0]?.rankInClass ? `${exams[0].rankInClass}등` : "-"}
-            </p>
-            <p className="mt-2 text-sm text-slate-600">가장 최근 시험 기준</p>
-          </article>
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <PortalMetricCard
+            label="응시 회차"
+            value={`${exams.length}회`}
+            caption="현재 등록된 전체 시험 수"
+          />
+          <PortalMetricCard
+            label="최신 총점"
+            value={exams[0]?.totalScore ?? "-"}
+            caption="가장 최근 시험 기준"
+          />
+          <PortalMetricCard
+            label="최신 반 석차"
+            value={exams[0]?.rankInClass ? `${exams[0].rankInClass}등` : "-"}
+            caption="가장 최근 시험 기준"
+          />
         </section>
 
         <ScoreTargetPanel
@@ -73,65 +77,81 @@ export default async function StudentExamsPage({ params }: StudentExamsPageProps
 
         <ExamScoreChart results={exams} />
 
-        <section className="space-y-4">
+        <section className={portalSectionClass}>
+          <PortalSectionHeader
+            eyebrow="Exam Results"
+            title="회차별 성적 기록"
+            description="모바일에서는 카드 단위로 요약하고, 과목 점수는 2단 그리드로 읽기 쉽게 배치했습니다."
+            icon={<ChartNoAxesColumn className="h-4 w-4" />}
+          />
+
           {exams.length > 0 ? (
-            exams.map((exam) => (
-              <article
-                key={exam.id}
-                className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_18px_50px_rgba(18,32,56,0.08)] md:p-6"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-                      {exam.examTypeName}
-                    </p>
-                    <h2 className="mt-2 text-2xl font-bold text-slate-950">
-                      {exam.examRound}회차
-                    </h2>
-                    <p className="mt-2 text-sm text-slate-600">시험일 {formatDate(exam.examDate)}</p>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-4">
-                      <p className="text-sm text-slate-500">총점</p>
-                      <p className="mt-2 text-2xl font-bold text-slate-950">
-                        {exam.totalScore ?? "-"}
+            <div className="mt-5 space-y-4">
+              {exams.map((exam) => (
+                <article key={exam.id} className={portalInsetClass}>
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                        {exam.examTypeName}
+                      </p>
+                      <h3 className="mt-2 text-[28px] font-semibold tracking-[-0.05em] text-slate-950">
+                        {exam.examRound}회차
+                      </h3>
+                      <p className="mt-2 text-sm text-slate-600">
+                        시험일 {formatDate(exam.examDate)}
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-4">
-                      <p className="text-sm text-slate-500">반 석차</p>
-                      <p className="mt-2 text-2xl font-bold text-slate-950">
-                        {exam.rankInClass ? `${exam.rankInClass}등` : "-"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                  {exam.subjects.map((subject) => (
-                    <div
-                      key={`${exam.id}-${subject.subjectId}`}
-                      className="rounded-[22px] border border-slate-200-slate-200 bg-white px-4 py-4"
-                    >
-                      <p className="text-sm font-semibold text-slate-900">{subject.name}</p>
-                      <p className="mt-3 text-2xl font-bold text-slate-950">
-                        {subject.score ?? "-"}
-                      </p>
-                      <p className="mt-2 text-xs text-slate-500">
-                        {subject.maxScore ? `만점 ${subject.maxScore}` : "만점 미설정"}
-                      </p>
+                    <div className="grid w-full gap-3 sm:w-auto sm:min-w-[280px] sm:grid-cols-2">
+                      <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                          총점
+                        </p>
+                        <p className="mt-3 text-[28px] font-semibold tracking-[-0.05em] text-slate-950">
+                          {exam.totalScore ?? "-"}
+                        </p>
+                      </div>
+                      <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                          반 석차
+                        </p>
+                        <p className="mt-3 text-[28px] font-semibold tracking-[-0.05em] text-slate-950">
+                          {exam.rankInClass ? `${exam.rankInClass}등` : "-"}
+                        </p>
+                      </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
 
-                <p className="mt-5 text-sm leading-6 text-slate-600">
-                  {exam.notes || "등록된 시험 메모가 없습니다."}
-                </p>
-              </article>
-            ))
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    {exam.subjects.map((subject) => (
+                      <div
+                        key={`${exam.id}-${subject.subjectId}`}
+                        className="rounded-[10px] border border-slate-200 bg-white px-4 py-4"
+                      >
+                        <p className="text-sm font-semibold text-slate-900">{subject.name}</p>
+                        <p className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-slate-950">
+                          {subject.score ?? "-"}
+                        </p>
+                        <p className="mt-2 text-xs text-slate-500">
+                          {subject.maxScore ? `만점 ${subject.maxScore}` : "만점 정보 없음"}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="mt-5 text-sm leading-6 text-slate-600">
+                    {exam.notes || "시험 메모가 없습니다."}
+                  </p>
+                </article>
+              ))}
+            </div>
           ) : (
-            <section className="rounded-[28px] border border-slate-200-dashed border-slate-300 bg-white px-5 py-8 text-sm text-slate-600 shadow-[0_18px_50px_rgba(18,32,56,0.08)]">
-              아직 등록된 모의고사 기록이 없습니다.
-            </section>
+            <div className="mt-5">
+              <PortalEmptyState
+                title="시험 기록이 없습니다."
+                description="시험 결과가 등록되면 회차별 성적 카드가 이 영역에 표시됩니다."
+              />
+            </div>
           )}
         </section>
       </StudentPortalFrame>
