@@ -359,7 +359,7 @@ export async function getStudentDashboardData(
 
   const currentMonth = today.slice(0, 7);
 
-  const [student, periods, settings, division, recentPoints, latestExam, upcomingExamSchedule, monthlyStudyMinutes] = await Promise.all([
+  const [student, periods, settings, division, recentPoints, latestExam, upcomingExamSchedule, monthlyStudyMinutes, attendanceRecords, pinnedAnnouncements] = await Promise.all([
     getStudentDetail(divisionSlug, studentId),
     getPeriods(divisionSlug),
     getDivisionSettings(divisionSlug),
@@ -368,14 +368,10 @@ export async function getStudentDashboardData(
     getLatestExamSummaryForStudent(divisionSlug, studentId),
     getNextExamSchedule(divisionSlug),
     getStudentMonthlyStudyMinutes(divisionSlug, studentId, currentMonth),
+    getStudentAttendanceRecords(divisionSlug, studentId, monthStart, today),
+    getPinnedAnnouncements(divisionSlug),
   ]);
 
-  const attendanceRecords = await getStudentAttendanceRecords(
-    divisionSlug,
-    studentId,
-    monthStart,
-    today,
-  );
   const attendanceRecordMap = buildAttendanceRecordMap(attendanceRecords);
   const operatingDays = normalizeOperatingDays(settings.operatingDays);
   const activePeriods = periods.filter((period) => period.isActive);
@@ -396,8 +392,6 @@ export async function getStudentDashboardData(
     operatingDays,
     now,
   });
-
-  const pinnedAnnouncements = await getPinnedAnnouncements(divisionSlug);
 
   return {
     division: {

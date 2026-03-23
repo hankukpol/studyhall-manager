@@ -367,9 +367,10 @@ export async function getAdminDashboardData(divisionSlug: string): Promise<Admin
           _max: { date: true },
         })
       : Promise.resolve([]),
+    listExamSchedules(divisionSlug, { onlyActive: true }),
   ]);
 
-  const [division, settings, students, snapshots, recentPoints, thisMonthPayments, todayLeaves, interviewGroups] = results.map(
+  const [division, settings, students, snapshots, recentPoints, thisMonthPayments, todayLeaves, interviewGroups, examSchedules] = results.map(
     (r) => (r.status === "fulfilled" ? r.value : null),
   ) as [
     Awaited<ReturnType<typeof getDivisionTheme>>,
@@ -380,6 +381,7 @@ export async function getAdminDashboardData(divisionSlug: string): Promise<Admin
     Awaited<ReturnType<typeof listPayments>>,
     Awaited<ReturnType<typeof listLeavePermissions>>,
     { studentId: string; _max: { date: Date | null } }[],
+    Awaited<ReturnType<typeof listExamSchedules>>,
   ];
 
   if (!division || !settings || !students || !snapshots) {
@@ -569,7 +571,7 @@ export async function getAdminDashboardData(divisionSlug: string): Promise<Admin
     paymentStats,
     expiringStudents,
     newStudents,
-    upcomingExamSchedules: await listExamSchedules(divisionSlug, { onlyActive: true }),
+    upcomingExamSchedules: examSchedules ?? [],
     todayLeaveStudents,
     interviewNeededStudents,
   };

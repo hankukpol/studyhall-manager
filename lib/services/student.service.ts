@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { Prisma } from "@prisma/client/index";
 
 import { normalizeYmdDate, parseUtcDateFromYmd } from "@/lib/date-utils";
@@ -547,9 +549,9 @@ async function resolveDbTuitionPlan(
 }
 
 
-export async function listStudents(divisionSlug: string): Promise<StudentListItem[]> {
+export const listStudents = cache(async function listStudents(divisionSlug: string): Promise<StudentListItem[]> {
   return isMockMode() ? getMockStudentsWithMetrics(divisionSlug) : getDbStudentsWithMetrics(divisionSlug);
-}
+});
 
 export async function getDivisionStudents(divisionSlug: string): Promise<DivisionStudent[]> {
   const students = await listStudents(divisionSlug);
@@ -578,14 +580,14 @@ export async function getDivisionStudents(divisionSlug: string): Promise<Divisio
 }
 
 export async function getStudentDetail(divisionSlug: string, studentId: string) {
-  const students = await listStudents(divisionSlug);
-  const student = students.find((item) => item.id === studentId);
-
-  if (!student) {
-    throw notFound("학생 정보를 찾을 수 없습니다.");
-  }
-
   if (isMockMode()) {
+    const students = await listStudents(divisionSlug);
+    const student = students.find((item) => item.id === studentId);
+
+    if (!student) {
+      throw notFound("학생 정보를 찾을 수 없습니다.");
+    }
+
     const state = await readMockState();
     const raw = (state.studentsByDivision[divisionSlug] ?? []).find((item) => item.id === studentId);
 
@@ -602,23 +604,58 @@ export async function getStudentDetail(divisionSlug: string, studentId: string) 
   }
 
   const prisma = await getPrismaClient();
-  const raw = await prisma.student.findFirst({
-    where: {
-      id: studentId,
-      division: {
-        slug: divisionSlug,
+  const [settings, raw, pointAggregate] = await Promise.all([
+    getDivisionSettings(divisionSlug),
+    prisma.student.findFirst({
+      where: {
+        id: studentId,
+        division: {
+          slug: divisionSlug,
+        },
       },
-    },
-  });
+      include: {
+        seat: {
+          select: {
+            id: true,
+            label: true,
+            studyRoom: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        tuitionPlan: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    }),
+    prisma.pointRecord.aggregate({
+      where: {
+        studentId,
+        student: {
+          division: {
+            slug: divisionSlug,
+          },
+        },
+      },
+      _sum: {
+        points: true,
+      },
+    }),
+  ]);
 
   if (!raw) {
     throw new Error("학생 정보를 찾을 수 없습니다.");
   }
 
-  return {
-    ...student,
-    updatedAt: raw.updatedAt.toISOString(),
-  } satisfies StudentDetail;
+  const netPoints = toNetPoints(pointAggregate._sum.points ?? 0);
+
+  return serializeDbStudent(raw, netPoints, getWarningStage(netPoints, settings));
 }
 
 export async function createStudent(divisionSlug: string, input: StudentUpsertInput) {

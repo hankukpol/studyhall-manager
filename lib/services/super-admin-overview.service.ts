@@ -96,74 +96,52 @@ async function getMockDivisionOverviewMetrics(slug: string, today: string) {
 
 async function getDbDivisionOverviewMetrics(divisionId: string, today: string) {
   const prisma = await getPrismaClient();
-  const students = await prisma.student.findMany({
-    where: {
-      divisionId,
-      status: {
-        in: ["ACTIVE", "ON_LEAVE"],
+  const start = parseUtcDateFromYmd(today);
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 1);
+
+  // students와 periods는 서로 의존관계 없으므로 병렬 조회
+  const [students, periods] = await Promise.all([
+    prisma.student.findMany({
+      where: {
+        divisionId,
+        status: { in: ["ACTIVE", "ON_LEAVE"] },
       },
-    },
-    select: {
-      id: true,
-      status: true,
-      courseEndDate: true,
-    },
-  });
-  const studentIds = students.map((student) => student.id);
-  const [pointTotals, periods] = await Promise.all([
+      select: { id: true, status: true, courseEndDate: true },
+    }),
+    prisma.period.findMany({
+      where: { divisionId, isActive: true, isMandatory: true },
+      select: { id: true },
+    }),
+  ]);
+
+  const studentIds = students.map((s) => s.id);
+  const periodIds = periods.map((p) => p.id);
+
+  // pointTotals와 attendanceRecords 모두 studentIds/periodIds에 의존 → 병렬 조회
+  const [pointTotals, attendanceRecords] = await Promise.all([
     studentIds.length > 0
       ? prisma.pointRecord.groupBy({
           by: ["studentId"],
-          where: {
-            studentId: {
-              in: studentIds,
-            },
-          },
-          _sum: {
-            points: true,
-          },
+          where: { studentId: { in: studentIds } },
+          _sum: { points: true },
         })
       : Promise.resolve([]),
-    prisma.period.findMany({
-      where: {
-        divisionId,
-        isActive: true,
-        isMandatory: true,
-      },
-      select: {
-        id: true,
-      },
-    }),
+    studentIds.length > 0 && periodIds.length > 0
+      ? prisma.attendance.findMany({
+          where: {
+            date: { gte: start, lt: end },
+            studentId: { in: studentIds },
+            periodId: { in: periodIds },
+          },
+          select: { periodId: true, status: true },
+        })
+      : Promise.resolve([]),
   ]);
 
   const pointTotalByStudentId = new Map(
     pointTotals.map((record) => [record.studentId, toNetPoints(record._sum.points)]),
   );
-  const periodIds = periods.map((period) => period.id);
-  const start = parseUtcDateFromYmd(today);
-  const end = new Date(start);
-  end.setUTCDate(end.getUTCDate() + 1);
-  const attendanceRecords =
-    studentIds.length > 0 && periodIds.length > 0
-      ? await prisma.attendance.findMany({
-          where: {
-            date: {
-              gte: start,
-              lt: end,
-            },
-            studentId: {
-              in: studentIds,
-            },
-            periodId: {
-              in: periodIds,
-            },
-          },
-          select: {
-            periodId: true,
-            status: true,
-          },
-        })
-      : [];
 
   return {
     students: students.map((student) => ({

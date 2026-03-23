@@ -1,4 +1,6 @@
-﻿import { readMockState, type MockPeriodRecord, updateMockState } from "@/lib/mock-store";
+﻿import { cache } from "react";
+
+import { readMockState, type MockPeriodRecord, updateMockState } from "@/lib/mock-store";
 import { getMockDivisionBySlug, isMockMode } from "@/lib/mock-data";
 
 export type PeriodRecord = {
@@ -86,7 +88,7 @@ function timeToMinutes(value: string) {
   return hours * 60 + minutes;
 }
 
-export async function getPeriods(divisionSlug: string) {
+export const getPeriods = cache(async function getPeriods(divisionSlug: string) {
   if (isMockMode()) {
     const state = await readMockState();
     return sortPeriods(state.periodsByDivision[divisionSlug] ?? []);
@@ -99,7 +101,7 @@ export async function getPeriods(divisionSlug: string) {
     where: { divisionId: division.id },
     orderBy: { displayOrder: "asc" },
   });
-}
+});
 
 export async function createPeriod(divisionSlug: string, input: PeriodInput) {
   if (isMockMode()) {

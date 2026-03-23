@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { NextResponse } from "next/server";
@@ -57,7 +59,7 @@ export async function createStudentSessionToken(session: StudentSession) {
   return createStudentSessionTokenValue(session);
 }
 
-export async function getCurrentAdminSession(): Promise<AdminSession | null> {
+export const getCurrentAdminSession = cache(async function getCurrentAdminSession(): Promise<AdminSession | null> {
   const cookieStore = cookies();
   const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
 
@@ -126,7 +128,7 @@ export async function getCurrentAdminSession(): Promise<AdminSession | null> {
     divisionId: admin.divisionId,
     divisionSlug: admin.division?.slug ?? null,
   };
-}
+});
 
 export async function getCurrentStudentSession(
   requestedDivisionSlug?: string,

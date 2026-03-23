@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { getMockDivisionBySlug, isMockMode } from "@/lib/mock-data";
 import { notFound } from "@/lib/errors";
 import {
@@ -292,7 +294,7 @@ async function ensureDbDivisionSettings(divisionSlug: string) {
   };
 }
 
-export async function getDivisionSettings(divisionSlug: string): Promise<DivisionSettingsRecord> {
+export const getDivisionSettings = cache(async function getDivisionSettings(divisionSlug: string): Promise<DivisionSettingsRecord> {
   if (isMockMode()) {
     const { settings } = await ensureMockDivisionSettings(divisionSlug);
     return settings;
@@ -300,9 +302,9 @@ export async function getDivisionSettings(divisionSlug: string): Promise<Divisio
 
   const { settings } = await ensureDbDivisionSettings(divisionSlug);
   return settings;
-}
+});
 
-export async function getDivisionTheme(divisionSlug: string) {
+export const getDivisionTheme = cache(async function getDivisionTheme(divisionSlug: string) {
   if (isMockMode()) {
     const state = await readMockState();
     const division =
@@ -334,7 +336,7 @@ export async function getDivisionTheme(divisionSlug: string) {
   }
 
   return division;
-}
+});
 
 export async function getDivisionRuleSettings(
   divisionSlug: string,
