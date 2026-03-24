@@ -4,7 +4,6 @@ import { memo, useMemo } from "react";
 import { getSeatPositionKey } from "@/lib/seat-layout";
 import type { SeatMapSeat } from "@/lib/services/seat.service";
 import {
-  formatStudyTrackLabel,
   getStudyTrackBadgeClasses,
   getStudyTrackShortLabel,
 } from "@/lib/study-track-meta";
