@@ -126,21 +126,6 @@ function summarizeTracks(seats: SeatMapSeat[]) {
     .map(([track, count]) => ({ track, count }));
 }
 
-function getStudentStatusLabel(status: StudentListItem["status"]) {
-  switch (status) {
-    case "ACTIVE":
-      return "재원";
-    case "ON_LEAVE":
-      return "일시중단";
-    case "GRADUATED":
-      return "수료";
-    case "WITHDRAWN":
-      return "퇴실";
-    default:
-      return status;
-  }
-}
-
 export function SeatEditor({
   divisionSlug,
   initialRooms,
