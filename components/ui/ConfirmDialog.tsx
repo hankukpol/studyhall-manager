@@ -18,11 +18,11 @@ type ConfirmDialogProps = {
 
 const CONFIRM_BUTTON_CLASS: Record<NonNullable<ConfirmDialogProps["variant"]>, string> = {
   danger:
-    "inline-flex items-center gap-2 bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:opacity-60",
+    "inline-flex items-center gap-2 bg-[var(--division-color,#e11d48)] px-5 py-2.5 text-sm font-semibold text-white rounded-full transition hover:opacity-90 disabled:opacity-60",
   warning:
-    "inline-flex items-center gap-2 bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:opacity-60",
+    "inline-flex items-center gap-2 bg-[var(--division-color,#d97706)] px-5 py-2.5 text-sm font-semibold text-white rounded-full transition hover:opacity-90 disabled:opacity-60",
   default:
-    "inline-flex items-center gap-2 bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60",
+    "inline-flex items-center gap-2 bg-[var(--division-color,#0f172a)] px-5 py-2.5 text-sm font-semibold text-white rounded-full transition hover:opacity-90 disabled:opacity-60",
 };
 
 export function ConfirmDialog({
@@ -75,7 +75,7 @@ export function ConfirmDialog({
             role="dialog"
             aria-modal="true"
             aria-labelledby="confirm-dialog-title"
-            className="relative z-10 w-full max-w-sm border border-slate-200-slate-200 bg-white p-6"
+            className="relative z-10 w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-xl"
           >
             {/* 헤더 */}
             <div className="flex items-start justify-between gap-4">
@@ -88,7 +88,7 @@ export function ConfirmDialog({
               <button
                 type="button"
                 onClick={onCancel}
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center border border-slate-200-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-800"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-800"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -105,7 +105,7 @@ export function ConfirmDialog({
                 type="button"
                 onClick={onCancel}
                 disabled={isLoading}
-                className="inline-flex items-center gap-2 border border-slate-200-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
               >
                 {cancelLabel}
               </button>
