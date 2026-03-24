@@ -431,6 +431,16 @@ export async function deletePointRule(divisionSlug: string, ruleId: string) {
     throw notFound("상벌점 규칙을 찾을 수 없습니다.");
   }
 
+  // 이 규칙으로 부여된 상벌점 기록이 존재하면 삭제 차단 (기록에서 규칙 참조 유실 방지)
+  const recordCount = await prisma.pointRecord.count({
+    where: { ruleId },
+  });
+  if (recordCount > 0) {
+    throw new Error(
+      `이 규칙으로 부여된 상벌점 기록이 ${recordCount}건 존재합니다. 규칙을 삭제하면 기록의 사유가 유실됩니다. 대신 비활성화해 주세요.`,
+    );
+  }
+
   await prisma.pointRule.delete({
     where: {
       id: ruleId,

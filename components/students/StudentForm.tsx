@@ -572,7 +572,7 @@ export function StudentForm({
 
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-[20px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-4">
             <p className="text-sm text-slate-500">
-              ?섏씠吏 泥?吏꾩엯 ?띿룄瑜??꾪빐 醫뚯꽍 留? ?꾩뿉 ?꾨븘???붾윭?⑸땲?? ?꾪븘???좏깮?섎㈃ ?ㅽ떆 諛곗젙?덉쓣 ?뺤씤???덉뒿?덈떎.
+              아래 좌석 맵을 열면 자습실별 배치도를 한눈에 확인하고 빈 자리를 바로 선택할 수 있습니다. 원하는 좌석을 선택하면 즉시 배정 내용을 확인할 수 있습니다.
             </p>
             <button
               type="button"
@@ -580,7 +580,7 @@ export function StudentForm({
               className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
             >
               <MapPinned className="h-4 w-4" />
-              {isSeatBrowserOpen ? "醫뚯꽍 留? ?リ린" : "醫뚯꽍 留? ?닿린"}
+              {isSeatBrowserOpen ? "좌석 맵 닫기" : "좌석 맵 열기"}
             </button>
           </div>
 
@@ -655,14 +655,14 @@ export function StudentForm({
             <div className="rounded-[20px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-center text-sm text-slate-500">
               <span className="inline-flex items-center gap-2">
                 <LoaderCircle className="h-4 w-4 animate-spin" />
-                醫뚯꽍 ?꾪솴???鍮꾪븯?뒗 以묒엯?덈떎.
+                좌석 현황을 불러오는 중입니다.
               </span>
             </div>
           ) : null}
 
           {isSeatBrowserOpen && hasLoadedSeatBrowser && rooms.length === 0 ? (
             <div className="rounded-[20px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-center text-sm text-slate-500">
-              ?깅줉???먯뒿?ㅼ씠 ?놁뒿?덈떎.
+              등록된 자습실이 없습니다.
             </div>
           ) : null}
 

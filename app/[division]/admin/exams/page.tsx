@@ -1,4 +1,6 @@
 import { ExamScoreManager } from "@/components/exams/ExamScoreManager";
+import { MorningExamScoreManager } from "@/components/exams/MorningExamScoreManager";
+import { ExamTabLayout } from "@/components/exams/ExamTabLayout";
 import { listExamTypes } from "@/lib/services/exam.service";
 
 type AdminExamsPageProps = {
@@ -7,13 +9,14 @@ type AdminExamsPageProps = {
   };
 };
 
-
 export default async function AdminExamsPage({ params }: AdminExamsPageProps) {
   const examTypes = (await listExamTypes(params.division)).filter((examType) => examType.isActive);
+  const morningTypes = examTypes.filter((t) => t.category === "MORNING");
+  const regularTypes = examTypes.filter((t) => t.category === "REGULAR");
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[28px] border border-slate-200/80 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
           Exams
         </p>
@@ -21,12 +24,25 @@ export default async function AdminExamsPage({ params }: AdminExamsPageProps) {
           시험 성적 관리
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-          시험 템플릿과 회차를 선택하면 해당 지점, 해당 직렬 학생만 성적 시트에 표시됩니다.
-          과목별 점수 입력, 탭 구분 붙여넣기, 총점 및 석차 계산까지 한 화면에서 처리합니다.
+          아침모의고사는 매일 1과목씩, 정기모의고사는 전과목을 한번에 입력합니다.
+          엑셀 붙여넣기와 CSV 업로드/다운로드를 지원합니다.
         </p>
       </section>
 
-      <ExamScoreManager divisionSlug={params.division} initialExamTypes={examTypes} />
+      <ExamTabLayout
+        morningContent={
+          <MorningExamScoreManager
+            divisionSlug={params.division}
+            morningExamTypes={morningTypes}
+          />
+        }
+        regularContent={
+          <ExamScoreManager
+            divisionSlug={params.division}
+            initialExamTypes={regularTypes}
+          />
+        }
+      />
     </div>
   );
 }

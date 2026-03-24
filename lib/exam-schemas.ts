@@ -17,8 +17,12 @@ const examSubjectSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
+export const EXAM_CATEGORIES = ["MORNING", "REGULAR"] as const;
+export type ExamCategory = (typeof EXAM_CATEGORIES)[number];
+
 export const examTypeSchema = z.object({
   name: z.string().trim().min(1, "시험 종류명을 입력해주세요."),
+  category: z.enum(["MORNING", "REGULAR"]).default("REGULAR"),
   studyTrack: z.string().trim().nullable().optional(),
   isActive: z.boolean().optional(),
   subjects: z.array(examSubjectSchema).min(1, "과목을 하나 이상 추가해주세요."),

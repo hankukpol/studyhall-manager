@@ -65,6 +65,23 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
+// 프로덕션 DB 보호: supabase.co 등 원격 DB URL 감지 시 차단
+const dbUrl = process.env.DATABASE_URL;
+const productionPatterns = ["supabase.co", "neon.tech", "planetscale.com", "amazonaws.com", "azure.com"];
+const isProductionDb = productionPatterns.some((pattern) => dbUrl.includes(pattern));
+
+if (isProductionDb) {
+  console.error("[reset-all-data] 프로덕션 데이터베이스가 감지되었습니다.");
+  console.error(`  DATABASE_URL: ${dbUrl.slice(0, 40)}...`);
+  console.error("  프로덕션 DB 초기화는 차단됩니다. 로컬 DB에서만 실행하세요.");
+
+  if (!process.argv.includes("--i-know-what-i-am-doing")) {
+    process.exit(1);
+  }
+
+  console.warn("[reset-all-data] --i-know-what-i-am-doing 플래그가 감지되었습니다. 프로덕션 보호를 우회합니다.");
+}
+
 const { PrismaClient } = await import("@prisma/client/index.js");
 
 const prisma = new PrismaClient();

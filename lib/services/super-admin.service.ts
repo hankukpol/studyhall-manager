@@ -347,6 +347,17 @@ export async function deleteManagedDivision(slug: string): Promise<ManagedDivisi
     throw new Error("지점 정보를 찾을 수 없습니다.");
   }
 
+  // 학생 데이터가 존재하면 삭제 차단 (CASCADE로 모든 성적·출결·상벌점 유실 방지)
+  const studentCount = await prisma.student.count({
+    where: { divisionId: division.id },
+  });
+
+  if (studentCount > 0) {
+    throw new Error(
+      `이 지점에 학생 ${studentCount}명의 데이터가 존재합니다. 지점을 삭제하면 모든 학생·출결·성적·상벌점 데이터가 영구 삭제됩니다. 먼저 모든 학생을 퇴실 처리하거나 다른 지점으로 이동해주세요.`,
+    );
+  }
+
   await prisma.$transaction([
     prisma.admin.updateMany({
       where: {

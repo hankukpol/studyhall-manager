@@ -1,6 +1,6 @@
 import { isMockMode } from "@/lib/mock-data";
 import { readMockState } from "@/lib/mock-store";
-import { listPinnedAnnouncements } from "@/lib/services/announcement.service";
+import { listAnnouncements, type AnnouncementItem } from "@/lib/services/announcement.service";
 import { getNextExamSchedule, type ExamScheduleItem } from "@/lib/services/exam-schedule.service";
 import { getLatestExamSummaryForStudent } from "@/lib/services/exam.service";
 import { type PointRecordItem, listPointRecords } from "@/lib/services/point.service";
@@ -72,13 +72,8 @@ export type StudentDashboardData = {
     notes: string | null;
   } | null;
   upcomingExamSchedule: ExamScheduleItem | null;
-  pinnedAnnouncements: Array<{
-    id: string;
-    title: string;
-    content: string;
-    createdAt: string;
-    divisionName: string | null;
-  }>;
+  pinnedAnnouncements: AnnouncementItem[];
+  recentAnnouncements: AnnouncementItem[];
 };
 
 type StudentAttendanceRecord = {
@@ -342,12 +337,6 @@ async function getStudentAttendanceRecords(
   })) satisfies StudentAttendanceRecord[];
 }
 
-async function getPinnedAnnouncements(
-  divisionSlug: string,
-): Promise<StudentDashboardData["pinnedAnnouncements"]> {
-  return listPinnedAnnouncements(divisionSlug);
-}
-
 export async function getStudentDashboardData(
   divisionSlug: string,
   studentId: string,
@@ -359,7 +348,7 @@ export async function getStudentDashboardData(
 
   const currentMonth = today.slice(0, 7);
 
-  const [student, periods, settings, division, recentPoints, latestExam, upcomingExamSchedule, monthlyStudyMinutes, attendanceRecords, pinnedAnnouncements] = await Promise.all([
+  const [student, periods, settings, division, recentPoints, latestExam, upcomingExamSchedule, monthlyStudyMinutes, attendanceRecords, announcements] = await Promise.all([
     getStudentDetail(divisionSlug, studentId),
     getPeriods(divisionSlug),
     getDivisionSettings(divisionSlug),
@@ -369,7 +358,7 @@ export async function getStudentDashboardData(
     getNextExamSchedule(divisionSlug),
     getStudentMonthlyStudyMinutes(divisionSlug, studentId, currentMonth),
     getStudentAttendanceRecords(divisionSlug, studentId, monthStart, today),
-    getPinnedAnnouncements(divisionSlug),
+    listAnnouncements(divisionSlug),
   ]);
 
   const attendanceRecordMap = buildAttendanceRecordMap(attendanceRecords);
@@ -456,6 +445,7 @@ export async function getStudentDashboardData(
     recentPoints,
     latestExam,
     upcomingExamSchedule,
-    pinnedAnnouncements,
+    pinnedAnnouncements: announcements.filter((announcement) => announcement.isPinned),
+    recentAnnouncements: announcements.slice(0, 4),
   };
 }

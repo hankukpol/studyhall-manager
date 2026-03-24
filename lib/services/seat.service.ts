@@ -887,38 +887,25 @@ export async function deleteStudyRoom(divisionSlug: string, roomId: string) {
     throw new Error("자습실은 1개 이상 유지해야 합니다.");
   }
 
+  // 이 자습실 좌석에 배정된 학생이 있으면 삭제 차단
+  const assignedStudentCount = await prisma.student.count({
+    where: {
+      seat: { studyRoomId: roomId },
+    },
+  });
+  if (assignedStudentCount > 0) {
+    throw new Error(
+      `이 자습실에 배정된 학생이 ${assignedStudentCount}명 있습니다. 먼저 학생들의 좌석을 해제하거나 다른 자습실로 이동한 후 삭제해주세요.`,
+    );
+  }
+
   await prisma.$transaction(async (tx) => {
-    const seats = await tx.seat.findMany({
+    await tx.seat.deleteMany({
       where: {
         divisionId: division.id,
         studyRoomId: roomId,
       },
-      select: {
-        id: true,
-      },
     });
-    const seatIds = seats.map((seat) => seat.id);
-
-    if (seatIds.length > 0) {
-      await tx.student.updateMany({
-        where: {
-          seatId: {
-            in: seatIds,
-          },
-        },
-        data: {
-          seatId: null,
-        },
-      });
-
-      await tx.seat.deleteMany({
-        where: {
-          id: {
-            in: seatIds,
-          },
-        },
-      });
-    }
 
     await tx.studyRoom.delete({
       where: {
@@ -1016,16 +1003,15 @@ export async function saveSeatLayout(
 
   await prisma.$transaction(async (tx) => {
     if (removedIds.length > 0) {
-      await tx.student.updateMany({
-        where: {
-          seatId: {
-            in: removedIds,
-          },
-        },
-        data: {
-          seatId: null,
-        },
+      // 학생이 배정된 좌석은 삭제 차단
+      const assignedCount = await tx.student.count({
+        where: { seatId: { in: removedIds } },
       });
+      if (assignedCount > 0) {
+        throw new Error(
+          `삭제하려는 좌석 중 ${assignedCount}개에 학생이 배정되어 있습니다. 먼저 학생의 좌석을 해제한 후 다시 시도해주세요.`,
+        );
+      }
 
       await tx.seat.deleteMany({
         where: {

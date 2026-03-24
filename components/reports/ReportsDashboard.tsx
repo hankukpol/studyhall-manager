@@ -172,10 +172,7 @@ export function ReportsDashboard({
       <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-              Phase 6-B
-            </p>
-            <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-950">
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-950">
               통계 / 보고서
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">

@@ -151,21 +151,20 @@ export function ScoreTargetPanel({
   return (
     <section className={portalSectionClass}>
       <PortalSectionHeader
-        eyebrow="Score Targets"
         title="성적 목표"
         description="시험 종류별로 목표 점수를 확인하고, 관리자 권한이 있을 때만 수정할 수 있습니다."
-        icon={<Target className="h-4 w-4" />}
+        icon={<Target className="h-5 w-5" />}
       />
 
       {canEdit ? (
         <div className={`mt-5 ${portalInsetClass}`}>
           <div className="grid gap-3 md:grid-cols-[1.3fr_0.8fr]">
             <label className="block">
-              <span className="mb-2 block text-sm font-semibold text-slate-700">시험 종류</span>
+              <span className="mb-2 block text-[13px] font-semibold text-[var(--foreground)]">시험 종류</span>
               <select
                 value={selectedExamTypeId}
                 onChange={(event) => setSelectedExamTypeId(event.target.value)}
-                className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-[var(--division-color)]"
+                className="w-full rounded-[12px] border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--division-color)]"
               >
                 {availableExamTypes.length > 0 ? (
                   availableExamTypes.map((examType) => (
@@ -181,31 +180,31 @@ export function ScoreTargetPanel({
             </label>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-semibold text-slate-700">목표 점수</span>
+              <span className="mb-2 block text-[13px] font-semibold text-[var(--foreground)]">목표 점수</span>
               <input
                 type="number"
                 min={0}
                 step={1}
                 value={targetScore}
                 onChange={(event) => setTargetScore(event.target.value)}
-                className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-[var(--division-color)]"
+                className="w-full rounded-[12px] border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--division-color)]"
                 placeholder="예: 420"
               />
             </label>
           </div>
 
           <label className="mt-3 block">
-            <span className="mb-2 block text-sm font-semibold text-slate-700">메모</span>
+            <span className="mb-2 block text-[13px] font-semibold text-[var(--foreground)]">메모</span>
             <textarea
               value={note}
               onChange={(event) => setNote(event.target.value)}
-              className="min-h-[96px] w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-[var(--division-color)]"
+              className="min-h-[96px] w-full rounded-[12px] border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--division-color)]"
               placeholder="예: 4월까지 주간 모의고사 420점 이상 유지"
             />
           </label>
 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-slate-500">
+            <p className="text-[12px] text-[var(--muted)]">
               같은 시험 종류를 다시 저장하면 기존 목표가 최신 값으로 갱신됩니다.
             </p>
             <button
@@ -230,21 +229,21 @@ export function ScoreTargetPanel({
       ) : null}
 
       {targets.length > 0 ? (
-        <div className="mt-5 grid gap-3 xl:grid-cols-2">
+        <div className="mt-5 grid gap-3 lg:grid-cols-2">
           {targets.map((target) => (
             <article key={target.id} className={portalInsetClass}>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  <p className="text-[12px] font-medium text-[var(--muted)]">
                     {target.studyTrack || "공통"}
                   </p>
-                  <h4 className="mt-2 text-lg font-semibold tracking-[-0.03em] text-slate-950">
+                  <h4 className="mt-1.5 text-[17px] font-bold text-[var(--foreground)]">
                     {target.examTypeName}
                   </h4>
                 </div>
 
                 <span
-                  className={`rounded-[10px] border px-3 py-1.5 text-xs font-semibold ${getStatusTone(target)}`}
+                  className={`rounded-[12px] border px-3 py-1.5 text-[12px] font-medium ${getStatusTone(target)}`}
                 >
                   {target.isAchieved
                     ? "달성"
@@ -254,34 +253,34 @@ export function ScoreTargetPanel({
                 </span>
               </div>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              <div className="mt-4 grid grid-cols-3 gap-3">
+                <div className="rounded-[12px] border border-[var(--border)] bg-white px-4 py-3">
+                  <p className="text-[12px] font-medium text-[var(--muted)]">
                     목표 점수
                   </p>
-                  <p className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
+                  <p className="mt-1.5 text-[20px] font-bold tracking-tight text-[var(--foreground)]">
                     {target.targetScore}
                   </p>
                 </div>
-                <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                <div className="rounded-[12px] border border-[var(--border)] bg-white px-4 py-3">
+                  <p className="text-[12px] font-medium text-[var(--muted)]">
                     최신 점수
                   </p>
-                  <p className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
+                  <p className="mt-1.5 text-[20px] font-bold tracking-tight text-[var(--foreground)]">
                     {target.latestScore ?? "-"}
                   </p>
                 </div>
-                <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                <div className="rounded-[12px] border border-[var(--border)] bg-white px-4 py-3">
+                  <p className="text-[12px] font-medium text-[var(--muted)]">
                     최신 회차
                   </p>
-                  <p className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">
+                  <p className="mt-1.5 text-[20px] font-bold tracking-tight text-[var(--foreground)]">
                     {target.latestExamRound ? `${target.latestExamRound}회차` : "-"}
                   </p>
                 </div>
               </div>
 
-              <p className="mt-4 text-sm text-slate-600">
+              <p className="mt-4 text-[13px] text-[var(--muted)]">
                 최근 시험일 {formatDate(target.latestExamDate)}
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-600">

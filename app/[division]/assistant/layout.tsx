@@ -19,21 +19,23 @@ export default async function AssistantLayout({ children, params }: AssistantLay
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#eef3f8_100%)] text-slate-900">
-      <header className="sticky top-0 z-40 border-b border-black/5 bg-[#eef3f8] px-4 py-4">
-        <div className="mx-auto max-w-3xl">
-          <div className="flex items-center justify-between gap-3 rounded-[28px] border border-black/5 bg-white px-4 py-4">
-            <div>
+      <header className="sticky top-0 z-40 border-b border-black/5 bg-[rgb(238_243_248/0.9)] backdrop-blur">
+        <div className="mx-auto max-w-4xl px-4 py-3">
+          <div className="flex items-center justify-between gap-3 rounded-[22px] border border-black/5 bg-white px-4 py-3">
+            <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--division-color)]">
                 Assistant Mode
               </p>
-              <h1 className="mt-1 text-lg font-bold text-slate-950">{division?.name ?? params.division}</h1>
-              <p className="text-sm text-slate-500">{session.name}</p>
+              <h1 className="mt-1 truncate text-base font-bold text-slate-950">
+                {division?.name ?? params.division}
+              </h1>
+              <p className="text-xs text-slate-500">{session.name}</p>
             </div>
 
-            <form action="/api/auth/logout" method="post">
+            <form action="/api/auth/logout" method="post" className="shrink-0">
               <button
                 type="submit"
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 로그아웃
               </button>
@@ -42,7 +44,7 @@ export default async function AssistantLayout({ children, params }: AssistantLay
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 pb-28 pt-5">{children}</main>
+      <main className="mx-auto max-w-4xl px-4 pb-24 pt-4">{children}</main>
 
       <AssistantBottomNav divisionSlug={params.division} />
     </div>

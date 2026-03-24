@@ -4,10 +4,10 @@
 
 
 :root {
-  --background: #f4f6f9;
-  --foreground: #111827;
-  --muted: #64748b;
-  --border: #e2e8f0;
+  --background: #F7F7F5;
+  --foreground: #191F28;
+  --muted: #6B7684;
+  --border: #EBEBEB;
   --card: #ffffff;
   --division-color: #1b4fbb;
   --division-color-rgb: 27 79 187;
@@ -19,21 +19,14 @@
   --division-hero-end: #2858c9;
   --division-on-accent: #ffffff;
   --division-on-accent-muted: rgb(255 255 255 / 0.72);
-  --division-accent-surface: rgb(255 255 255 / 0.12);
+  --division-accent-surface: rgb(255 255 255 / 0.15);
   --division-accent-surface-soft: rgb(255 255 255 / 0.08);
-  --division-accent-border: rgb(255 255 255 / 0.18);
-  --division-accent-outline: rgb(255 255 255 / 0.1);
+  --division-accent-border: rgb(255 255 255 / 0.2);
+  --division-accent-outline: rgb(255 255 255 / 0.12);
 }
 
 * {
   box-sizing: border-box;
-  box-shadow: none !important;
-}
-
-/* 예외적으로 카드 UI들(기존에 20px 이상 라운드였던 요소 및 article, 모달 등)에만 10px 허용 */
-article, aside, [role="dialog"], 
-.rounded-\[20px\], .rounded-\[22px\], .rounded-\[24px\], .rounded-\[26px\], .rounded-\[28px\], .rounded-\[30px\], .rounded-2xl, .rounded-3xl {
-  border-radius: 10px !important;
 }
 
 html {

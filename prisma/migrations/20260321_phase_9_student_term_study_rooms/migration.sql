@@ -1,4 +1,4 @@
-CREATE TABLE "tuition_plans" (
+CREATE TABLE IF NOT EXISTS "tuition_plans" (
   "id" TEXT NOT NULL,
   "division_id" TEXT NOT NULL,
   "name" TEXT NOT NULL,
@@ -13,18 +13,27 @@ CREATE TABLE "tuition_plans" (
   CONSTRAINT "tuition_plans_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX "tuition_plans_division_id_name_key"
+CREATE UNIQUE INDEX IF NOT EXISTS "tuition_plans_division_id_name_key"
 ON "tuition_plans"("division_id", "name");
 
-CREATE INDEX "tuition_plans_division_id_idx"
+CREATE INDEX IF NOT EXISTS "tuition_plans_division_id_idx"
 ON "tuition_plans"("division_id");
 
-ALTER TABLE "tuition_plans"
-ADD CONSTRAINT "tuition_plans_division_id_fkey"
-FOREIGN KEY ("division_id") REFERENCES "divisions"("id")
-ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'tuition_plans_division_id_fkey'
+  ) THEN
+    ALTER TABLE "tuition_plans"
+    ADD CONSTRAINT "tuition_plans_division_id_fkey"
+    FOREIGN KEY ("division_id") REFERENCES "divisions"("id")
+    ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
-CREATE TABLE "study_rooms" (
+CREATE TABLE IF NOT EXISTS "study_rooms" (
   "id" TEXT NOT NULL,
   "division_id" TEXT NOT NULL,
   "name" TEXT NOT NULL,
@@ -39,16 +48,25 @@ CREATE TABLE "study_rooms" (
   CONSTRAINT "study_rooms_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX "study_rooms_division_id_name_key"
+CREATE UNIQUE INDEX IF NOT EXISTS "study_rooms_division_id_name_key"
 ON "study_rooms"("division_id", "name");
 
-CREATE INDEX "study_rooms_division_id_idx"
+CREATE INDEX IF NOT EXISTS "study_rooms_division_id_idx"
 ON "study_rooms"("division_id");
 
-ALTER TABLE "study_rooms"
-ADD CONSTRAINT "study_rooms_division_id_fkey"
-FOREIGN KEY ("division_id") REFERENCES "divisions"("id")
-ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'study_rooms_division_id_fkey'
+  ) THEN
+    ALTER TABLE "study_rooms"
+    ADD CONSTRAINT "study_rooms_division_id_fkey"
+    FOREIGN KEY ("division_id") REFERENCES "divisions"("id")
+    ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
 INSERT INTO "study_rooms" (
   "id",
@@ -73,40 +91,68 @@ SELECT
   0,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
-FROM "divisions";
+FROM "divisions"
+ON CONFLICT ("division_id", "name") DO NOTHING;
 
 ALTER TABLE "students"
-ADD COLUMN "course_start_date" DATE,
-ADD COLUMN "course_end_date" DATE,
-ADD COLUMN "tuition_plan_id" TEXT,
-ADD COLUMN "tuition_amount" INTEGER;
+ADD COLUMN IF NOT EXISTS "course_start_date" DATE,
+ADD COLUMN IF NOT EXISTS "course_end_date" DATE,
+ADD COLUMN IF NOT EXISTS "tuition_plan_id" TEXT,
+ADD COLUMN IF NOT EXISTS "tuition_amount" INTEGER;
 
-CREATE INDEX "students_tuition_plan_id_idx"
+CREATE INDEX IF NOT EXISTS "students_tuition_plan_id_idx"
 ON "students"("tuition_plan_id");
 
-ALTER TABLE "students"
-ADD CONSTRAINT "students_tuition_plan_id_fkey"
-FOREIGN KEY ("tuition_plan_id") REFERENCES "tuition_plans"("id")
-ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'students_tuition_plan_id_fkey'
+  ) THEN
+    ALTER TABLE "students"
+    ADD CONSTRAINT "students_tuition_plan_id_fkey"
+    FOREIGN KEY ("tuition_plan_id") REFERENCES "tuition_plans"("id")
+    ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END $$;
 
 ALTER TABLE "seats"
-ADD COLUMN "study_room_id" TEXT,
-ADD COLUMN "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ADD COLUMN IF NOT EXISTS "study_room_id" TEXT,
+ADD COLUMN IF NOT EXISTS "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
 UPDATE "seats"
 SET "study_room_id" = 'room-default-' || "division_id"
 WHERE "study_room_id" IS NULL;
 
-ALTER TABLE "seats"
-ALTER COLUMN "study_room_id" SET NOT NULL;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM "seats"
+    WHERE "study_room_id" IS NULL
+  ) THEN
+    ALTER TABLE "seats"
+    ALTER COLUMN "study_room_id" SET NOT NULL;
+  END IF;
+END $$;
 
-CREATE INDEX "seats_study_room_id_idx"
+CREATE INDEX IF NOT EXISTS "seats_study_room_id_idx"
 ON "seats"("study_room_id");
 
-CREATE UNIQUE INDEX "seats_study_room_id_position_x_position_y_key"
+CREATE UNIQUE INDEX IF NOT EXISTS "seats_study_room_id_position_x_position_y_key"
 ON "seats"("study_room_id", "position_x", "position_y");
 
-ALTER TABLE "seats"
-ADD CONSTRAINT "seats_study_room_id_fkey"
-FOREIGN KEY ("study_room_id") REFERENCES "study_rooms"("id")
-ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'seats_study_room_id_fkey'
+  ) THEN
+    ALTER TABLE "seats"
+    ADD CONSTRAINT "seats_study_room_id_fkey"
+    FOREIGN KEY ("study_room_id") REFERENCES "study_rooms"("id")
+    ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;

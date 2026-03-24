@@ -719,7 +719,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+      <div className="grid gap-6 xl:grid-cols-2">
         {/* 교시별 출결 현황 */}
         <section className="flex h-full flex-col rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
           <div className="flex items-center justify-between">

@@ -30,8 +30,7 @@ export default async function HomePage() {
                 </h1>
                 <p className="max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
                   직렬별 출석, 상벌점, 성적, 수납 흐름을 분리 관리하는 운영 플랫폼입니다.
-                  현재는 문서 기준으로 Phase 순서대로 개발 중이며, 아래 카드에서 직렬
-                  흐름과 관리자 영역을 확인할 수 있습니다.
+                  아래 카드에서 직렬별 관리 영역으로 이동할 수 있습니다.
                 </p>
               </div>
 
@@ -48,12 +47,8 @@ export default async function HomePage() {
             </div>
 
             <div className="rounded-[28px] border border-slate-200-slate-200 bg-slate-950 p-6 text-white">
-              <p className="text-sm uppercase tracking-[0.24em] text-white/55">Current Scope</p>
+              <p className="text-sm uppercase tracking-[0.24em] text-white/55">시스템 개요</p>
               <div className="mt-5 space-y-4">
-                <div className="rounded-2xl border border-slate-200-white/10 bg-white/5 p-4">
-                  <p className="text-sm text-white/70">진행 기준</p>
-                  <p className="mt-2 text-lg font-bold">Phase 1 기반 설정</p>
-                </div>
                 <div className="rounded-2xl border border-slate-200-white/10 bg-white/5 p-4">
                   <p className="text-sm text-white/70">핵심 원칙</p>
                   <p className="mt-2 text-lg font-bold">직렬 완전 분리 · 설정 하드코딩 금지</p>

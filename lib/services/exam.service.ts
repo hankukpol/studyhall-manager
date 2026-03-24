@@ -33,6 +33,7 @@ export type ExamTypeItem = {
   id: string;
   divisionId: string;
   name: string;
+  category: "MORNING" | "REGULAR";
   studyTrack: string | null;
   isActive: boolean;
   displayOrder: number;
@@ -152,6 +153,7 @@ function toExamTypeItem(examType: {
   id: string;
   divisionId: string;
   name: string;
+  category?: "MORNING" | "REGULAR" | string;
   studyTrack?: string | null;
   isActive: boolean;
   displayOrder: number;
@@ -171,6 +173,7 @@ function toExamTypeItem(examType: {
     id: examType.id,
     divisionId: examType.divisionId,
     name: examType.name,
+    category: (examType.category === "MORNING" ? "MORNING" : "REGULAR") as "MORNING" | "REGULAR",
     studyTrack: examType.studyTrack ?? null,
     isActive: examType.isActive,
     displayOrder: examType.displayOrder,
@@ -367,6 +370,7 @@ export async function createExamType(divisionSlug: string, input: ExamTypeSchema
         id: examTypeId,
         divisionId: division.id,
         name,
+        category: input.category === "MORNING" ? "MORNING" : "REGULAR",
         studyTrack,
         isActive: input.isActive ?? true,
         displayOrder: current.length,
@@ -395,6 +399,7 @@ export async function createExamType(divisionSlug: string, input: ExamTypeSchema
     data: {
       divisionId: division.id,
       name,
+      category: input.category === "MORNING" ? "MORNING" : "REGULAR",
       studyTrack,
       isActive: input.isActive ?? true,
       displayOrder: count,
@@ -563,10 +568,18 @@ export async function deleteExamType(divisionSlug: string, examTypeId: string) {
         throw new Error("시험 종류를 찾을 수 없습니다.");
       }
 
-      state.examTypesByDivision[divisionSlug] = current.filter((examType) => examType.id !== examTypeId);
-      state.examScoresByDivision[divisionSlug] = (state.examScoresByDivision[divisionSlug] ?? []).filter(
-        (score) => score.examTypeId !== examTypeId,
+      // 성적 데이터가 존재하면 삭제 차단
+      const hasRegularScores = (state.examScoresByDivision[divisionSlug] ?? []).some(
+        (score) => score.examTypeId === examTypeId,
       );
+      const hasMorningScores = (state.morningExamScoresByDivision[divisionSlug] ?? []).some(
+        (score) => score.examTypeId === examTypeId,
+      );
+      if (hasRegularScores || hasMorningScores) {
+        throw new Error("해당 시험 종류에 성적 데이터가 존재하여 삭제할 수 없습니다. 먼저 성적 데이터를 삭제해주세요.");
+      }
+
+      state.examTypesByDivision[divisionSlug] = current.filter((examType) => examType.id !== examTypeId);
     });
     return true;
   }
@@ -586,6 +599,16 @@ export async function deleteExamType(divisionSlug: string, examTypeId: string) {
 
   if (!examType) {
     throw new Error("시험 종류를 찾을 수 없습니다.");
+  }
+
+  // 성적 데이터가 존재하면 삭제 차단
+  const [regularScoreCount, morningScoreCount] = await Promise.all([
+    prisma.examScore.count({ where: { examTypeId } }),
+    prisma.morningExamScore.count({ where: { examTypeId } }),
+  ]);
+
+  if (regularScoreCount > 0 || morningScoreCount > 0) {
+    throw new Error("해당 시험 종류에 성적 데이터가 존재하여 삭제할 수 없습니다. 먼저 성적 데이터를 삭제해주세요.");
   }
 
   await prisma.examType.delete({

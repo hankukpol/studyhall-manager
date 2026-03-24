@@ -12,7 +12,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Modal } from "@/components/ui/Modal";
@@ -46,6 +46,15 @@ function toFormState(scope: AnnouncementScope): FormState {
 
 function formatDateTime(value: string) {
   return new Date(value).toLocaleString("ko-KR");
+}
+
+function formatBoardDate(value: string) {
+  return new Date(value).toLocaleString("ko-KR", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function formatDateTimeLocal(value: string | null) {
@@ -84,12 +93,29 @@ function getVisibilityLabel(announcement: AnnouncementItem) {
   return "공개 중";
 }
 
+function getAnnouncementDate(announcement: AnnouncementItem) {
+  return announcement.publishedAt ?? announcement.createdAt;
+}
+
+function getPreviewText(content: string, maxLength = 72) {
+  const normalized = content.replace(/\s+/g, " ").trim();
+
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, maxLength)}...`;
+}
+
 export function AnnouncementManager({
   divisionSlug,
   initialAnnouncements,
   canManageGlobal,
 }: AnnouncementManagerProps) {
   const [announcements, setAnnouncements] = useState(initialAnnouncements);
+  const [selectedAnnouncementId, setSelectedAnnouncementId] = useState<string | null>(
+    initialAnnouncements[0]?.id ?? null,
+  );
   const [editingAnnouncementId, setEditingAnnouncementId] = useState<string | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [filterScope, setFilterScope] = useState<"ALL" | AnnouncementScope>("ALL");
@@ -140,6 +166,21 @@ export function AnnouncementManager({
     (announcement) => !announcement.isPublished && announcement.publishedAt,
   ).length;
   const publishedCount = announcements.filter((announcement) => announcement.isPublished).length;
+  const selectedAnnouncement =
+    visibleAnnouncements.find((announcement) => announcement.id === selectedAnnouncementId) ?? null;
+
+  useEffect(() => {
+    if (visibleAnnouncements.length === 0) {
+      if (selectedAnnouncementId !== null) {
+        setSelectedAnnouncementId(null);
+      }
+      return;
+    }
+
+    if (!visibleAnnouncements.some((announcement) => announcement.id === selectedAnnouncementId)) {
+      setSelectedAnnouncementId(visibleAnnouncements[0].id);
+    }
+  }, [selectedAnnouncementId, visibleAnnouncements]);
 
   function canEditAnnouncement(announcement: AnnouncementItem) {
     return announcement.scope === "DIVISION" || canManageGlobal;
@@ -161,6 +202,7 @@ export function AnnouncementManager({
   }
 
   function startEdit(announcement: AnnouncementItem) {
+    setSelectedAnnouncementId(announcement.id);
     setEditingAnnouncementId(announcement.id);
     setForm({
       title: announcement.title,
@@ -399,80 +441,213 @@ export function AnnouncementManager({
             </div>
           </div>
 
-          <div className="mt-6 space-y-3">
-            {visibleAnnouncements.length > 0 ? (
-              visibleAnnouncements.map((announcement) => (
-                <article
-                  key={announcement.id}
-                  className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex rounded-full border border-slate-200-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
-                        {getScopeLabel(announcement.scope, announcement.divisionName)}
-                      </span>
-                      <span className="inline-flex rounded-full border border-slate-200-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
-                        {getVisibilityLabel(announcement)}
-                      </span>
-                      {announcement.isPinned ? (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-slate-200-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-amber-700">
-                          <Pin className="h-3 w-3" />
-                          상단 고정
-                        </span>
-                      ) : null}
-                      {!announcement.isPublished && announcement.publishedAt ? (
-                        <span className="inline-flex rounded-full border border-slate-200-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-sky-700">
-                          예약 {formatDateTime(announcement.publishedAt)}
-                        </span>
-                      ) : null}
-                    </div>
+          <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
+            <section className="overflow-hidden rounded-[26px] border border-slate-200 bg-white">
+              {visibleAnnouncements.length > 0 ? (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-[920px] w-full text-sm">
+                      <thead className="bg-[#f8fafc] text-left text-slate-500">
+                        <tr>
+                          <th className="px-4 py-3 font-medium">번호</th>
+                          <th className="px-4 py-3 font-medium">제목</th>
+                          <th className="px-4 py-3 font-medium">구분</th>
+                          <th className="px-4 py-3 font-medium">상태</th>
+                          <th className="px-4 py-3 font-medium">노출 시각</th>
+                          <th className="px-4 py-3 font-medium">작성자</th>
+                          <th className="px-4 py-3 font-medium">관리</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 bg-white">
+                        {visibleAnnouncements.map((announcement, index) => {
+                          const isSelected = selectedAnnouncement?.id === announcement.id;
 
-                    {canEditAnnouncement(announcement) ? (
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => startEdit(announcement)}
-                          className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-3 py-2 text-sm text-slate-700 transition hover:bg-white"
-                        >
-                          <Pencil className="h-4 w-4" />
-                          수정
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => void handleDelete(announcement)}
-                          disabled={deletingId === announcement.id}
-                          className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-3 py-2 text-sm text-rose-700 transition hover:bg-white disabled:opacity-60"
-                        >
-                          {deletingId === announcement.id ? (
-                            <LoaderCircle className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
-                          삭제
-                        </button>
-                      </div>
+                          return (
+                            <tr
+                              key={announcement.id}
+                              onClick={() => setSelectedAnnouncementId(announcement.id)}
+                              className={`cursor-pointer transition ${
+                                isSelected ? "bg-slate-50" : "hover:bg-slate-50/80"
+                              }`}
+                            >
+                              <td className="px-4 py-4 align-top text-slate-400">
+                                {visibleAnnouncements.length - index}
+                              </td>
+                              <td className="px-4 py-4 align-top">
+                                <div className="max-w-[360px]">
+                                  <p className="font-semibold text-slate-950">
+                                    {announcement.title}
+                                  </p>
+                                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                                    {getPreviewText(announcement.content)}
+                                  </p>
+                                </div>
+                              </td>
+                              <td className="px-4 py-4 align-top">
+                                <span className="inline-flex rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
+                                  {getScopeLabel(announcement.scope, announcement.divisionName)}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4 align-top">
+                                <div className="flex flex-wrap gap-2">
+                                  <span className="inline-flex rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
+                                    {getVisibilityLabel(announcement)}
+                                  </span>
+                                  {announcement.isPinned ? (
+                                    <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
+                                      <Pin className="h-3 w-3" />
+                                      상단 고정
+                                    </span>
+                                  ) : null}
+                                </div>
+                              </td>
+                              <td className="px-4 py-4 align-top text-slate-500">
+                                {formatBoardDate(getAnnouncementDate(announcement))}
+                              </td>
+                              <td className="px-4 py-4 align-top text-slate-500">
+                                {announcement.createdByName}
+                              </td>
+                              <td className="px-4 py-4 align-top">
+                                {canEditAnnouncement(announcement) ? (
+                                  <div className="flex gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        startEdit(announcement);
+                                      }}
+                                      className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-white"
+                                    >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                      수정
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        void handleDelete(announcement);
+                                      }}
+                                      disabled={deletingId === announcement.id}
+                                      className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-white disabled:opacity-60"
+                                    >
+                                      {deletingId === announcement.id ? (
+                                        <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                                      ) : (
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      )}
+                                      삭제
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-slate-400">보기 전용</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="border-t border-slate-200 px-4 py-3 text-xs text-slate-500">
+                    목록 행을 클릭하면 우측 상세 패널에서 본문을 확인할 수 있습니다.
+                  </div>
+                </>
+              ) : (
+                <div className="px-4 py-8 text-sm text-slate-600">
+                  <div className="rounded-[24px] border border-dashed border-slate-300 bg-white px-4 py-8">
+                    조건에 맞는 공지가 없습니다.
+                  </div>
+                </div>
+              )}
+            </section>
+
+            <aside className="rounded-[26px] border border-slate-200 bg-white p-5">
+              {selectedAnnouncement ? (
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="inline-flex rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
+                      {getScopeLabel(selectedAnnouncement.scope, selectedAnnouncement.divisionName)}
+                    </span>
+                    <span className="inline-flex rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
+                      {getVisibilityLabel(selectedAnnouncement)}
+                    </span>
+                    {selectedAnnouncement.isPinned ? (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
+                        <Pin className="h-3 w-3" />
+                        상단 고정
+                      </span>
                     ) : null}
                   </div>
 
-                  <h3 className="mt-3 text-xl font-bold text-slate-950">{announcement.title}</h3>
-                  <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">
-                    {announcement.content}
-                  </p>
+                  <h3 className="mt-4 text-2xl font-bold tracking-tight text-slate-950">
+                    {selectedAnnouncement.title}
+                  </h3>
 
-                  <div className="mt-3 text-xs text-slate-500">
-                    작성 {formatDateTime(announcement.createdAt)} · 수정{" "}
-                    {formatDateTime(announcement.updatedAt)}
-                    {announcement.publishedAt
-                      ? ` · 발행 ${formatDateTime(announcement.publishedAt)}`
-                      : ""}
+                  <div className="mt-4 rounded-[22px] border border-slate-200 bg-[#f8fafc] px-4 py-4">
+                    <p className="whitespace-pre-line text-sm leading-7 text-slate-700">
+                      {selectedAnnouncement.content}
+                    </p>
                   </div>
-                </article>
-              ))
-            ) : (
-              <div className="rounded-[24px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-8 text-sm text-slate-600">
-                조건에 맞는 공지가 없습니다.
-              </div>
-            )}
+
+                  <div className="mt-4 grid gap-3">
+                    <div className="rounded-[20px] border border-slate-200 bg-white px-4 py-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                        노출 시각
+                      </p>
+                      <p className="mt-2 text-sm font-semibold text-slate-950">
+                        {formatDateTime(getAnnouncementDate(selectedAnnouncement))}
+                      </p>
+                    </div>
+
+                    <div className="rounded-[20px] border border-slate-200 bg-white px-4 py-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                        작성 및 수정
+                      </p>
+                      <p className="mt-2 text-sm font-semibold text-slate-950">
+                        작성 {formatDateTime(selectedAnnouncement.createdAt)}
+                      </p>
+                      <p className="mt-1 text-sm text-slate-600">
+                        수정 {formatDateTime(selectedAnnouncement.updatedAt)}
+                      </p>
+                      <p className="mt-1 text-sm text-slate-600">
+                        작성자 {selectedAnnouncement.createdByName}
+                      </p>
+                    </div>
+                  </div>
+
+                  {canEditAnnouncement(selectedAnnouncement) ? (
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => startEdit(selectedAnnouncement)}
+                        className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                      >
+                        <Pencil className="h-4 w-4" />
+                        선택 공지 수정
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleDelete(selectedAnnouncement)}
+                        disabled={deletingId === selectedAnnouncement.id}
+                        className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2.5 text-sm font-medium text-rose-700 transition hover:bg-slate-50 disabled:opacity-60"
+                      >
+                        {deletingId === selectedAnnouncement.id ? (
+                          <LoaderCircle className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                        선택 공지 삭제
+                      </button>
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <div className="rounded-[24px] border border-dashed border-slate-300 bg-white px-4 py-8 text-sm text-slate-600">
+                  목록에서 공지를 선택하면 상세 내용이 여기 표시됩니다.
+                </div>
+              )}
+            </aside>
           </div>
         </section>
       </div>

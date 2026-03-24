@@ -131,7 +131,7 @@ export const LeaveManager = memo(function LeaveManager({
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error ?? "?몄텧/?닿? ?댁뿭??遺덈윭?ㅼ? 紐삵뻽?듬땲??");
+      throw new Error(data.error ?? "외출/휴가 내역을 불러오지 못했습니다.");
     }
 
     return data.permissions as LeavePermissionItem[];

@@ -1,4 +1,4 @@
-CREATE TABLE "payment_categories" (
+CREATE TABLE IF NOT EXISTS "payment_categories" (
   "id" TEXT NOT NULL,
   "division_id" TEXT NOT NULL,
   "name" TEXT NOT NULL,
@@ -10,23 +10,41 @@ CREATE TABLE "payment_categories" (
   CONSTRAINT "payment_categories_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX "payment_categories_division_id_name_key"
+CREATE UNIQUE INDEX IF NOT EXISTS "payment_categories_division_id_name_key"
 ON "payment_categories"("division_id", "name");
 
-CREATE INDEX "payment_categories_division_id_idx"
+CREATE INDEX IF NOT EXISTS "payment_categories_division_id_idx"
 ON "payment_categories"("division_id");
 
-ALTER TABLE "payment_categories"
-ADD CONSTRAINT "payment_categories_division_id_fkey"
-FOREIGN KEY ("division_id") REFERENCES "divisions"("id")
-ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'payment_categories_division_id_fkey'
+  ) THEN
+    ALTER TABLE "payment_categories"
+    ADD CONSTRAINT "payment_categories_division_id_fkey"
+    FOREIGN KEY ("division_id") REFERENCES "divisions"("id")
+    ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
-INSERT INTO "payment_categories" ("id", "division_id", "name", "display_order")
+INSERT INTO "payment_categories" (
+  "id",
+  "division_id",
+  "name",
+  "display_order",
+  "created_at",
+  "updated_at"
+)
 SELECT
   'paycat_' || substr(md5(d.id || ':' || t.code), 1, 24),
   d.id,
   t.name,
-  t.display_order
+  t.display_order,
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
 FROM "divisions" d
 CROSS JOIN (
   VALUES
@@ -37,32 +55,70 @@ CROSS JOIN (
 ON CONFLICT ("division_id", "name") DO NOTHING;
 
 ALTER TABLE "payments"
-ADD COLUMN "payment_type_id" TEXT;
+ADD COLUMN IF NOT EXISTS "payment_type_id" TEXT;
 
-UPDATE "payments" p
-SET "payment_type_id" = pc."id"
-FROM "students" s
-JOIN "payment_categories" pc
-  ON pc."division_id" = s."division_id"
- AND pc."name" = CASE p."type"
-   WHEN 'ENROLLMENT'::"PaymentType" THEN '등록비'
-   WHEN 'MONTHLY'::"PaymentType" THEN '월납부'
-   WHEN 'REFUND'::"PaymentType" THEN '환불'
- END
-WHERE p."student_id" = s."id";
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'payments'
+      AND column_name = 'type'
+  ) THEN
+    EXECUTE $sql$
+      UPDATE "payments" p
+      SET "payment_type_id" = pc."id"
+      FROM "students" s
+      JOIN "payment_categories" pc
+        ON pc."division_id" = s."division_id"
+       AND pc."name" = CASE p."type"
+         WHEN 'ENROLLMENT'::"PaymentType" THEN '등록비'
+         WHEN 'MONTHLY'::"PaymentType" THEN '월납부'
+         WHEN 'REFUND'::"PaymentType" THEN '환불'
+       END
+      WHERE p."student_id" = s."id"
+        AND p."payment_type_id" IS NULL
+    $sql$;
+  END IF;
+END $$;
 
-ALTER TABLE "payments"
-ALTER COLUMN "payment_type_id" SET NOT NULL;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'payments'
+      AND column_name = 'payment_type_id'
+  ) AND NOT EXISTS (
+    SELECT 1
+    FROM "payments"
+    WHERE "payment_type_id" IS NULL
+  ) THEN
+    ALTER TABLE "payments"
+    ALTER COLUMN "payment_type_id" SET NOT NULL;
+  END IF;
+END $$;
 
-CREATE INDEX "payments_payment_type_id_idx"
+CREATE INDEX IF NOT EXISTS "payments_payment_type_id_idx"
 ON "payments"("payment_type_id");
 
-ALTER TABLE "payments"
-ADD CONSTRAINT "payments_payment_type_id_fkey"
-FOREIGN KEY ("payment_type_id") REFERENCES "payment_categories"("id")
-ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'payments_payment_type_id_fkey'
+  ) THEN
+    ALTER TABLE "payments"
+    ADD CONSTRAINT "payments_payment_type_id_fkey"
+    FOREIGN KEY ("payment_type_id") REFERENCES "payment_categories"("id")
+    ON DELETE RESTRICT ON UPDATE CASCADE;
+  END IF;
+END $$;
 
 ALTER TABLE "payments"
-DROP COLUMN "type";
+DROP COLUMN IF EXISTS "type";
 
-DROP TYPE "PaymentType";
+DROP TYPE IF EXISTS "PaymentType";

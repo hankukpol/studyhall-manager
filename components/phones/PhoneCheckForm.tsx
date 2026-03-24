@@ -3,11 +3,12 @@
 import dynamic from "next/dynamic";
 
 import { RefreshCcw, Save } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import type { PhoneCheckStatus, PhoneDaySnapshot } from "@/lib/services/phone-submission.service";
 import type { SeatLayout, StudyRoomItem } from "@/lib/services/seat.service";
+import { UnsavedChangesGuard } from "@/components/ui/UnsavedChangesGuard";
 
 const PhoneCheckSeatMap = dynamic(
   () => import("@/components/phones/PhoneCheckSeatMap").then((mod) => mod.PhoneCheckSeatMap),
@@ -77,6 +78,11 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
   );
   const [isLoading, setIsLoading] = useState(false);
   const [savingPeriodId, setSavingPeriodId] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
+
+  const markDirty = useCallback(() => {
+    setIsDirty(true);
+  }, []);
 
   const periods = snapshot.periods;
   const students = snapshot.students;
@@ -99,6 +105,7 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
       const { snapshot: newSnapshot } = (await res.json()) as { snapshot: PhoneDaySnapshot };
       setSnapshot(newSnapshot);
       setPeriodsState(buildInitialState(newSnapshot));
+      setIsDirty(false);
       if (
         newSnapshot.periods.length > 0 &&
         !newSnapshot.periods.find((p) => p.periodId === activePeriodId)
@@ -120,6 +127,7 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
   }
 
   function setStudentStatus(periodId: string, studentId: string, status: LocalStatus) {
+    markDirty();
     setPeriodsState((prev) => ({
       ...prev,
       [periodId]: {
@@ -143,6 +151,7 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
   }
 
   function setAllForPeriod(periodId: string, status: PhoneCheckStatus) {
+    markDirty();
     setPeriodsState((prev) => {
       const next: LocalPeriodState = {};
       for (const student of students) {
@@ -205,6 +214,7 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
         }
         return updated;
       });
+      setIsDirty(false);
       toast.success("저장되었습니다.");
     } finally {
       setSavingPeriodId(null);
@@ -246,6 +256,7 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
 
   return (
     <div className="space-y-5">
+      <UnsavedChangesGuard isDirty={isDirty} />
       {/* 날짜 선택 */}
       <div className="flex flex-wrap items-center gap-3">
         <input

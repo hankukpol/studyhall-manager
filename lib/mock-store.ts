@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import {
@@ -231,10 +231,13 @@ export type MockExamSubjectRecord = {
   updatedAt: string;
 };
 
+export type MockExamCategory = "MORNING" | "REGULAR";
+
 export type MockExamTypeRecord = {
   id: string;
   divisionId: string;
   name: string;
+  category: MockExamCategory;
   studyTrack: string | null;
   isActive: boolean;
   displayOrder: number;
@@ -252,6 +255,21 @@ export type MockExamScoreRecord = {
   scores: Record<string, number | null>;
   totalScore: number | null;
   rankInClass: number | null;
+  notes: string | null;
+  recordedById: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type MockMorningExamScoreRecord = {
+  id: string;
+  studentId: string;
+  examTypeId: string;
+  subjectId: string;
+  examDate: string;
+  score: number | null;
+  weekNumber: number;
+  weekYear: number;
   notes: string | null;
   recordedById: string;
   createdAt: string;
@@ -319,6 +337,7 @@ type MockState = {
   globalAnnouncements: MockAnnouncementRecord[];
   examTypesByDivision: Record<string, MockExamTypeRecord[]>;
   examScoresByDivision: Record<string, MockExamScoreRecord[]>;
+  morningExamScoresByDivision: Record<string, MockMorningExamScoreRecord[]>;
   scoreTargetsByDivision: Record<string, MockScoreTargetRecord[]>;
   examSchedulesByDivision: Record<string, MockExamScheduleRecord[]>;
   phoneSubmissionsByDivision: Record<string, MockPhoneSubmissionRecord[]>;
@@ -1055,6 +1074,7 @@ function normalizeMockExamTypeRecord(
     id: examTypeId,
     divisionId,
     name: typeof examType.name === "string" ? examType.name : `시험 ${index + 1}`,
+    category: examType.category === "MORNING" ? "MORNING" : "REGULAR",
     studyTrack: typeof examType.studyTrack === "string" ? examType.studyTrack : null,
     isActive: typeof examType.isActive === "boolean" ? examType.isActive : true,
     displayOrder: typeof examType.displayOrder === "number" ? examType.displayOrder : index,
@@ -1188,6 +1208,7 @@ function createInitialExamTypes(divisionSlug: string, divisions?: MockDivisionRe
       id: examTypeId,
       divisionId: division.id,
       name: template.name,
+      category: "REGULAR" as MockExamCategory,
       studyTrack: template.studyTrack ?? null,
       isActive: true,
       displayOrder: examTypeIndex,
@@ -1413,6 +1434,9 @@ function createInitialState(): MockState {
     globalAnnouncements,
     examTypesByDivision,
     examScoresByDivision,
+    morningExamScoresByDivision: Object.fromEntries(
+      divisions.map((d) => [d.slug, [] as MockMorningExamScoreRecord[]]),
+    ),
     scoreTargetsByDivision,
     examSchedulesByDivision,
     phoneSubmissionsByDivision,
@@ -1751,6 +1775,14 @@ function normalizeMockState(rawState: Partial<MockState> | null | undefined) {
     globalAnnouncements,
     examTypesByDivision,
     examScoresByDivision,
+    morningExamScoresByDivision: Object.fromEntries(
+      getDivisionSlugs({ ...state, divisions: normalizedDivisions, deletedDivisionSlugs }).map((divisionSlug) => [
+        divisionSlug,
+        Array.isArray(state.morningExamScoresByDivision?.[divisionSlug])
+          ? state.morningExamScoresByDivision[divisionSlug]
+          : [],
+      ]),
+    ),
     scoreTargetsByDivision,
     examSchedulesByDivision,
     phoneSubmissionsByDivision,
@@ -1775,8 +1807,11 @@ async function withMockStateLock<T>(operation: () => Promise<T>) {
 }
 
 async function persistMockState(serialized: string) {
+  // 원자적 쓰기: 임시파일에 먼저 쓴 뒤 rename으로 교체하여 부분 쓰기 방지
+  const tempPath = `${mockStatePath}.tmp`;
+  await writeFile(tempPath, serialized, "utf8");
   await writeFile(mockStateBackupPath, serialized, "utf8");
-  await writeFile(mockStatePath, serialized, "utf8");
+  await rename(tempPath, mockStatePath);
 }
 
 async function ensureMockStateFile() {

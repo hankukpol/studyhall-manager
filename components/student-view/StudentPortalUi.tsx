@@ -1,7 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 
 type PortalSectionHeaderProps = {
-  eyebrow: string;
   title: string;
   description?: string;
   icon?: ReactNode;
@@ -21,21 +20,22 @@ type PortalEmptyStateProps = {
 };
 
 export const portalPageClass =
-  "min-h-[100dvh] bg-[#f4f6fb] px-4 py-4 md:px-6 md:py-6";
+  "min-h-[100dvh] w-full overflow-x-hidden bg-[var(--background)] px-3 py-3 md:px-5 md:py-5";
 
 export const portalContainerClass =
-  "mx-auto flex w-full max-w-6xl flex-col gap-4 md:gap-5";
+  "mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-3 md:gap-4";
 
 export const portalSectionClass =
-  "rounded-[10px] border border-slate-200 bg-white p-4 md:p-5";
+  "rounded-[16px] border border-[var(--border)] bg-white p-4 shadow-card md:p-6";
 
 export const portalInsetClass =
-  "rounded-[10px] border border-slate-200 bg-[#f8fafc] p-4";
+  "rounded-[12px] border border-[var(--border)] bg-[#F4F4F2] p-3.5 md:p-4";
 
-export const portalCardClass = "rounded-[10px] border border-slate-200 bg-white";
+export const portalCardClass =
+  "rounded-[16px] border border-[var(--border)] bg-white shadow-card";
 
 export const portalChipClass =
-  "inline-flex items-center rounded-[10px] border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700";
+  "inline-flex items-center rounded-[12px] border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-medium text-[var(--foreground)]";
 
 export function getBrandSurfaceStyle(alpha = 0.12): CSSProperties {
   return {
@@ -50,35 +50,31 @@ export function getBrandBorderStyle(alpha = 0.2): CSSProperties {
 }
 
 export function PortalSectionHeader({
-  eyebrow,
   title,
   description,
   icon,
   action,
 }: PortalSectionHeaderProps) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4">
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
+    <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2.5">
           {icon ? (
             <div
-              className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-slate-200 text-slate-700"
-              style={getBrandSurfaceStyle(0.12)}
+              className="flex h-8 w-8 shrink-0 items-center justify-center"
+              style={{ color: "var(--division-color)" }}
             >
               {icon}
             </div>
           ) : null}
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-              {eyebrow}
-            </p>
-            <h2 className="mt-1 text-[26px] font-semibold tracking-[-0.04em] text-slate-950 md:text-[30px]">
-              {title}
-            </h2>
-          </div>
+          <h2 className="text-[17px] font-bold text-[var(--foreground)] md:text-[20px]">
+            {title}
+          </h2>
         </div>
         {description ? (
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">{description}</p>
+          <p className="mt-1.5 text-[13px] leading-[1.5] text-[var(--muted)] md:text-sm">
+            {description}
+          </p>
         ) : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
@@ -90,21 +86,53 @@ export function PortalMetricCard({
   label,
   value,
   caption,
-  valueToneClassName = "text-slate-950",
+  valueToneClassName = "text-[var(--foreground)]",
 }: PortalMetricCardProps) {
   return (
-    <article className={portalSectionClass}>
-      <div
-        className="h-1 w-10 rounded-full"
-        style={{ backgroundColor: "var(--division-color)" }}
-      />
-      <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+    <article className={`${portalSectionClass} flex min-h-[88px] flex-col justify-between md:min-h-[110px]`}>
+      <p className="text-[12px] font-medium text-[var(--muted)]">
         {label}
       </p>
-      <p className={`mt-3 text-3xl font-semibold tracking-[-0.04em] ${valueToneClassName}`}>
+      <p
+        className={`mt-2 text-[24px] font-bold tracking-tight md:text-[28px] ${valueToneClassName}`}
+      >
         {value}
       </p>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{caption}</p>
+      <p className="mt-1.5 text-[12px] leading-[1.5] text-[var(--muted)] md:text-[13px]">
+        {caption}
+      </p>
+    </article>
+  );
+}
+
+type PortalMiniTileProps = {
+  label: string;
+  title: ReactNode;
+  description?: ReactNode;
+  titleClassName?: string;
+  className?: string;
+};
+
+export function PortalMiniTile({
+  label,
+  title,
+  description,
+  titleClassName = "text-[14px] font-bold text-[var(--foreground)] md:text-[16px]",
+  className = "",
+}: PortalMiniTileProps) {
+  return (
+    <article className={`${portalInsetClass} min-w-0 ${className}`.trim()}>
+      <p className="text-[12px] font-medium text-[var(--muted)]">
+        {label}
+      </p>
+      <div className={`mt-1.5 min-w-0 break-keep [overflow-wrap:anywhere] ${titleClassName}`}>
+        {title}
+      </div>
+      {description ? (
+        <div className="mt-1 min-w-0 break-keep text-[13px] leading-[1.5] text-[var(--muted)] [overflow-wrap:anywhere] md:text-sm">
+          {description}
+        </div>
+      ) : null}
     </article>
   );
 }
@@ -114,9 +142,9 @@ export function PortalEmptyState({
   description,
 }: PortalEmptyStateProps) {
   return (
-    <div className="rounded-[10px] border border-dashed border-slate-300 bg-[#f8fafc] px-4 py-6 text-sm text-slate-600">
-      <p className="font-semibold text-slate-900">{title}</p>
-      <p className="mt-2 leading-6">{description}</p>
+    <div className="rounded-[12px] border border-dashed border-[var(--border)] bg-[#F4F4F2] px-4 py-5 md:px-5 md:py-6">
+      <p className="text-[14px] font-semibold text-[var(--foreground)]">{title}</p>
+      <p className="mt-1.5 text-[13px] leading-[1.5] text-[var(--muted)]">{description}</p>
     </div>
   );
 }

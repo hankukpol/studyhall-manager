@@ -115,7 +115,6 @@ export function ExamScoreChart({ results }: ExamScoreChartProps) {
   return (
     <section className={portalSectionClass}>
       <PortalSectionHeader
-        eyebrow="Exam Trend"
         title="성적 추이 차트"
         description="시험 종류별로 과목 점수와 총점 변화를 비교할 수 있습니다."
       />
@@ -126,10 +125,10 @@ export function ExamScoreChart({ results }: ExamScoreChartProps) {
             key={group.examTypeId}
             type="button"
             onClick={() => setSelectedExamTypeId(group.examTypeId)}
-            className={`rounded-[10px] border px-3 py-2 text-xs font-semibold transition ${
+            className={`rounded-[12px] border px-3 py-2 text-[13px] font-medium transition ${
               (selectedGroup?.examTypeId ?? "") === group.examTypeId
                 ? "border-transparent"
-                : "border-slate-200 bg-white text-slate-600 hover:text-slate-900"
+                : "border-[var(--border)] bg-white text-[var(--muted)] hover:text-[var(--foreground)]"
             }`}
             style={
               (selectedGroup?.examTypeId ?? "") === group.examTypeId

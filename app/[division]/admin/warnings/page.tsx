@@ -21,10 +21,7 @@ export default async function WarningPage({ params }: WarningPageProps) {
   return (
     <div className="space-y-6">
       <section className="rounded-[28px] border border-slate-200-black/5 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
-        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-          Phase 3-C
-        </p>
-        <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-950">경고 대상자 관리</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-950">경고 대상자 관리</h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
           직렬 설정의 경고 임계값을 기준으로 대상자를 자동 분류하고 연락처를 바로 복사할 수 있습니다.
         </p>

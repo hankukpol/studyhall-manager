@@ -1,4 +1,4 @@
-CREATE TABLE "score_targets" (
+CREATE TABLE IF NOT EXISTS "score_targets" (
   "id" TEXT NOT NULL,
   "student_id" TEXT NOT NULL,
   "exam_type_id" TEXT NOT NULL,
@@ -10,18 +10,36 @@ CREATE TABLE "score_targets" (
   CONSTRAINT "score_targets_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX "score_targets_student_id_exam_type_id_key"
+CREATE UNIQUE INDEX IF NOT EXISTS "score_targets_student_id_exam_type_id_key"
 ON "score_targets"("student_id", "exam_type_id");
 
-CREATE INDEX "score_targets_exam_type_id_idx"
+CREATE INDEX IF NOT EXISTS "score_targets_exam_type_id_idx"
 ON "score_targets"("exam_type_id");
 
-ALTER TABLE "score_targets"
-ADD CONSTRAINT "score_targets_student_id_fkey"
-FOREIGN KEY ("student_id") REFERENCES "students"("id")
-ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'score_targets_student_id_fkey'
+  ) THEN
+    ALTER TABLE "score_targets"
+    ADD CONSTRAINT "score_targets_student_id_fkey"
+    FOREIGN KEY ("student_id") REFERENCES "students"("id")
+    ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
-ALTER TABLE "score_targets"
-ADD CONSTRAINT "score_targets_exam_type_id_fkey"
-FOREIGN KEY ("exam_type_id") REFERENCES "exam_types"("id")
-ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'score_targets_exam_type_id_fkey'
+  ) THEN
+    ALTER TABLE "score_targets"
+    ADD CONSTRAINT "score_targets_exam_type_id_fkey"
+    FOREIGN KEY ("exam_type_id") REFERENCES "exam_types"("id")
+    ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;

@@ -264,6 +264,26 @@ export async function deletePeriod(divisionSlug: string, periodId: string) {
     throw new Error("Period not found.");
   }
 
+  // 출결 기록이 존재하면 삭제 차단 (CASCADE로 출결 데이터 유실 방지)
+  const attendanceCount = await prisma.attendance.count({
+    where: { periodId },
+  });
+  if (attendanceCount > 0) {
+    throw new Error(
+      `이 교시에 출결 기록이 ${attendanceCount}건 존재합니다. 출결 데이터가 함께 삭제되므로 교시를 삭제할 수 없습니다. 대신 비활성화해 주세요.`,
+    );
+  }
+
+  // 핸드폰 제출 기록이 존재하면 삭제 차단
+  const phoneSubmissionCount = await prisma.phoneSubmission.count({
+    where: { periodId },
+  });
+  if (phoneSubmissionCount > 0) {
+    throw new Error(
+      `이 교시에 핸드폰 제출 기록이 ${phoneSubmissionCount}건 존재합니다. 교시를 삭제할 수 없습니다. 대신 비활성화해 주세요.`,
+    );
+  }
+
   await prisma.period.delete({
     where: { id: periodId },
   });

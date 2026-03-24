@@ -88,6 +88,30 @@ export async function POST(request: NextRequest) {
       prisma.divisionSettings.findUnique({ where: { divisionId: sourceDivision.id } }),
     ]);
 
+    // 대상 직렬 기존 데이터에 연결된 레코드가 있으면 삭제 차단
+    const [targetAttendanceCount, targetPointRecordCount] = await Promise.all([
+      prisma.attendance.count({
+        where: { period: { divisionId: targetDivision.id } },
+      }),
+      prisma.pointRecord.count({
+        where: { rule: { divisionId: targetDivision.id } },
+      }),
+    ]);
+
+    if (targetAttendanceCount > 0) {
+      return NextResponse.json(
+        { error: `대상 직렬(${targetSlug})에 출결 기록이 ${targetAttendanceCount}건 존재합니다. 기존 교시를 덮어쓰면 출결 데이터가 유실됩니다.` },
+        { status: 409 },
+      );
+    }
+
+    if (targetPointRecordCount > 0) {
+      return NextResponse.json(
+        { error: `대상 직렬(${targetSlug})에 상벌점 기록이 ${targetPointRecordCount}건 존재합니다. 기존 규칙을 덮어쓰면 상벌점 데이터가 유실됩니다.` },
+        { status: 409 },
+      );
+    }
+
     // 대상 직렬 기존 데이터 초기화 후 복사
     await prisma.$transaction(async (tx) => {
       // 교시 삭제 후 재생성

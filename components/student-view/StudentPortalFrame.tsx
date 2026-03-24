@@ -20,15 +20,12 @@ type StudentPortalFrameProps = {
     color: string;
   };
   student: StudentDetail;
-  current: "dashboard" | "attendance" | "points" | "exams";
+  current: "dashboard" | "attendance" | "points" | "exams" | "announcements";
   title: string;
   description: string;
   children: ReactNode;
 };
 
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString("ko-KR");
-}
 
 export function StudentPortalFrame({
   division,
@@ -38,113 +35,71 @@ export function StudentPortalFrame({
   description,
   children,
 }: StudentPortalFrameProps) {
-  const accentMutedTextStyle = { color: "var(--division-on-accent-muted)" };
-  const accentSurfaceStyle = {
-    borderColor: "var(--division-accent-border)",
-    backgroundColor: "var(--division-accent-surface)",
-  };
-  const accentSurfaceSoftStyle = {
-    borderColor: "var(--division-accent-border)",
-    backgroundColor: "var(--division-accent-surface-soft)",
-  };
-  const accentOutlineStyle = { borderColor: "var(--division-accent-outline)" };
-
   return (
     <main className={portalPageClass}>
       <div className={portalContainerClass}>
         <section
-          className="relative overflow-hidden rounded-[10px] border border-slate-200"
+          aria-label={title}
+          className="relative overflow-hidden rounded-[16px] shadow-header"
           style={{
-            background:
-              "linear-gradient(145deg, var(--division-color-strong) 0%, var(--division-hero-end) 100%)",
-            color: "var(--division-on-accent)",
+            background: "var(--division-color)",
+            color: "white",
           }}
         >
-          <div className="relative z-10 grid gap-5 px-5 py-5 md:px-6 md:py-6 lg:grid-cols-[1.05fr_0.95fr]">
-            <div>
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em]" style={accentMutedTextStyle}>
-                    Student Portal
-                  </p>
-                  <h1 className="mt-4 text-[32px] font-semibold tracking-[-0.05em] md:text-[38px]">
-                    {title}
-                  </h1>
-                </div>
-                <StudentLogoutButton divisionSlug={division.slug} />
-              </div>
-
-              <p className="mt-3 max-w-2xl text-sm leading-6" style={accentMutedTextStyle}>
-                {description}
-              </p>
-
-              <div className="mt-5 flex flex-wrap gap-2">
-                <StudentStatusBadge status={student.status} />
-                <WarningStageBadge stage={student.warningStage} />
-                <span className="inline-flex items-center rounded-[10px] border px-3 py-1.5 text-xs font-semibold" style={accentSurfaceStyle}>
-                  {student.studentNumber}
-                </span>
-                {student.studyTrack ? (
-                  <span className="inline-flex items-center rounded-[10px] border px-3 py-1.5 text-xs font-semibold" style={accentSurfaceStyle}>
-                    {student.studyTrack}
-                  </span>
-                ) : null}
-                {student.seatLabel ? (
-                  <span className="inline-flex items-center rounded-[10px] border px-3 py-1.5 text-xs font-semibold" style={accentSurfaceStyle}>
-                    좌석 {student.seatLabel}
-                  </span>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="grid gap-3">
-              <article className="rounded-[10px] border p-4" style={accentSurfaceStyle}>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={accentMutedTextStyle}>
-                  Student
-                </p>
-                <p className="mt-3 text-2xl font-semibold tracking-[-0.04em]">
-                  {student.name}
-                </p>
-                <p className="mt-2 text-sm" style={accentMutedTextStyle}>
-                  {division.fullName}
-                  {student.phone ? ` · ${student.phone}` : ""}
-                </p>
-              </article>
-
-              <div className="grid gap-3 sm:grid-cols-3">
-                <article className="rounded-[10px] border p-4" style={accentSurfaceSoftStyle}>
-                  <p className="text-xs uppercase tracking-[0.18em]" style={accentMutedTextStyle}>Division</p>
-                  <p className="mt-3 text-xl font-semibold tracking-[-0.03em]">
-                    {division.name}
-                  </p>
-                  <p className="mt-2 text-sm" style={accentMutedTextStyle}>{division.fullName}</p>
-                </article>
-                <article className="rounded-[10px] border p-4" style={accentSurfaceSoftStyle}>
-                  <p className="text-xs uppercase tracking-[0.18em]" style={accentMutedTextStyle}>Net Points</p>
-                  <p className="mt-3 text-xl font-semibold tracking-[-0.03em]">
-                    {student.netPoints}점
-                  </p>
-                  <p className="mt-2 text-sm" style={accentMutedTextStyle}>현재 경고 단계 반영 기준</p>
-                </article>
-                <article className="rounded-[10px] border p-4" style={accentSurfaceSoftStyle}>
-                  <p className="text-xs uppercase tracking-[0.18em]" style={accentMutedTextStyle}>Registered</p>
-                  <p className="mt-3 text-xl font-semibold tracking-[-0.03em]">
-                    {formatDate(student.createdAt)}
-                  </p>
-                  <p className="mt-2 text-sm" style={accentMutedTextStyle}>
-                    {student.seatDisplay || "좌석 미배정"}
-                  </p>
-                </article>
-              </div>
-            </div>
+          <div className="sr-only">
+            <h1>{title}</h1>
+            <p>{description}</p>
           </div>
 
-          <div className="absolute -right-8 top-8 h-28 w-28 rounded-full border" style={accentOutlineStyle} />
-          <div className="absolute bottom-6 right-20 h-20 w-20 rounded-full border" style={accentOutlineStyle} />
+          <div className="relative px-4 py-4 md:p-5">
+            {/* Header: Identity & Logout */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                 </div>
+                 <div className="min-w-0">
+                   <p className="truncate text-[15px] font-bold leading-tight">
+                     {student.name}
+                     <span className="ml-1 text-[12px] font-normal text-white/60">학생님</span>
+                   </p>
+                   <p className="mt-0.5 truncate text-[12px] font-medium text-white/50">{division.fullName}</p>
+                 </div>
+              </div>
+              <div className="shrink-0">
+                <StudentLogoutButton divisionSlug={division.slug} isPill />
+              </div>
+            </div>
+
+            {/* Stats Row */}
+            <div className="mt-4 flex items-center justify-between border-t border-white/15 pt-3.5">
+              <div className="flex flex-col">
+                <p className="text-[11px] font-medium text-white/50">학번</p>
+                <p className="mt-0.5 text-[15px] font-bold text-white">{student.studentNumber}</p>
+              </div>
+              <div className="flex flex-col items-center">
+                <p className="text-[11px] font-medium text-white/50">좌석</p>
+                <p className="mt-0.5 text-[15px] font-bold text-white">{student.seatLabel || "미배정"}</p>
+              </div>
+              <div className="flex flex-col items-center">
+                <p className="text-[11px] font-medium text-white/50">상벌점</p>
+                <p className="mt-0.5 text-[15px] font-bold text-white">{student.netPoints}점</p>
+              </div>
+              <div className="flex flex-col items-end">
+                <p className="text-[11px] font-medium text-white/50">직렬</p>
+                <p className="mt-0.5 text-[15px] font-bold text-white">{student.studyTrack || "경찰"}</p>
+              </div>
+            </div>
+
+            {/* Badges */}
+            <div className="mt-3.5 flex flex-wrap gap-1.5">
+               <StudentStatusBadge status={student.status} />
+               <WarningStageBadge stage={student.warningStage} />
+            </div>
+          </div>
         </section>
 
         <StudentPortalTabs divisionSlug={division.slug} current={current} />
-
         {children}
       </div>
     </main>

@@ -21,8 +21,11 @@ type SubjectFormItem = {
   isActive: boolean;
 };
 
+type ExamCategoryValue = "MORNING" | "REGULAR";
+
 type FormState = {
   name: string;
+  category: ExamCategoryValue;
   studyTrack: string;
   isActive: boolean;
   subjects: SubjectFormItem[];
@@ -32,6 +35,7 @@ const COMMON_TRACK_VALUE = "__COMMON__";
 
 const defaultForm: FormState = {
   name: "",
+  category: "REGULAR",
   studyTrack: COMMON_TRACK_VALUE,
   isActive: true,
   subjects: [
@@ -61,6 +65,7 @@ function buildTrackOptions(examTypes: ExamTypeItem[], studyTrackOptions: string[
 function toFormState(examType: ExamTypeItem): FormState {
   return {
     name: examType.name,
+    category: examType.category === "MORNING" ? "MORNING" : "REGULAR",
     studyTrack: examType.studyTrack ?? COMMON_TRACK_VALUE,
     isActive: examType.isActive,
     subjects: examType.subjects.map((subject) => ({
@@ -88,6 +93,7 @@ function calculateMaxScore(totalItems: string, pointsPerItem: string) {
 function buildRequestBody(form: FormState) {
   return {
     name: form.name,
+    category: form.category,
     studyTrack: form.studyTrack === COMMON_TRACK_VALUE ? null : form.studyTrack,
     isActive: form.isActive,
     subjects: form.subjects.map((subject) => ({
@@ -353,6 +359,19 @@ export function ExamTypeManager({
                         <p className="text-base font-bold">{examType.name}</p>
                         <span
                           className={`rounded-full px-2 py-1 text-xs font-medium ${
+                            examType.category === "MORNING"
+                              ? selectedId === examType.id
+                                ? "bg-amber-300/30 text-white"
+                                : "bg-amber-100 text-amber-800"
+                              : selectedId === examType.id
+                                ? "bg-blue-300/30 text-white"
+                                : "bg-blue-100 text-blue-800"
+                          }`}
+                        >
+                          {examType.category === "MORNING" ? "아침" : "정기"}
+                        </span>
+                        <span
+                          className={`rounded-full px-2 py-1 text-xs font-medium ${
                             selectedId === examType.id
                               ? "bg-white/15 text-white"
                               : "bg-slate-200 text-slate-700"
@@ -460,6 +479,61 @@ export function ExamTypeManager({
         </div>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <div>
+            <span className="mb-2 block text-sm font-medium text-slate-700">시험 분류</span>
+            <div className="flex gap-3">
+              <label
+                className={`flex flex-1 cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition ${
+                  form.category === "MORNING"
+                    ? "border-amber-400 bg-amber-50"
+                    : "border-slate-200 bg-white hover:bg-slate-50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="category"
+                  value="MORNING"
+                  checked={form.category === "MORNING"}
+                  onChange={() =>
+                    setForm((current) => ({ ...current, category: "MORNING" }))
+                  }
+                  disabled={!!editingId}
+                  className="h-4 w-4 accent-amber-600"
+                />
+                <div>
+                  <span className="block text-sm font-medium text-slate-800">아침모의고사</span>
+                  <span className="block text-xs text-slate-500">매일 1과목씩 입력, 주간 집계</span>
+                </div>
+              </label>
+              <label
+                className={`flex flex-1 cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition ${
+                  form.category === "REGULAR"
+                    ? "border-blue-400 bg-blue-50"
+                    : "border-slate-200 bg-white hover:bg-slate-50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="category"
+                  value="REGULAR"
+                  checked={form.category === "REGULAR"}
+                  onChange={() =>
+                    setForm((current) => ({ ...current, category: "REGULAR" }))
+                  }
+                  disabled={!!editingId}
+                  className="h-4 w-4 accent-blue-600"
+                />
+                <div>
+                  <span className="block text-sm font-medium text-slate-800">정기모의고사</span>
+                  <span className="block text-xs text-slate-500">전과목 한번에 입력, 회차별 관리</span>
+                </div>
+              </label>
+            </div>
+            {editingId && (
+              <p className="mt-1 text-xs text-slate-400">시험 분류는 생성 후 변경할 수 없습니다.</p>
+            )}
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2">
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-slate-700">시험 종류명</span>

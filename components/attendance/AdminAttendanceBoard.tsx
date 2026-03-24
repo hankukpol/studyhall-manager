@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { LayoutGrid, LoaderCircle, RefreshCcw, Save, Table2 } from "lucide-react";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -11,6 +11,7 @@ import {
   type AttendanceOptionValue,
 } from "@/lib/attendance-meta";
 import type { SeatLayout, StudyRoomItem } from "@/lib/services/seat.service";
+import { UnsavedChangesGuard } from "@/components/ui/UnsavedChangesGuard";
 
 const seatViewFallback = () => (
   <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-6 text-sm text-slate-500">
@@ -121,6 +122,11 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
   const [isSaving, setIsSaving] = useState(false);
   const hasSeatLayout = Boolean(seatRooms && seatRooms.length > 0 && initialSeatLayout);
   const [viewMode, setViewMode] = useState<"table" | "seat">("table");
+  const [isDirty, setIsDirty] = useState(false);
+
+  const markDirty = useCallback(() => {
+    setIsDirty(true);
+  }, []);
 
   const summaryCards = useMemo(
     () => [
@@ -176,6 +182,7 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
         setPeriods(attendanceData.periods);
         setMatrix(createMatrix(attendanceData.students, attendanceData.periods, attendanceData.records));
         setStats(statsData);
+        setIsDirty(false);
       } catch (error) {
         if (isMounted) {
           toast.error(error instanceof Error ? error.message : "출석부를 불러오지 못했습니다.");
@@ -195,6 +202,7 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
   }, [divisionSlug, initialDate, initialMatrix, initialPeriods, initialStats, initialStudents, selectedDate]);
 
   function updateCell(studentId: string, periodId: string, value: Partial<{ status: AttendanceOptionValue; reason: string }>) {
+    markDirty();
     setMatrix((current) => ({
       ...current,
       [studentId]: {
@@ -208,6 +216,7 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
   }
 
   function updateStudentAllPeriods(studentId: string, status: AttendanceOptionValue) {
+    markDirty();
     setMatrix((current) => {
       const updated = { ...current, [studentId]: { ...(current[studentId] ?? {}) } };
       for (const period of periods) {
@@ -267,6 +276,7 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
     setIsSaving(true);
     try {
       await savePeriodsForStudents();
+      setIsDirty(false);
       toast.success("출석부를 저장했습니다.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "출석부 저장에 실패했습니다.");
@@ -282,6 +292,7 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
 
   return (
     <div className="space-y-6">
+      <UnsavedChangesGuard isDirty={isDirty} />
       <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>

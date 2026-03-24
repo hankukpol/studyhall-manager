@@ -16,12 +16,9 @@ export default async function AdminAnnouncementsPage({ params }: AdminAnnounceme
   return (
     <div className="space-y-6">
       <section className="rounded-[28px] border border-slate-200-black/5 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
-        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-          Phase 5-C
-        </p>
-        <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-950">공지사항</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-950">공지사항</h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-          직렬 공지와 전체 공지를 함께 관리합니다. 핀 고정된 공지는 학생 포털 상단에 우선 노출됩니다.
+          직렬 공지와 전체 공지를 게시판 형태로 함께 관리합니다. 선택한 글은 우측 상세 패널에서 확인하고 바로 수정하거나 삭제할 수 있습니다.
         </p>
       </section>
 
