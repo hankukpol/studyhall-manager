@@ -18,13 +18,13 @@ export default function SuperAdminLayout({ children }: SuperAdminLayoutProps) {
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-[#f0f2f5]">
+    <div className="min-h-screen bg-[var(--background)]">
       {/* 상단 헤더 */}
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-screen-2xl px-6 md:px-10">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[8px] bg-slate-900 text-white text-sm font-bold">
+              <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-slate-900 text-white text-sm font-bold">
                 SA
               </div>
               <div>
@@ -47,7 +47,7 @@ export default function SuperAdminLayout({ children }: SuperAdminLayoutProps) {
                   prefetch={false}
                   className={`relative px-5 py-3 text-sm font-semibold transition ${
                     isActive
-                      ? "text-blue-700 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-blue-700 after:content-['']"
+                      ? "text-slate-950 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-slate-950 after:content-['']"
                       : "text-slate-500 hover:text-slate-700"
                   }`}
                 >

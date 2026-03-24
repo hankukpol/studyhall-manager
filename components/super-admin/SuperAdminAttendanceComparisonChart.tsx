@@ -35,11 +35,14 @@ export function SuperAdminAttendanceComparisonChart({
   }));
 
   return (
-    <section className="rounded-[10px] border border-slate-200 bg-white px-6 py-5 shadow-sm">
+    <section className="rounded-[10px] border border-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.06)]">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-bold text-slate-900">지점별 출석률 비교</h3>
-          <p className="mt-0.5 text-sm text-slate-500">오늘 필수 교시 기준</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
+            Attendance Comparison
+          </p>
+          <h3 className="mt-2 text-2xl font-bold text-slate-950">지점별 출석률 비교</h3>
+          <p className="mt-1 text-sm text-slate-500">오늘 필수 교시 기준</p>
         </div>
       </div>
       <div className="mt-4 h-44">

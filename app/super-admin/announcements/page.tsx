@@ -167,14 +167,17 @@ export default function SuperAdminAnnouncementsPage() {
   }
 
   const inputCls =
-    "w-full rounded-[8px] border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100";
+    "w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-slate-400 focus:bg-white";
 
   return (
     <div className="space-y-6">
       {/* 헤더 */}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">전체 공지사항</h2>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
+            Announcements
+          </p>
+          <h2 className="mt-2 text-3xl font-extrabold text-slate-950">전체 공지사항</h2>
           <p className="mt-1 text-sm text-slate-500">
             모든 지점 학생 포탈에 동시 표시되는 전체 공지입니다.
           </p>
@@ -182,7 +185,7 @@ export default function SuperAdminAnnouncementsPage() {
         <button
           type="button"
           onClick={openCreate}
-          className="inline-flex items-center gap-2 rounded-[8px] bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
+          className="inline-flex items-center gap-2 rounded-[10px] bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
         >
           <Plus className="h-4 w-4" />
           공지 등록
@@ -191,7 +194,7 @@ export default function SuperAdminAnnouncementsPage() {
 
       {/* 작성/수정 폼 */}
       {showForm && (
-        <section className="rounded-[10px] border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-[10px] border border-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.06)]">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-base font-bold text-slate-900">
               {editingId ? "공지사항 수정" : "새 전체 공지 등록"}
@@ -253,14 +256,14 @@ export default function SuperAdminAnnouncementsPage() {
               <button
                 type="button"
                 onClick={cancelForm}
-                className="rounded-[8px] border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 취소
               </button>
               <button
                 type="submit"
                 disabled={isSaving}
-                className="inline-flex items-center gap-2 rounded-[8px] bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-[10px] bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-60"
               >
                 {isSaving && <LoaderCircle className="h-4 w-4 animate-spin" />}
                 {editingId ? "수정 완료" : "등록하기"}
@@ -294,8 +297,8 @@ export default function SuperAdminAnnouncementsPage() {
             {announcements.map((item) => (
               <article
                 key={item.id}
-                className={`rounded-[10px] border bg-white p-5 shadow-sm transition hover:shadow-md ${
-                  item.isPinned ? "border-slate-300" : "border-slate-200"
+                className={`rounded-[10px] border bg-white p-5 shadow-[0_18px_44px_rgba(15,23,42,0.06)] transition hover:shadow-[0_18px_50px_rgba(15,23,42,0.10)] ${
+                  item.isPinned ? "border-black/10" : "border-black/5"
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
@@ -326,7 +329,7 @@ export default function SuperAdminAnnouncementsPage() {
                     <button
                       type="button"
                       onClick={() => void handleTogglePin(item)}
-                      className="rounded-[6px] border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50"
+                      className="rounded-full border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50"
                       title={item.isPinned ? "고정 해제" : "상단 고정"}
                     >
                       {item.isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
@@ -334,7 +337,7 @@ export default function SuperAdminAnnouncementsPage() {
                     <button
                       type="button"
                       onClick={() => openEdit(item)}
-                      className="rounded-[6px] border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50"
+                      className="rounded-full border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50"
                       title="수정"
                     >
                       <Pencil className="h-4 w-4" />
@@ -342,7 +345,7 @@ export default function SuperAdminAnnouncementsPage() {
                     <button
                       type="button"
                       onClick={() => void handleDelete(item.id, item.title)}
-                      className="rounded-[6px] border border-red-100 p-2 text-red-400 transition hover:bg-red-50"
+                      className="rounded-full border border-red-100 p-2 text-red-400 transition hover:bg-red-50"
                       title="삭제"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -356,7 +359,7 @@ export default function SuperAdminAnnouncementsPage() {
       </section>
 
       {/* 안내 */}
-      <section className="rounded-[10px] border border-slate-200 bg-slate-50 p-4">
+      <section className="rounded-[10px] border border-black/5 bg-slate-50 p-4">
         <p className="flex items-start gap-2 text-sm text-slate-600">
           <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
           전체 공지는 경찰반·소방반 등 모든 지점의 학생 포탈 공지란에 함께 표시됩니다.

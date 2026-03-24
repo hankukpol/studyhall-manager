@@ -334,3 +334,231 @@ export async function getSuperAdminOverview(
 
   return getSuperAdminOverviewCached();
 }
+
+// ─── 학생 수 추이 ────────────────────────────────────────────────────────────
+
+export type StudentCountTrendPoint = {
+  weekLabel: string;
+  weekStart: string;
+  divisions: Array<{
+    slug: string;
+    name: string;
+    color: string;
+    activeCount: number;
+  }>;
+};
+
+type TrendStudent = {
+  enrolledAt: Date;
+  withdrawnAt: Date | null;
+  status: string;
+  updatedAt: Date;
+};
+
+function getMondaysDescending(count: number): Date[] {
+  const now = new Date();
+  // KST 기준 오늘
+  const kstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const today = new Date(Date.UTC(kstNow.getUTCFullYear(), kstNow.getUTCMonth(), kstNow.getUTCDate()));
+  // 이번 주 월요일
+  const dayOfWeek = today.getUTCDay();
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const thisMonday = new Date(today);
+  thisMonday.setUTCDate(today.getUTCDate() + mondayOffset);
+
+  const mondays: Date[] = [];
+  for (let i = 0; i < count; i++) {
+    const monday = new Date(thisMonday);
+    monday.setUTCDate(thisMonday.getUTCDate() - i * 7);
+    mondays.push(monday);
+  }
+
+  return mondays.reverse();
+}
+
+function countActiveAtDate(students: TrendStudent[], weekEnd: Date): number {
+  let count = 0;
+  for (const s of students) {
+    if (s.enrolledAt > weekEnd) continue;
+    if (s.status === "WITHDRAWN" || s.status === "GRADUATED") {
+      const exitDate = s.withdrawnAt ?? s.updatedAt;
+      if (exitDate <= weekEnd) continue;
+    }
+    count++;
+  }
+  return count;
+}
+
+async function getStudentCountTrendUncached(weekCount: number): Promise<StudentCountTrendPoint[]> {
+  const divisions = await listManagedDivisions();
+  const mondays = getMondaysDescending(weekCount);
+
+  const divisionStudents = await Promise.all(
+    divisions
+      .filter((d) => d.isActive)
+      .map(async (division) => {
+        let students: TrendStudent[];
+
+        if (isMockMode()) {
+          const list = await listStudents(division.slug);
+          students = list.map((s) => ({
+            enrolledAt: s.enrolledAt ? new Date(s.enrolledAt) : new Date(),
+            withdrawnAt: s.withdrawnAt ? new Date(s.withdrawnAt) : null,
+            status: s.status,
+            updatedAt: s.updatedAt ? new Date(s.updatedAt) : new Date(),
+          }));
+        } else {
+          const prisma = await getPrismaClient();
+          students = await prisma.student.findMany({
+            where: { divisionId: division.id },
+            select: { enrolledAt: true, withdrawnAt: true, status: true, updatedAt: true },
+          });
+        }
+
+        return { division, students };
+      }),
+  );
+
+  return mondays.map((monday) => {
+    // 주의 마지막(일요일 23:59:59)
+    const weekEnd = new Date(monday);
+    weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
+    weekEnd.setUTCHours(23, 59, 59, 999);
+
+    return {
+      weekLabel: `${monday.getUTCMonth() + 1}/${monday.getUTCDate()}`,
+      weekStart: monday.toISOString().slice(0, 10),
+      divisions: divisionStudents.map(({ division, students }) => ({
+        slug: division.slug,
+        name: division.name,
+        color: division.color,
+        activeCount: countActiveAtDate(students, weekEnd),
+      })),
+    };
+  });
+}
+
+const getStudentCountTrendCached = unstable_cache(
+  async (weekCount: number) => getStudentCountTrendUncached(weekCount),
+  ["super-admin-student-trend"],
+  { revalidate: 300, tags: ["super-admin-student-trend"] },
+);
+
+export async function getStudentCountTrend(weekCount = 8): Promise<StudentCountTrendPoint[]> {
+  return getStudentCountTrendCached(Math.min(weekCount, 24));
+}
+
+// ─── 수납 현황 ───────────────────────────────────────────────────────────────
+
+export type TuitionDivisionStatus = {
+  slug: string;
+  name: string;
+  color: string;
+  expected: number;
+  collected: number;
+  unpaidCount: number;
+  collectionRate: number;
+  activeStudentCount: number;
+};
+
+export type TuitionStatusSummary = {
+  totalExpected: number;
+  totalCollected: number;
+  collectionRate: number;
+  unpaidCount: number;
+  divisions: TuitionDivisionStatus[];
+};
+
+async function getTuitionStatusUncached(month?: string): Promise<TuitionStatusSummary> {
+  const now = new Date();
+  const kstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const targetYear = month ? Number(month.slice(0, 4)) : kstNow.getUTCFullYear();
+  const targetMonth = month ? Number(month.slice(5, 7)) - 1 : kstNow.getUTCMonth();
+
+  const monthStart = new Date(Date.UTC(targetYear, targetMonth, 1));
+  const monthEnd = new Date(Date.UTC(targetYear, targetMonth + 1, 1));
+
+  const divisions = await listManagedDivisions();
+
+  const divisionStatuses: TuitionDivisionStatus[] = [];
+
+  for (const division of divisions.filter((d) => d.isActive)) {
+    let expected = 0;
+    let collected = 0;
+    let unpaidCount = 0;
+    let activeStudentCount = 0;
+
+    if (isMockMode()) {
+      const students = await listStudents(division.slug);
+      const activeStudents = students.filter(
+        (s) => (s.status === "ACTIVE" || s.status === "ON_LEAVE") && (s.tuitionAmount ?? 0) > 0,
+      );
+      activeStudentCount = activeStudents.length;
+      expected = activeStudents.reduce((sum, s) => sum + (s.tuitionAmount ?? 0), 0);
+      // Mock: 랜덤하게 70~90% 수납된 것으로 가정
+      collected = Math.round(expected * (0.7 + Math.random() * 0.2));
+      unpaidCount = Math.max(0, Math.round(activeStudentCount * 0.15));
+    } else {
+      const prisma = await getPrismaClient();
+      const [students, payments] = await Promise.all([
+        prisma.student.findMany({
+          where: {
+            divisionId: division.id,
+            status: { in: ["ACTIVE", "ON_LEAVE"] },
+            tuitionAmount: { gt: 0 },
+          },
+          select: { id: true, tuitionAmount: true },
+        }),
+        prisma.payment.findMany({
+          where: {
+            student: { divisionId: division.id },
+            paymentDate: { gte: monthStart, lt: monthEnd },
+          },
+          select: { studentId: true, amount: true },
+        }),
+      ]);
+
+      activeStudentCount = students.length;
+      expected = students.reduce((sum, s) => sum + (s.tuitionAmount ?? 0), 0);
+      collected = payments.reduce((sum, p) => sum + p.amount, 0);
+
+      const paidStudentIds = new Set(payments.map((p) => p.studentId));
+      unpaidCount = students.filter((s) => !paidStudentIds.has(s.id)).length;
+    }
+
+    const collectionRate = expected > 0 ? Number(((collected / expected) * 100).toFixed(1)) : 0;
+
+    divisionStatuses.push({
+      slug: division.slug,
+      name: division.name,
+      color: division.color,
+      expected,
+      collected,
+      unpaidCount,
+      collectionRate,
+      activeStudentCount,
+    });
+  }
+
+  const totalExpected = divisionStatuses.reduce((s, d) => s + d.expected, 0);
+  const totalCollected = divisionStatuses.reduce((s, d) => s + d.collected, 0);
+  const totalUnpaidCount = divisionStatuses.reduce((s, d) => s + d.unpaidCount, 0);
+
+  return {
+    totalExpected,
+    totalCollected,
+    collectionRate: totalExpected > 0 ? Number(((totalCollected / totalExpected) * 100).toFixed(1)) : 0,
+    unpaidCount: totalUnpaidCount,
+    divisions: divisionStatuses,
+  };
+}
+
+const getTuitionStatusCached = unstable_cache(
+  async (month?: string) => getTuitionStatusUncached(month),
+  ["super-admin-tuition-status"],
+  { revalidate: 120, tags: ["super-admin-tuition-status"] },
+);
+
+export async function getTuitionStatus(month?: string): Promise<TuitionStatusSummary> {
+  return getTuitionStatusCached(month);
+}

@@ -320,7 +320,7 @@ export function SuperAdminManager({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.08)]">
+      <div className="rounded-[10px] border border-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.08)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -339,7 +339,7 @@ export function SuperAdminManager({
           <button
             type="button"
             onClick={() => refreshAll(true)}
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
           >
             {isRefreshing ? (
               <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -352,7 +352,7 @@ export function SuperAdminManager({
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.06)]">
+        <section className="rounded-[10px] border border-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.06)]">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -366,7 +366,7 @@ export function SuperAdminManager({
             <button
               type="button"
               onClick={resetDivisionForm}
-              className="rounded-full border border-slate-200-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
               초기화
             </button>
@@ -381,7 +381,7 @@ export function SuperAdminManager({
                   onChange={(event) =>
                     setDivisionForm((current) => ({ ...current, name: event.target.value }))
                   }
-                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   required
                 />
               </label>
@@ -396,7 +396,7 @@ export function SuperAdminManager({
                       slug: event.target.value.toLowerCase(),
                     }))
                   }
-                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
+                  className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
                   disabled={Boolean(editingDivisionSlug)}
                   required
                 />
@@ -410,7 +410,7 @@ export function SuperAdminManager({
                 onChange={(event) =>
                   setDivisionForm((current) => ({ ...current, fullName: event.target.value }))
                 }
-                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 required
               />
             </label>
@@ -423,7 +423,7 @@ export function SuperAdminManager({
                   onChange={(event) =>
                     setDivisionForm((current) => ({ ...current, color: event.target.value }))
                   }
-                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   required
                 />
               </label>
@@ -440,7 +440,7 @@ export function SuperAdminManager({
                       displayOrder: event.target.value,
                     }))
                   }
-                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 />
               </label>
             </div>
@@ -501,7 +501,7 @@ export function SuperAdminManager({
 
           <div className="mt-8 space-y-3">
             {divisions.map((division) => (
-              <div key={division.id} className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
+              <div key={division.id} className="rounded-[10px] border border-slate-200 bg-white p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
@@ -511,7 +511,7 @@ export function SuperAdminManager({
                         /{division.slug}
                       </span>
                       {!division.isActive ? (
-                        <span className="rounded-full bg-white border border-slate-200-slate-200 px-2.5 py-1 text-xs font-semibold text-red-700">
+                        <span className="rounded-full bg-white border border-slate-200 px-2.5 py-1 text-xs font-semibold text-red-700">
                           비활성
                         </span>
                       ) : null}
@@ -527,7 +527,7 @@ export function SuperAdminManager({
                         setEditingDivisionSlug(division.slug);
                         setDivisionForm(toDivisionFormState(division));
                       }}
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-white"
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-white"
                     >
                       <Pencil className="h-4 w-4" />
                       수정
@@ -536,7 +536,7 @@ export function SuperAdminManager({
                       type="button"
                       onClick={() => handleDivisionDelete(division)}
                       disabled={isDeletingDivisionSlug === division.slug}
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-white disabled:opacity-60"
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-white disabled:opacity-60"
                     >
                       {isDeletingDivisionSlug === division.slug ? (
                         <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -552,7 +552,7 @@ export function SuperAdminManager({
           </div>
         </section>
 
-        <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.06)]">
+        <section className="rounded-[10px] border border-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.06)]">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -566,7 +566,7 @@ export function SuperAdminManager({
             <button
               type="button"
               onClick={resetAdminForm}
-              className="rounded-full border border-slate-200-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
               초기화
             </button>
@@ -581,7 +581,7 @@ export function SuperAdminManager({
                   onChange={(event) =>
                     setAdminForm((current) => ({ ...current, name: event.target.value }))
                   }
-                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   required
                 />
               </label>
@@ -597,7 +597,7 @@ export function SuperAdminManager({
                       divisionSlug: event.target.value === "SUPER_ADMIN" ? "" : current.divisionSlug,
                     }))
                   }
-                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 >
                   <option value="SUPER_ADMIN">최고관리자</option>
                   <option value="ADMIN">관리자</option>
@@ -614,7 +614,7 @@ export function SuperAdminManager({
                   onChange={(event) =>
                     setAdminForm((current) => ({ ...current, email: event.target.value }))
                   }
-                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
+                  className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
                   disabled={Boolean(editingAdminId)}
                   required
                 />
@@ -629,7 +629,7 @@ export function SuperAdminManager({
                     onChange={(event) =>
                       setAdminForm((current) => ({ ...current, password: event.target.value }))
                     }
-                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                    className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                     required
                   />
                 </label>
@@ -644,7 +644,7 @@ export function SuperAdminManager({
                   setAdminForm((current) => ({ ...current, divisionSlug: event.target.value }))
                 }
                 disabled={adminForm.role === "SUPER_ADMIN"}
-                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
+                className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
               >
                 <option value="">선택하세요</option>
                 {divisions.map((division) => (
@@ -707,7 +707,7 @@ export function SuperAdminManager({
 
           <div className="mt-8 space-y-3">
             {admins.map((admin) => (
-              <div key={admin.id} className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
+              <div key={admin.id} className="rounded-[10px] border border-slate-200 bg-white p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -716,7 +716,7 @@ export function SuperAdminManager({
                         {getRoleLabel(admin.role)}
                       </span>
                       {!admin.isActive ? (
-                        <span className="rounded-full bg-white border border-slate-200-slate-200 px-2.5 py-1 text-xs font-semibold text-red-700">
+                        <span className="rounded-full bg-white border border-slate-200 px-2.5 py-1 text-xs font-semibold text-red-700">
                           비활성
                         </span>
                       ) : null}
@@ -736,7 +736,7 @@ export function SuperAdminManager({
                         setAdminForm(toAdminFormState(admin));
                         setResetPasswordValue("");
                       }}
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-white"
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-white"
                     >
                       <Pencil className="h-4 w-4" />
                       수정
@@ -745,7 +745,7 @@ export function SuperAdminManager({
                       type="button"
                       onClick={() => handleAdminDelete(admin)}
                       disabled={isDeletingAdminId === admin.id}
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-white disabled:opacity-60"
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-white disabled:opacity-60"
                     >
                       {isDeletingAdminId === admin.id ? (
                         <LoaderCircle className="h-4 w-4 animate-spin" />
