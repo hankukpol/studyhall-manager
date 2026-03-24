@@ -231,17 +231,26 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
       ? students.filter((s) => targetStudentIds.includes(s.id))
       : students;
 
-    // Validate all periods first
-    for (const period of periods) {
+    // 입력된 교시만 필터 (최소 1명이라도 상태가 설정된 교시)
+    const periodsWithData = periods.filter((period) =>
+      targetStudents.some((student) => matrix[student.id]?.[period.id]?.status),
+    );
+
+    if (periodsWithData.length === 0) {
+      throw new Error("저장할 출결 데이터가 없습니다. 최소 1개 교시의 출석 상태를 입력해주세요.");
+    }
+
+    // 입력된 교시에 대해서만 검증 (해당 교시 내 모든 학생이 채워져야 함)
+    for (const period of periodsWithData) {
       const unresolved = targetStudents.find((student) => !matrix[student.id]?.[period.id]?.status);
       if (unresolved) {
         throw new Error(`${period.name}에서 ${unresolved.name} 학생 상태가 비어 있습니다.`);
       }
     }
 
-    // Save all periods in parallel
+    // 입력된 교시만 저장
     await Promise.all(
-      periods.map(async (period) => {
+      periodsWithData.map(async (period) => {
         const response = await fetch(`/api/${divisionSlug}/attendance`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -358,8 +367,8 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
           ))}
         </div>
 
-        <div className="mt-4 rounded-2xl border border-slate-200-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-          미처리(남색) 상태로 남은 학생이 있으면 저장할 수 없습니다. 저장 전에 모든 교시를 확인해 주세요.
+        <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+          출석 상태가 입력된 교시만 저장됩니다. 미입력 교시는 건너뛰므로, 현재 교시까지만 체크 후 저장하셔도 됩니다.
         </div>
       </section>
 
