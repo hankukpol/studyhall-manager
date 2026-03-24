@@ -71,8 +71,7 @@ export const SeatMap = memo(function SeatMap({
           <div
             className="grid gap-1.5 sm:gap-2"
             style={{
-              gridTemplateColumns: `repeat(${columns}, 100px)`,
-              gridAutoRows: "100px",
+              gridTemplateColumns: `repeat(${columns}, minmax(80px, 1fr))`,
             }}
           >
             {Array.from({ length: rows }).flatMap((_, rowIndex) =>
@@ -84,7 +83,7 @@ export const SeatMap = memo(function SeatMap({
                   return (
                     <div
                       key={`aisle-${positionX}-${positionY}`}
-                      className="flex h-full items-center justify-center rounded-[8px] border border-dashed border-slate-200 bg-white text-[10px] font-semibold tracking-[0.2em] text-slate-400"
+                      className="flex aspect-square items-center justify-center rounded-[8px] border border-dashed border-slate-200 bg-white text-[10px] font-semibold tracking-[0.2em] text-slate-400"
                     >
                       복도
                     </div>
@@ -103,7 +102,7 @@ export const SeatMap = memo(function SeatMap({
 
                 const content = (
                   <div
-                    className={`flex h-full flex-col justify-between rounded-[8px] border p-2 text-left transition ${
+                    className={`flex aspect-square flex-col justify-between rounded-[8px] border p-2 text-left transition ${
                       isSelected
                         ? "border-slate-950 bg-slate-950 text-white shadow-[0_8px_24px_rgba(15,23,42,0.2)]"
                         : classes
@@ -142,7 +141,7 @@ export const SeatMap = memo(function SeatMap({
                 );
 
                 if (!isInteractive) {
-                  return <div key={`seat-${positionX}-${positionY}`} className="h-full">{content}</div>;
+                  return <div key={`seat-${positionX}-${positionY}`}>{content}</div>;
                 }
 
                 return (
@@ -150,7 +149,7 @@ export const SeatMap = memo(function SeatMap({
                     key={`seat-${positionX}-${positionY}`}
                     type="button"
                     onClick={(event) => onCellClick?.(positionX, positionY, seatId, event.shiftKey)}
-                    className="h-full text-left"
+                    className="text-left"
                     draggable={canDragSeat}
                     onDragStart={(event) => {
                       if (!canDragSeat || !seatId) {

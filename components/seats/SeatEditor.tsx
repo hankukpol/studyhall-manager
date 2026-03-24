@@ -994,7 +994,10 @@ export function SeatEditor({
                   <input
                     type="checkbox"
                     checked={allSelectedSeats.every((s) => s.isActive)}
-                    onChange={(event) => updateSelectedSeat({ isActive: event.target.checked })}
+                    onChange={(event) => {
+                      const active = event.target.checked;
+                      updateSelectedSeat(active ? { isActive: true } : { isActive: false, label: "" });
+                    }}
                     className="h-4 w-4 rounded border-slate-300"
                   />
                   <span className="text-sm font-medium text-slate-800">운영 좌석</span>
@@ -1060,7 +1063,10 @@ export function SeatEditor({
                   <input
                     type="checkbox"
                     checked={selectedSeat.isActive}
-                    onChange={(event) => updateSelectedSeat({ isActive: event.target.checked })}
+                    onChange={(event) => {
+                      const active = event.target.checked;
+                      updateSelectedSeat(active ? { isActive: true } : { isActive: false, label: "" });
+                    }}
                     className="h-5 w-5 rounded border-slate-300"
                   />
                   <span>
