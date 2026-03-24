@@ -449,7 +449,7 @@ model Seat {
   studyRoom   StudyRoom @relation(fields: [studyRoomId], references: [id], onDelete: Cascade)
   student     Student?
 
-  @@unique([studyRoomId, label])
+  // @@unique([studyRoomId, label]) -- SQL partial unique index로 관리 (빈 label 허용)
   @@unique([studyRoomId, positionX, positionY])
   @@index([divisionId])
   @@index([studyRoomId])

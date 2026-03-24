@@ -100,7 +100,7 @@ export const SeatMap = memo(function SeatMap({
                 const canDragSeat = Boolean(onSeatDrop && seatId && seat?.assignedStudent && seat.isActive);
                 const canDropSeat = Boolean(onSeatDrop && seatId && seat?.isActive);
                 const classes = getSeatTone(seat);
-                const displayLabel = seat ? (seat.isActive || seat.label.startsWith("_") ? seat.label : seat.label || "") : "빈 칸";
+                const displayLabel = seat ? seat.label : "빈 칸";
 
                 const content = (
                   <div
@@ -112,7 +112,7 @@ export const SeatMap = memo(function SeatMap({
                   >
                     <div className="flex items-start justify-between gap-1">
                       <span className="text-[11px] font-bold leading-tight">
-                        {!seat?.isActive && (!seat?.label || seat.label.startsWith("_")) ? "" : displayLabel}
+                        {!seat?.isActive && !seat?.label ? "" : displayLabel}
                       </span>
                       {seat?.assignedStudent ? (
                         <span

@@ -1094,10 +1094,10 @@ export async function saveSeatLayout(
 
   validateSeatDrafts(seats, room);
 
-  // 비활성 좌석에 빈 label이면 위치 기반 placeholder 자동 생성 (unique 제약 대응)
+  // 비활성 좌석에 빈 label이면 빈 문자열로 정규화 (partial unique index가 빈 문자열 제외)
   for (const seat of seats) {
     if (!seat.label.trim() && !seat.isActive) {
-      seat.label = `_${seat.positionX}-${seat.positionY}`;
+      seat.label = "";
     }
   }
 
