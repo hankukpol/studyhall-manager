@@ -29,7 +29,7 @@ type StudentExamsPageProps = {
 
 const panelFallback = (
   <section className={`${portalSectionClass} animate-pulse`}>
-    <div className="h-28 rounded-[12px] bg-[#F4F4F2]" />
+    <div className="h-28 rounded-[10px] bg-[#F4F4F2]" />
   </section>
 );
 
@@ -123,7 +123,7 @@ export default async function StudentExamsPage({ params }: StudentExamsPageProps
                     </div>
 
                     <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:min-w-[260px]">
-                      <div className="rounded-[12px] border border-[var(--border)] bg-white px-4 py-3">
+                      <div className="rounded-[10px] border border-[var(--border)] bg-white px-4 py-3">
                         <p className="text-[12px] font-medium text-[var(--muted)]">
                           총점
                         </p>
@@ -131,7 +131,7 @@ export default async function StudentExamsPage({ params }: StudentExamsPageProps
                           {exam.totalScore ?? "-"}
                         </p>
                       </div>
-                      <div className="rounded-[12px] border border-[var(--border)] bg-white px-4 py-3">
+                      <div className="rounded-[10px] border border-[var(--border)] bg-white px-4 py-3">
                         <p className="text-[12px] font-medium text-[var(--muted)]">
                           반 석차
                         </p>
@@ -146,7 +146,7 @@ export default async function StudentExamsPage({ params }: StudentExamsPageProps
                     {exam.subjects.map((subject) => (
                       <div
                         key={`${exam.id}-${subject.subjectId}`}
-                        className="rounded-[12px] border border-[var(--border)] bg-white px-4 py-3"
+                        className="rounded-[10px] border border-[var(--border)] bg-white px-4 py-3"
                       >
                         <p className="text-[13px] font-semibold text-[var(--foreground)]">{subject.name}</p>
                         <p className="mt-1.5 text-[22px] font-bold tracking-tight text-[var(--foreground)]">

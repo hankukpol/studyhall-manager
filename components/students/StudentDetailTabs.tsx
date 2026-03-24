@@ -45,7 +45,7 @@ type StudentDetailTabsProps = {
 };
 
 const tabSectionFallback = () => (
-  <div className="rounded-[22px] border border-slate-200 bg-white p-4 text-sm text-slate-500">
+  <div className="rounded-[10px] border border-slate-200 bg-white p-4 text-sm text-slate-500">
     불러오는 중...
   </div>
 );
@@ -225,35 +225,35 @@ export function StudentDetailTabs({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <article className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
             <p className="text-sm text-slate-500">이번 달 출석률</p>
             <p className="mt-3 text-2xl font-bold text-slate-950">
               {attendanceSummary.monthlyAttendanceRate}%
             </p>
           </article>
-          <article className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
             <p className="text-sm text-slate-500">월간 출석</p>
             <p className="mt-3 text-2xl font-bold text-slate-950">
               {attendanceSummary.monthlyAttendedCount}/{attendanceSummary.monthlyExpectedCount}
             </p>
           </article>
-          <article className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
             <p className="text-sm text-slate-500">주간 출석</p>
             <p className="mt-3 text-2xl font-bold text-slate-950">
               {attendanceSummary.weeklyAttendedCount}/{attendanceSummary.weeklyExpectedCount}
             </p>
           </article>
-          <article className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
             <p className="text-sm text-slate-500">외출/휴가 기록</p>
             <p className="mt-3 text-2xl font-bold text-slate-950">{leavePermissions.length}건</p>
           </article>
         </div>
 
-        <div className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+        <div className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
           <AttendanceCalendar weeklyAttendance={weeklyAttendance} />
         </div>
 
-        <div className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+        <div className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
           <p className="text-sm font-semibold text-slate-900">최근 외출/휴가</p>
           {leavePermissions.length > 0 ? (
             <div className="mt-4 space-y-3">
@@ -314,7 +314,7 @@ export function StudentDetailTabs({
             {pointRecords.map((record) => (
               <article
                 key={record.id}
-                className="rounded-[22px] border border-slate-200-slate-200 bg-white px-4 py-4"
+                className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4"
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <PointCategoryBadge category={record.category} />
@@ -332,7 +332,7 @@ export function StudentDetailTabs({
             ))}
           </div>
         ) : (
-          <div className="rounded-[22px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
+          <div className="rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
             등록된 상벌점 기록이 없습니다.
           </div>
         )}
@@ -462,7 +462,7 @@ export function StudentDetailTabs({
             {filteredExamResults.map((exam) => (
               <article
                 key={exam.id}
-                className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4"
+                className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
@@ -509,7 +509,7 @@ export function StudentDetailTabs({
             ))}
           </div>
         ) : (
-          <div className="rounded-[22px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
+          <div className="rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
             {examResults.length === 0 ? "등록된 시험 성적이 없습니다." : "해당 시험 성적이 없습니다."}
           </div>
         )}
@@ -549,7 +549,7 @@ export function StudentDetailTabs({
         </div>
 
         {paymentRecords.length > 0 ? (
-          <div className="overflow-x-auto rounded-[22px] border border-slate-200-slate-200 bg-white">
+          <div className="overflow-x-auto rounded-[10px] border border-slate-200-slate-200 bg-white">
             <table className="min-w-full divide-y divide-slate-200 text-sm">
               <thead>
                 <tr className="text-left text-slate-500">
@@ -579,7 +579,7 @@ export function StudentDetailTabs({
             </table>
           </div>
         ) : (
-          <div className="rounded-[22px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
+          <div className="rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
             등록된 수납 기록이 없습니다.
           </div>
         )}
@@ -726,7 +726,7 @@ export function StudentDetailTabs({
           {interviews.map((interview) => (
             <article
               key={interview.id}
-              className="rounded-[22px] border border-slate-200-slate-200 bg-white px-4 py-4"
+              className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4"
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span
@@ -749,7 +749,7 @@ export function StudentDetailTabs({
           ))}
         </div>
       ) : (
-        <div className="rounded-[22px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
+        <div className="rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
           등록된 면담 기록이 없습니다.
         </div>
       )}

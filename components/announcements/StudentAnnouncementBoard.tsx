@@ -103,7 +103,7 @@ export function StudentAnnouncementBoard({
               <input
                 value={searchKeyword}
                 onChange={(event) => setSearchKeyword(event.target.value)}
-                className="w-full rounded-[12px] border border-[var(--border)] bg-white py-2.5 pl-10 pr-3.5 text-sm outline-none transition focus:border-[var(--division-color)]"
+                className="w-full rounded-[10px] border border-[var(--border)] bg-white py-2.5 pl-10 pr-3.5 text-sm outline-none transition focus:border-[var(--division-color)]"
                 placeholder="제목 또는 내용 검색"
               />
             </label>
@@ -112,7 +112,7 @@ export function StudentAnnouncementBoard({
               <select
                 value={visibilityFilter}
                 onChange={(event) => setVisibilityFilter(event.target.value as VisibilityFilter)}
-                className="rounded-[12px] border border-[var(--border)] bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-[var(--division-color)]"
+                className="rounded-[10px] border border-[var(--border)] bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-[var(--division-color)]"
               >
                 <option value="ALL">전체 공지</option>
                 <option value="PINNED">중요 공지만</option>
@@ -122,7 +122,7 @@ export function StudentAnnouncementBoard({
         </div>
 
         {visibleAnnouncements.length > 0 ? (
-          <div className="mt-3 overflow-x-auto rounded-[12px] border border-[var(--border)]">
+          <div className="mt-3 overflow-x-auto rounded-[10px] border border-[var(--border)]">
             <table className="min-w-[720px] w-full text-sm">
               <thead className="bg-[#F4F4F2] text-left text-[var(--muted)]">
                 <tr>
@@ -152,7 +152,7 @@ export function StudentAnnouncementBoard({
                           <div className="flex flex-wrap items-center gap-2">
                             <p className="font-semibold text-[var(--foreground)]">{announcement.title}</p>
                             {announcement.isPinned ? (
-                              <span className="inline-flex items-center gap-1 rounded-[12px] border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">
+                              <span className="inline-flex items-center gap-1 rounded-[10px] border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">
                                 <Pin className="h-3 w-3" />
                                 중요
                               </span>
@@ -191,7 +191,7 @@ export function StudentAnnouncementBoard({
             <div className="flex flex-wrap items-center gap-2">
               <span className={portalChipClass}>{getScopeLabel(selectedAnnouncement)}</span>
               {selectedAnnouncement.isPinned ? (
-                <span className="inline-flex items-center gap-1 rounded-[12px] border border-amber-200 bg-amber-50 px-3 py-1 text-[12px] font-medium text-amber-700">
+                <span className="inline-flex items-center gap-1 rounded-[10px] border border-amber-200 bg-amber-50 px-3 py-1 text-[12px] font-medium text-amber-700">
                   <Pin className="h-3 w-3" />
                   중요 공지
                 </span>
@@ -228,7 +228,7 @@ export function StudentAnnouncementBoard({
               </div>
             </div>
 
-            <div className="mt-3 flex items-center gap-2 rounded-[12px] border border-[var(--border)] bg-[#F4F4F2] px-3.5 py-3 text-[13px] text-[var(--muted)]">
+            <div className="mt-3 flex items-center gap-2 rounded-[10px] border border-[var(--border)] bg-[#F4F4F2] px-3.5 py-3 text-[13px] text-[var(--muted)]">
               <Megaphone className="h-4 w-4 text-[var(--muted)]" />
               최신 공지가 위에서부터 순서대로 정렬됩니다.
             </div>

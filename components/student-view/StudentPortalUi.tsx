@@ -26,16 +26,16 @@ export const portalContainerClass =
   "mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-3 md:gap-4";
 
 export const portalSectionClass =
-  "rounded-[16px] border border-[var(--border)] bg-white p-4 shadow-card md:p-6";
+  "rounded-[10px] border border-[var(--border)] bg-white p-4 shadow-card md:p-6";
 
 export const portalInsetClass =
-  "rounded-[12px] border border-[var(--border)] bg-[#F4F4F2] p-3.5 md:p-4";
+  "rounded-[10px] border border-[var(--border)] bg-[#F4F4F2] p-3.5 md:p-4";
 
 export const portalCardClass =
-  "rounded-[16px] border border-[var(--border)] bg-white shadow-card";
+  "rounded-[10px] border border-[var(--border)] bg-white shadow-card";
 
 export const portalChipClass =
-  "inline-flex items-center rounded-[12px] border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-medium text-[var(--foreground)]";
+  "inline-flex items-center rounded-[10px] border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-medium text-[var(--foreground)]";
 
 export function getBrandSurfaceStyle(alpha = 0.12): CSSProperties {
   return {
@@ -142,7 +142,7 @@ export function PortalEmptyState({
   description,
 }: PortalEmptyStateProps) {
   return (
-    <div className="rounded-[12px] border border-dashed border-[var(--border)] bg-[#F4F4F2] px-4 py-5 md:px-5 md:py-6">
+    <div className="rounded-[10px] border border-dashed border-[var(--border)] bg-[#F4F4F2] px-4 py-5 md:px-5 md:py-6">
       <p className="text-[14px] font-semibold text-[var(--foreground)]">{title}</p>
       <p className="mt-1.5 text-[13px] leading-[1.5] text-[var(--muted)]">{description}</p>
     </div>

@@ -52,12 +52,12 @@ export default async function AssistantPage({ params }: AssistantPageProps) {
             <div className="mt-5 flex flex-wrap items-center gap-2.5">
               <Link
                 href={`/${params.division}/assistant/check`}
-                className="inline-flex items-center gap-2 rounded-[14px] bg-[var(--division-color)] px-5 py-3.5 text-sm font-bold text-white transition hover:opacity-90 shadow-sm"
+                className="inline-flex items-center gap-2 rounded-[10px] bg-[var(--division-color)] px-5 py-3.5 text-sm font-bold text-white transition hover:opacity-90 shadow-sm"
               >
                 출석체크 시작
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <span className="rounded-[14px] border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-500">
+              <span className="rounded-[10px] border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-500">
                 {today}
               </span>
             </div>
@@ -118,7 +118,7 @@ export default async function AssistantPage({ params }: AssistantPageProps) {
       </section>
 
       <section className="grid grid-cols-2 gap-3">
-        <article className="rounded-[22px] border border-black/5 bg-white p-4 shadow-[0_2px_8px_rgba(15,23,42,0.02)]">
+        <article className="rounded-[10px] border border-black/5 bg-white p-4 shadow-[0_2px_8px_rgba(15,23,42,0.02)]">
           <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-600">
             Tip
           </p>
@@ -128,7 +128,7 @@ export default async function AssistantPage({ params }: AssistantPageProps) {
           </p>
         </article>
 
-        <article className="rounded-[22px] border border-black/5 bg-white p-4 shadow-[0_2px_8px_rgba(15,23,42,0.02)]">
+        <article className="rounded-[10px] border border-black/5 bg-white p-4 shadow-[0_2px_8px_rgba(15,23,42,0.02)]">
           <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-amber-600">
             Swipe
           </p>

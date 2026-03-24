@@ -368,7 +368,7 @@ export function AnnouncementManager({
           </article>
         </section>
 
-        <section className="rounded-[30px] border border-slate-200-black/5 bg-white p-5 shadow-[0_18px_44px_rgba(18,32,56,0.06)]">
+        <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_18px_44px_rgba(18,32,56,0.06)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <span className="inline-flex rounded-full border border-slate-200-slate-200 bg-white px-3 py-1 text-xs font-semibold tracking-[0.2em] text-slate-500">
@@ -442,7 +442,7 @@ export function AnnouncementManager({
           </div>
 
           <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-            <section className="overflow-hidden rounded-[26px] border border-slate-200 bg-white">
+            <section className="overflow-hidden rounded-[10px] border border-slate-200 bg-white">
               {visibleAnnouncements.length > 0 ? (
                 <>
                   <div className="overflow-x-auto">
@@ -562,7 +562,7 @@ export function AnnouncementManager({
               )}
             </section>
 
-            <aside className="rounded-[26px] border border-slate-200 bg-white p-5">
+            <aside className="rounded-[10px] border border-slate-200 bg-white p-5">
               {selectedAnnouncement ? (
                 <>
                   <div className="flex flex-wrap gap-2">
@@ -584,7 +584,7 @@ export function AnnouncementManager({
                     {selectedAnnouncement.title}
                   </h3>
 
-                  <div className="mt-4 rounded-[22px] border border-slate-200 bg-[#f8fafc] px-4 py-4">
+                  <div className="mt-4 rounded-[10px] border border-slate-200 bg-[#f8fafc] px-4 py-4">
                     <p className="whitespace-pre-line text-sm leading-7 text-slate-700">
                       {selectedAnnouncement.content}
                     </p>
@@ -743,7 +743,7 @@ export function AnnouncementManager({
               학생 대시보드 상단에 고정합니다.
             </label>
 
-            <div className="mt-4 rounded-[22px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm leading-6 text-slate-600">
+            <div className="mt-4 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm leading-6 text-slate-600">
               발행 일시를 비워 두면 즉시 공개됩니다. 미래 시점을 지정하면 예약 공지로 등록됩니다.
               {!canManageGlobal
                 ? " 전체 공지는 최고관리자만 작성할 수 있습니다."

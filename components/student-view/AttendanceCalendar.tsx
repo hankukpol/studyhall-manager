@@ -136,7 +136,7 @@ export function AttendanceCalendar({
   return (
     <div className="w-full min-w-0">
       <div className="md:hidden">
-        <div className="max-w-full overflow-x-auto overscroll-x-contain rounded-[16px] border border-[var(--border)] bg-white [-webkit-overflow-scrolling:touch] [touch-action:pan-x]">
+        <div className="max-w-full overflow-x-auto overscroll-x-contain rounded-[10px] border border-[var(--border)] bg-white [-webkit-overflow-scrolling:touch] [touch-action:pan-x]">
           <table
             className="w-max border-collapse text-[11px]"
             style={{ minWidth: `${mobileTableMinWidth}px` }}
@@ -192,7 +192,7 @@ export function AttendanceCalendar({
                       className="border-b border-r border-slate-100 px-1.5 py-1.5 text-center align-middle last:border-r-0"
                     >
                       <div
-                        className={`flex min-h-[30px] min-w-[44px] items-center justify-center rounded-[12px] border px-1 text-[10px] font-semibold leading-tight ${getStatusClasses(period.status)}`}
+                        className={`flex min-h-[30px] min-w-[44px] items-center justify-center rounded-[10px] border px-1 text-[10px] font-semibold leading-tight ${getStatusClasses(period.status)}`}
                         title={period.reason || `${period.periodName} ${period.startTime}-${period.endTime}`}
                       >
                         {period.statusLabel}
@@ -244,7 +244,7 @@ export function AttendanceCalendar({
               <tr key={row.date.date}>
                 <th className="sticky left-0 z-10 bg-white pr-3 pb-3 text-left align-top">
                   <div
-                    className={`rounded-[12px] border px-3 py-2.5 ${getDateBadgeClass(
+                    className={`rounded-[10px] border px-3 py-2.5 ${getDateBadgeClass(
                       row.date.isToday,
                     )}`}
                     style={
@@ -264,7 +264,7 @@ export function AttendanceCalendar({
                         <p className="mt-1 text-sm font-semibold">{row.date.label}</p>
                       </div>
                       <span
-                        className={`rounded-[12px] border px-2 py-0.5 text-[10px] font-medium ${getDateBadgeClass(
+                        className={`rounded-[10px] border px-2 py-0.5 text-[10px] font-medium ${getDateBadgeClass(
                           row.date.isToday,
                         )}`}
                         style={
@@ -285,7 +285,7 @@ export function AttendanceCalendar({
                 {row.periods.map((period) => (
                   <td key={`${row.date.date}-${period.periodId}`} className="pb-3 align-top">
                     <div
-                      className={`rounded-[12px] border px-2.5 py-2.5 text-center ${getStatusClasses(period.status)}`}
+                      className={`rounded-[10px] border px-2.5 py-2.5 text-center ${getStatusClasses(period.status)}`}
                       title={period.reason || `${period.periodName} ${period.startTime}-${period.endTime}`}
                     >
                       <p className="text-[10px] font-medium opacity-75">

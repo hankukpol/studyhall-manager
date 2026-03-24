@@ -7,7 +7,12 @@ import {
   type MockScoreTargetRecord,
 } from "@/lib/mock-store";
 import type { ScoreTargetUpsertInput } from "@/lib/score-target-schemas";
+import {
+  isPrismaSchemaMismatchError,
+  logSchemaCompatibilityFallback,
+} from "@/lib/service-helpers";
 import { listExamTypes, type ExamTypeItem } from "@/lib/services/exam.service";
+import { listStudents } from "@/lib/services/student.service";
 
 type StudentSummary = {
   id: string;
@@ -23,11 +28,6 @@ type ScoreTargetRecord = {
   note: string | null;
   createdAt: Date;
   updatedAt: Date;
-  examType: {
-    id: string;
-    name: string;
-    studyTrack: string | null;
-  };
 };
 
 type ExamScoreSummaryRecord = {
@@ -165,26 +165,17 @@ async function getStudentSummaryOrThrow(divisionSlug: string, studentId: string)
     };
   }
 
-  const prisma = await getPrismaClient();
-  const student = await prisma.student.findFirst({
-    where: {
-      id: studentId,
-      division: {
-        slug: divisionSlug,
-      },
-    },
-    select: {
-      id: true,
-      divisionId: true,
-      studyTrack: true,
-    },
-  });
+  const student = (await listStudents(divisionSlug)).find((item) => item.id === studentId);
 
   if (!student) {
     throw notFound("학생 정보를 찾을 수 없습니다.");
   }
 
-  return student;
+  return {
+    id: student.id,
+    divisionId: student.divisionId,
+    studyTrack: student.studyTrack,
+  };
 }
 
 function filterExamTypesForStudent(examTypes: ExamTypeItem[], studentStudyTrack: string | null) {
@@ -240,36 +231,8 @@ export async function listScoreTargets(
 
   await getStudentSummaryOrThrow(divisionSlug, studentId);
   const prisma = await getPrismaClient();
-  const [targets, latestScores]: [ScoreTargetRecord[], ExamScoreSummaryRecord[]] = await Promise.all([
-    prisma.scoreTarget.findMany({
-      where: {
-        studentId,
-        student: {
-          division: {
-            slug: divisionSlug,
-          },
-        },
-      },
-      include: {
-        examType: {
-          select: {
-            id: true,
-            name: true,
-            studyTrack: true,
-          },
-        },
-      },
-      orderBy: [
-        {
-          examType: {
-            displayOrder: "asc",
-          },
-        },
-        {
-          createdAt: "asc",
-        },
-      ],
-    }),
+  const [examTypes, latestScores] = await Promise.all([
+    listExamTypes(divisionSlug),
     prisma.examScore.findMany({
       where: {
         studentId,
@@ -290,6 +253,37 @@ export async function listScoreTargets(
     }),
   ]);
 
+  let targets: ScoreTargetRecord[];
+
+  try {
+    targets = await prisma.scoreTarget.findMany({
+      where: {
+        studentId,
+        student: {
+          division: {
+            slug: divisionSlug,
+          },
+        },
+      },
+      select: {
+        id: true,
+        studentId: true,
+        examTypeId: true,
+        targetScore: true,
+        note: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  } catch (error) {
+    if (!isPrismaSchemaMismatchError(error, ["score_targets"])) {
+      throw error;
+    }
+
+    logSchemaCompatibilityFallback("score-targets:list", error);
+    return [];
+  }
+
   const latestByType = new Map<string, LatestExamMeta>();
   for (const record of latestScores) {
     if (!latestByType.has(record.examTypeId)) {
@@ -301,9 +295,19 @@ export async function listScoreTargets(
     }
   }
 
-  return targets.map((target) =>
-    serializeScoreTarget(target, target.examType, latestByType.get(target.examTypeId)),
-  );
+  const examTypeMap = new Map(examTypes.map((examType) => [examType.id, examType]));
+  const displayOrderMap = new Map(examTypes.map((examType) => [examType.id, examType.displayOrder]));
+
+  return [...targets]
+    .sort(
+      (left, right) =>
+        (displayOrderMap.get(left.examTypeId) ?? Number.MAX_SAFE_INTEGER) -
+          (displayOrderMap.get(right.examTypeId) ?? Number.MAX_SAFE_INTEGER) ||
+        left.createdAt.getTime() - right.createdAt.getTime(),
+    )
+    .map((target) =>
+      serializeScoreTarget(target, examTypeMap.get(target.examTypeId) ?? null, latestByType.get(target.examTypeId)),
+    );
 }
 
 export async function upsertScoreTarget(

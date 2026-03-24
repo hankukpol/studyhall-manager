@@ -40,7 +40,7 @@ export function StudentPortalFrame({
       <div className={portalContainerClass}>
         <section
           aria-label={title}
-          className="relative overflow-hidden rounded-[16px] shadow-header"
+          className="relative overflow-hidden rounded-[10px] shadow-header"
           style={{
             background: "var(--division-color)",
             color: "white",

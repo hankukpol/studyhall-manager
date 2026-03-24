@@ -419,7 +419,7 @@ export function MobileCheckForm({
   return (
     <div className="space-y-3">
       <div className="sticky z-30 -mx-1 bg-[linear-gradient(180deg,#eef3f8_0%,#eef3f8_82%,rgba(238,243,248,0)_100%)] px-1 pb-3" style={{ top: `${headerHeight}px` }}>
-        <section className="overflow-hidden rounded-[22px] border border-black/5 bg-white">
+        <section className="overflow-hidden rounded-[10px] border border-black/5 bg-white">
           {/* 항상 표시되는 컴팩트 헤더 바 */}
           <button
             type="button"
@@ -487,19 +487,19 @@ export function MobileCheckForm({
 
               <div className="grid gap-3 px-4 py-4">
                 <div className="grid grid-cols-4 gap-2">
-                  <div className="rounded-[16px] border border-slate-200 bg-slate-50 px-2 py-2.5 text-center">
+                  <div className="rounded-[10px] border border-slate-200 bg-slate-50 px-2 py-2.5 text-center">
                     <p className="text-[10px] font-semibold text-slate-400">대상</p>
                     <p className="mt-0.5 text-base font-bold text-slate-950">{students.length}</p>
                   </div>
-                  <div className="rounded-[16px] border border-slate-200 bg-slate-50 px-2 py-2.5 text-center">
+                  <div className="rounded-[10px] border border-slate-200 bg-slate-50 px-2 py-2.5 text-center">
                     <p className="text-[10px] font-semibold text-slate-400">미처리</p>
                     <p className="mt-0.5 text-base font-bold text-slate-950">{summary.uncheckedCount}</p>
                   </div>
-                  <div className="rounded-[16px] border border-slate-200 bg-slate-50 px-2 py-2.5 text-center">
+                  <div className="rounded-[10px] border border-slate-200 bg-slate-50 px-2 py-2.5 text-center">
                     <p className="text-[10px] font-semibold text-slate-400">출석</p>
                     <p className="mt-0.5 text-base font-bold text-emerald-600">{summary.presentCount}</p>
                   </div>
-                  <div className="rounded-[16px] border border-slate-200 bg-slate-50 px-2 py-2.5 text-center">
+                  <div className="rounded-[10px] border border-slate-200 bg-slate-50 px-2 py-2.5 text-center">
                     <p className="text-[10px] font-semibold text-slate-400">결석</p>
                     <p className="mt-0.5 text-base font-bold text-rose-600">{summary.absentCount}</p>
                   </div>
@@ -515,7 +515,7 @@ export function MobileCheckForm({
                       type="date"
                       value={selectedDate}
                       onChange={(event) => setSelectedDate(event.target.value)}
-                      className="w-full rounded-[16px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
+                      className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
                     />
                   </label>
 
@@ -527,7 +527,7 @@ export function MobileCheckForm({
                     <select
                       value={selectedPeriodId}
                       onChange={(event) => setSelectedPeriodId(event.target.value)}
-                      className="w-full rounded-[16px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
+                      className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
                     >
                       {periods.map((period) => (
                         <option key={period.id} value={period.id}>
@@ -542,7 +542,7 @@ export function MobileCheckForm({
                   <button
                     type="button"
                     onClick={refreshCurrentPeriod}
-                    className="inline-flex items-center justify-center gap-2 rounded-[16px] border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700"
+                    className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700"
                   >
                     <RefreshCcw className="h-4 w-4" />
                     현재 교시 맞추기
@@ -550,7 +550,7 @@ export function MobileCheckForm({
                   <button
                     type="button"
                     onClick={() => setShowOnlyUnchecked((current) => !current)}
-                    className={`inline-flex items-center justify-center gap-2 rounded-[16px] border px-4 py-3 text-sm font-semibold transition ${
+                    className={`inline-flex items-center justify-center gap-2 rounded-[10px] border px-4 py-3 text-sm font-semibold transition ${
                       showOnlyUnchecked
                         ? "border-indigo-200 bg-indigo-50 text-indigo-700"
                         : "border-slate-200 bg-white text-slate-700"
@@ -562,7 +562,7 @@ export function MobileCheckForm({
                   <button
                     type="button"
                     onClick={markAllPresent}
-                    className="rounded-[16px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"
+                    className="rounded-[10px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"
                   >
                     전원 출석 처리
                   </button>
@@ -570,7 +570,7 @@ export function MobileCheckForm({
                     type="button"
                     onClick={handleSave}
                     disabled={isSaving || isLoading}
-                    className="inline-flex items-center justify-center gap-2 rounded-[16px] bg-[var(--division-color)] px-4 py-3 text-sm font-semibold text-white disabled:opacity-70"
+                    className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-[var(--division-color)] px-4 py-3 text-sm font-semibold text-white disabled:opacity-70"
                   >
                     {isSaving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                     저장
@@ -614,7 +614,7 @@ export function MobileCheckForm({
           return (
             <div
               key={student.id}
-              className="relative overflow-hidden rounded-[22px] border border-black/5 bg-[linear-gradient(135deg,#eef4ff_0%,#f8fafc_48%,#ffffff_100%)] touch-pan-y"
+              className="relative overflow-hidden rounded-[10px] border border-black/5 bg-[linear-gradient(135deg,#eef4ff_0%,#f8fafc_48%,#ffffff_100%)] touch-pan-y"
               onTouchStart={(event) => handleSwipeStart(student.id, event)}
               onTouchMove={(event) => handleSwipeMove(student.id, event)}
               onTouchEnd={() => handleSwipeEnd(student.id)}
@@ -628,7 +628,7 @@ export function MobileCheckForm({
               </div>
 
               <article
-                className={`relative rounded-[22px] border bg-white p-3.5 ${getStudentCardClasses(state.status)}`}
+                className={`relative rounded-[10px] border bg-white p-3.5 ${getStudentCardClasses(state.status)}`}
                 style={{
                   transform: `translateX(${swipeOffset}px)`,
                   transition: swipeOffset === 0 ? "transform 150ms" : "none",
@@ -662,7 +662,7 @@ export function MobileCheckForm({
                         key={button.value}
                         type="button"
                         onClick={() => applyStudentStatus(student.id, button.value)}
-                        className={`rounded-[16px] border px-3 py-2.5 text-sm font-semibold transition ${
+                        className={`rounded-[10px] border px-3 py-2.5 text-sm font-semibold transition ${
                           isActive
                             ? button.activeClassName
                             : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
@@ -681,7 +681,7 @@ export function MobileCheckForm({
                   <select
                     value={state.status}
                     onChange={(event) => applyStudentStatus(student.id, event.target.value as AttendanceOptionValue)}
-                    className="w-full rounded-[16px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
+                    className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
                   >
                     {ATTENDANCE_STATUS_OPTIONS.map((option) => (
                       <option key={option.value || "empty"} value={option.value}>
@@ -697,7 +697,7 @@ export function MobileCheckForm({
                       value={state.reason}
                       onChange={(event) => updateStudentState(student.id, { reason: event.target.value })}
                       placeholder="사유를 입력해 주세요."
-                      className="w-full rounded-[16px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
+                      className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
                     />
                   </div>
                 ) : null}

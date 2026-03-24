@@ -556,7 +556,7 @@ export function StudentDetailView({
             {isRefundEnabled && (
               <div className="mt-4 space-y-4">
                 {paymentRecords.length > 0 && (
-                  <div className="rounded-[22px] border border-slate-200-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  <div className="rounded-[10px] border border-slate-200-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
                     <p className="font-medium text-slate-700">기존 수납 이력 참고</p>
                     <div className="mt-2 space-y-1">
                       <p>

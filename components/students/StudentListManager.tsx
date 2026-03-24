@@ -338,7 +338,7 @@ export function StudentListManager({
           </article>
         </section>
 
-        <section className="rounded-[30px] border border-slate-200-black/5 bg-white p-5 shadow-[0_18px_44px_rgba(18,32,56,0.06)]">
+        <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_18px_44px_rgba(18,32,56,0.06)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <span className="inline-flex rounded-full border border-slate-200-slate-200 bg-white px-3 py-1 text-xs font-semibold tracking-[0.2em] text-slate-500">

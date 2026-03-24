@@ -152,12 +152,12 @@ export function RulesSettingsManager({
           </p>
           <h2 className="mt-2 text-2xl font-bold text-slate-950">현재 운영 규칙 요약</h2>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[22px] bg-[var(--division-color)] p-4 text-white">
+            <div className="rounded-[10px] bg-[var(--division-color)] p-4 text-white">
               <p className="text-xs uppercase tracking-[0.22em] text-white/60">Tardy</p>
               <p className="mt-3 text-3xl font-extrabold">{form.tardyMinutes}분</p>
               <p className="mt-2 text-sm text-white/70">지각 판정 기준</p>
             </div>
-            <div className="rounded-[22px] bg-white p-4 text-amber-900">
+            <div className="rounded-[10px] bg-white p-4 text-amber-900">
               <p className="text-xs uppercase tracking-[0.22em] text-amber-700">Warnings</p>
               <p className="mt-3 text-3xl font-extrabold">{form.warnWithdraw}점</p>
               <p className="mt-2 text-sm text-amber-800">퇴실 기준, 시작점 대비 {warningGap}점 차이</p>
@@ -165,7 +165,7 @@ export function RulesSettingsManager({
           </div>
 
           <div className="mt-4 space-y-3">
-            <article className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+            <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <p className="text-sm font-semibold text-slate-900">조교 출석 수정 범위</p>
               <p className="mt-2 text-sm text-slate-600">
                 {form.assistantPastEditAllowed
@@ -174,7 +174,7 @@ export function RulesSettingsManager({
               </p>
             </article>
 
-            <article className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+            <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <p className="text-sm font-semibold text-slate-900">휴가/외출 한도</p>
               <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
                 <span>휴무권 {form.holidayLimit}회</span>
@@ -184,7 +184,7 @@ export function RulesSettingsManager({
               </div>
             </article>
 
-            <article className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+            <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <p className="text-sm font-semibold text-slate-900">개근 상점</p>
               <p className="mt-2 text-sm text-slate-600">
                 {form.perfectAttendancePtsEnabled
@@ -193,14 +193,14 @@ export function RulesSettingsManager({
               </p>
             </article>
 
-            <article className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+            <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <p className="text-sm font-semibold text-slate-900">최근 저장</p>
               <p className="mt-2 text-sm text-slate-600">
                 {new Date(settings.updatedAt).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
               </p>
             </article>
 
-            <article className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+            <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <p className="text-sm font-semibold text-slate-900">경고 문자 템플릿</p>
               <p className="mt-2 text-sm text-slate-600">
                 변수: {"{학원명}"} {"{직렬명}"} {"{학생이름}"} {"{벌점}"} {"{경고단계}"}

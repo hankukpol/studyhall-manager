@@ -228,7 +228,7 @@ export function PhoneSubmissionManager({
 
       {/* 미반납자 벌점 부여 */}
       {notSubmittedCount > 0 && (
-        <div className="rounded-[22px] border border-rose-200 bg-rose-50 p-4">
+        <div className="rounded-[10px] border border-rose-200 bg-rose-50 p-4">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-rose-500" />
             <p className="text-sm font-semibold text-rose-700">미반납자 벌점 부여</p>

@@ -60,7 +60,7 @@ export const SeatMap = memo(function SeatMap({
   return (
     <div className="space-y-4">
       <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-center text-sm font-medium text-slate-600">
-        출입구 방향
+        칠판
       </div>
 
       <div className="overflow-x-auto">

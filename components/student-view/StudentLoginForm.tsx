@@ -90,7 +90,7 @@ export function StudentLoginForm({
               <input
                 value={studentNumber}
                 onChange={(event) => setStudentNumber(event.target.value)}
-                className="w-full rounded-[12px] border border-[var(--border)] bg-[#F4F4F2] px-4 py-3 text-sm text-[var(--foreground)] outline-none transition focus:border-[var(--division-color)] focus:bg-white"
+                className="w-full rounded-[10px] border border-[var(--border)] bg-[#F4F4F2] px-4 py-3 text-sm text-[var(--foreground)] outline-none transition focus:border-[var(--division-color)] focus:bg-white"
                 placeholder="학번 입력"
                 autoComplete="username"
                 required
@@ -102,7 +102,7 @@ export function StudentLoginForm({
               <input
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                className="w-full rounded-[12px] border border-[var(--border)] bg-[#F4F4F2] px-4 py-3 text-sm text-[var(--foreground)] outline-none transition focus:border-[var(--division-color)] focus:bg-white"
+                className="w-full rounded-[10px] border border-[var(--border)] bg-[#F4F4F2] px-4 py-3 text-sm text-[var(--foreground)] outline-none transition focus:border-[var(--division-color)] focus:bg-white"
                 placeholder="이름 입력"
                 autoComplete="name"
                 required
@@ -110,7 +110,7 @@ export function StudentLoginForm({
             </label>
 
             {error ? (
-              <div className="rounded-[12px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              <div className="rounded-[10px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                 {error}
               </div>
             ) : null}
@@ -118,7 +118,7 @@ export function StudentLoginForm({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-[12px] px-4 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] px-4 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70"
               style={{
                 backgroundColor: "var(--division-color)",
                 color: "var(--division-on-accent)",

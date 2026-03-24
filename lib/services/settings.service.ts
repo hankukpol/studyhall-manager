@@ -16,6 +16,10 @@ import {
   type RulesSettingsInput,
   type StudyTrackList,
 } from "@/lib/settings-schemas";
+import {
+  isPrismaSchemaMismatchError,
+  logSchemaCompatibilityFallback,
+} from "@/lib/service-helpers";
 
 async function getPrismaClient() {
   const { prisma } = await import("@/lib/prisma");
@@ -48,6 +52,22 @@ type RawDbDivisionSettingsRecord = {
 };
 
 type RawDivisionSettingsRecord = RawDbDivisionSettingsRecord | MockDivisionSettingsRecord;
+
+type LegacyDivisionSettingsRow = {
+  divisionId: string;
+  warnLevel1: number | null;
+  warnLevel2: number | null;
+  warnInterview: number | null;
+  warnWithdraw: number | null;
+  tardyMinutes: number | null;
+  holidayLimit: number | null;
+  halfDayLimit: number | null;
+  healthLimit: number | null;
+  holidayUnusedPts: number | null;
+  halfDayUnusedPts: number | null;
+  operatingDays: unknown;
+  updatedAt: Date | null;
+};
 
 type DefaultRuleValues = {
   warnLevel1: number;
@@ -228,6 +248,123 @@ function serializeSettingsRecord(record: RawDivisionSettingsRecord): DivisionSet
   };
 }
 
+function serializeLegacySettingsRecord(record: LegacyDivisionSettingsRow): DivisionSettingsRecord {
+  return serializeSettingsRecord({
+    divisionId: record.divisionId,
+    warnLevel1: record.warnLevel1 ?? DEFAULT_RULE_VALUES.warnLevel1,
+    warnLevel2: record.warnLevel2 ?? DEFAULT_RULE_VALUES.warnLevel2,
+    warnInterview: record.warnInterview ?? DEFAULT_RULE_VALUES.warnInterview,
+    warnWithdraw: record.warnWithdraw ?? DEFAULT_RULE_VALUES.warnWithdraw,
+    warnMsgLevel1: null,
+    warnMsgLevel2: null,
+    warnMsgInterview: null,
+    warnMsgWithdraw: null,
+    tardyMinutes: record.tardyMinutes ?? DEFAULT_RULE_VALUES.tardyMinutes,
+    assistantPastEditAllowed: DEFAULT_RULE_VALUES.assistantPastEditAllowed,
+    assistantPastEditDays: DEFAULT_RULE_VALUES.assistantPastEditDays,
+    holidayLimit: record.holidayLimit ?? DEFAULT_RULE_VALUES.holidayLimit,
+    halfDayLimit: record.halfDayLimit ?? DEFAULT_RULE_VALUES.halfDayLimit,
+    healthLimit: record.healthLimit ?? DEFAULT_RULE_VALUES.healthLimit,
+    holidayUnusedPts: record.holidayUnusedPts ?? DEFAULT_RULE_VALUES.holidayUnusedPts,
+    halfDayUnusedPts: record.halfDayUnusedPts ?? DEFAULT_RULE_VALUES.halfDayUnusedPts,
+    perfectAttendancePtsEnabled: DEFAULT_RULE_VALUES.perfectAttendancePtsEnabled,
+    perfectAttendancePts: DEFAULT_RULE_VALUES.perfectAttendancePts,
+    operatingDays: record.operatingDays ?? normalizeOperatingDays(undefined),
+    studyTracks: normalizeStudyTracks(undefined),
+    updatedAt: record.updatedAt ?? new Date(),
+  });
+}
+
+async function readLegacyDivisionSettings(
+  prisma: Awaited<ReturnType<typeof getPrismaClient>>,
+  divisionId: string,
+): Promise<DivisionSettingsRecord> {
+  const rows = await prisma.$queryRaw<LegacyDivisionSettingsRow[]>`
+    SELECT
+      division_id AS "divisionId",
+      warn_level1 AS "warnLevel1",
+      warn_level2 AS "warnLevel2",
+      warn_interview AS "warnInterview",
+      warn_withdraw AS "warnWithdraw",
+      tardy_minutes AS "tardyMinutes",
+      holiday_limit AS "holidayLimit",
+      half_day_limit AS "halfDayLimit",
+      health_limit AS "healthLimit",
+      holiday_unused_pts AS "holidayUnusedPts",
+      half_day_unused_pts AS "halfDayUnusedPts",
+      operating_days AS "operatingDays",
+      updated_at AS "updatedAt"
+    FROM division_settings
+    WHERE division_id = ${divisionId}
+    LIMIT 1
+  `;
+
+  return rows[0] ? serializeLegacySettingsRecord(rows[0]) : createDefaultSettingsRecord(divisionId);
+}
+
+async function upsertLegacyDivisionRuleSettings(
+  prisma: Awaited<ReturnType<typeof getPrismaClient>>,
+  divisionId: string,
+  input: RulesSettingsInput,
+) {
+  await prisma.$executeRaw`
+    INSERT INTO division_settings (
+      division_id,
+      warn_level1,
+      warn_level2,
+      warn_interview,
+      warn_withdraw,
+      tardy_minutes,
+      holiday_limit,
+      half_day_limit,
+      health_limit,
+      holiday_unused_pts,
+      half_day_unused_pts
+    ) VALUES (
+      ${divisionId},
+      ${input.warnLevel1},
+      ${input.warnLevel2},
+      ${input.warnInterview},
+      ${input.warnWithdraw},
+      ${input.tardyMinutes},
+      ${input.holidayLimit},
+      ${input.halfDayLimit},
+      ${input.healthLimit},
+      ${input.holidayUnusedPts},
+      ${input.halfDayUnusedPts}
+    )
+    ON CONFLICT (division_id) DO UPDATE SET
+      warn_level1 = EXCLUDED.warn_level1,
+      warn_level2 = EXCLUDED.warn_level2,
+      warn_interview = EXCLUDED.warn_interview,
+      warn_withdraw = EXCLUDED.warn_withdraw,
+      tardy_minutes = EXCLUDED.tardy_minutes,
+      holiday_limit = EXCLUDED.holiday_limit,
+      half_day_limit = EXCLUDED.half_day_limit,
+      health_limit = EXCLUDED.health_limit,
+      holiday_unused_pts = EXCLUDED.holiday_unused_pts,
+      half_day_unused_pts = EXCLUDED.half_day_unused_pts
+  `;
+}
+
+async function upsertLegacyDivisionGeneralSettings(
+  prisma: Awaited<ReturnType<typeof getPrismaClient>>,
+  divisionId: string,
+  input: GeneralSettingsInput,
+) {
+  await prisma.$executeRaw`
+    INSERT INTO division_settings (
+      division_id,
+      operating_days
+    ) VALUES (
+      ${divisionId},
+      ${JSON.stringify(normalizeOperatingDays(input.operatingDays))}::jsonb
+    )
+    ON CONFLICT (division_id) DO UPDATE SET
+      operating_days = EXCLUDED.operating_days
+  `;
+}
+
 function getDivisionRuleSettingsFromRecord(
   settings: DivisionSettingsRecord,
 ): DivisionRuleSettings {
@@ -295,9 +432,30 @@ async function ensureDbDivisionSettings(divisionSlug: string) {
     throw notFound(DIVISION_NOT_FOUND_ERROR);
   }
 
-  const settings = await prisma.divisionSettings.findUnique({
-    where: { divisionId: division.id },
-  });
+  let settings;
+
+  try {
+    settings = await prisma.divisionSettings.findUnique({
+      where: { divisionId: division.id },
+    });
+  } catch (error) {
+    if (
+      !isPrismaSchemaMismatchError(error, [
+        "division_settings",
+        "assistant_past_edit",
+        "warn_msg_",
+        "study_tracks",
+      ])
+    ) {
+      throw error;
+    }
+
+    logSchemaCompatibilityFallback("division-settings:read", error);
+    return {
+      division,
+      settings: await readLegacyDivisionSettings(prisma, division.id),
+    };
+  }
 
   return {
     division,
@@ -498,50 +656,66 @@ export async function updateDivisionRuleSettings(
   const prisma = await getPrismaClient();
   const { division } = await ensureDbDivisionSettings(divisionSlug);
 
-  await prisma.divisionSettings.upsert({
-    where: { divisionId: division.id },
-    update: {
-      warnLevel1: input.warnLevel1,
-      warnLevel2: input.warnLevel2,
-      warnInterview: input.warnInterview,
-      warnWithdraw: input.warnWithdraw,
-      warnMsgLevel1: input.warnMsgLevel1.trim(),
-      warnMsgLevel2: input.warnMsgLevel2.trim(),
-      warnMsgInterview: input.warnMsgInterview.trim(),
-      warnMsgWithdraw: input.warnMsgWithdraw.trim(),
-      tardyMinutes: input.tardyMinutes,
-      assistantPastEditAllowed: input.assistantPastEditAllowed,
-      assistantPastEditDays: input.assistantPastEditDays,
-      holidayLimit: input.holidayLimit,
-      halfDayLimit: input.halfDayLimit,
-      healthLimit: input.healthLimit,
-      holidayUnusedPts: input.holidayUnusedPts,
-      halfDayUnusedPts: input.halfDayUnusedPts,
-      perfectAttendancePtsEnabled: input.perfectAttendancePtsEnabled,
-      perfectAttendancePts: input.perfectAttendancePts,
-    },
-    create: {
-      ...createDbDefaultSettingsCreateInput(division.id),
-      warnLevel1: input.warnLevel1,
-      warnLevel2: input.warnLevel2,
-      warnInterview: input.warnInterview,
-      warnWithdraw: input.warnWithdraw,
-      warnMsgLevel1: input.warnMsgLevel1.trim(),
-      warnMsgLevel2: input.warnMsgLevel2.trim(),
-      warnMsgInterview: input.warnMsgInterview.trim(),
-      warnMsgWithdraw: input.warnMsgWithdraw.trim(),
-      tardyMinutes: input.tardyMinutes,
-      assistantPastEditAllowed: input.assistantPastEditAllowed,
-      assistantPastEditDays: input.assistantPastEditDays,
-      holidayLimit: input.holidayLimit,
-      halfDayLimit: input.halfDayLimit,
-      healthLimit: input.healthLimit,
-      holidayUnusedPts: input.holidayUnusedPts,
-      halfDayUnusedPts: input.halfDayUnusedPts,
-      perfectAttendancePtsEnabled: input.perfectAttendancePtsEnabled,
-      perfectAttendancePts: input.perfectAttendancePts,
-    },
-  });
+  try {
+    await prisma.divisionSettings.upsert({
+      where: { divisionId: division.id },
+      update: {
+        warnLevel1: input.warnLevel1,
+        warnLevel2: input.warnLevel2,
+        warnInterview: input.warnInterview,
+        warnWithdraw: input.warnWithdraw,
+        warnMsgLevel1: input.warnMsgLevel1.trim(),
+        warnMsgLevel2: input.warnMsgLevel2.trim(),
+        warnMsgInterview: input.warnMsgInterview.trim(),
+        warnMsgWithdraw: input.warnMsgWithdraw.trim(),
+        tardyMinutes: input.tardyMinutes,
+        assistantPastEditAllowed: input.assistantPastEditAllowed,
+        assistantPastEditDays: input.assistantPastEditDays,
+        holidayLimit: input.holidayLimit,
+        halfDayLimit: input.halfDayLimit,
+        healthLimit: input.healthLimit,
+        holidayUnusedPts: input.holidayUnusedPts,
+        halfDayUnusedPts: input.halfDayUnusedPts,
+        perfectAttendancePtsEnabled: input.perfectAttendancePtsEnabled,
+        perfectAttendancePts: input.perfectAttendancePts,
+      },
+      create: {
+        ...createDbDefaultSettingsCreateInput(division.id),
+        warnLevel1: input.warnLevel1,
+        warnLevel2: input.warnLevel2,
+        warnInterview: input.warnInterview,
+        warnWithdraw: input.warnWithdraw,
+        warnMsgLevel1: input.warnMsgLevel1.trim(),
+        warnMsgLevel2: input.warnMsgLevel2.trim(),
+        warnMsgInterview: input.warnMsgInterview.trim(),
+        warnMsgWithdraw: input.warnMsgWithdraw.trim(),
+        tardyMinutes: input.tardyMinutes,
+        assistantPastEditAllowed: input.assistantPastEditAllowed,
+        assistantPastEditDays: input.assistantPastEditDays,
+        holidayLimit: input.holidayLimit,
+        halfDayLimit: input.halfDayLimit,
+        healthLimit: input.healthLimit,
+        holidayUnusedPts: input.holidayUnusedPts,
+        halfDayUnusedPts: input.halfDayUnusedPts,
+        perfectAttendancePtsEnabled: input.perfectAttendancePtsEnabled,
+        perfectAttendancePts: input.perfectAttendancePts,
+      },
+    });
+  } catch (error) {
+    if (
+      !isPrismaSchemaMismatchError(error, [
+        "division_settings",
+        "assistant_past_edit",
+        "warn_msg_",
+        "study_tracks",
+      ])
+    ) {
+      throw error;
+    }
+
+    logSchemaCompatibilityFallback("division-settings:write-rules", error);
+    await upsertLegacyDivisionRuleSettings(prisma, division.id, input);
+  }
 
   revalidateTag(`division-settings:${divisionSlug}`);
   return getDivisionRuleSettings(divisionSlug);
@@ -596,8 +770,43 @@ export async function updateDivisionGeneralSettings(
     throw notFound(DIVISION_NOT_FOUND_ERROR);
   }
 
-  await prisma.$transaction([
-    prisma.division.update({
+  try {
+    await prisma.$transaction([
+      prisma.division.update({
+        where: { slug: divisionSlug },
+        data: {
+          name: input.name,
+          fullName: input.fullName,
+          color: input.color,
+          isActive: input.isActive,
+        },
+      }),
+      prisma.divisionSettings.upsert({
+        where: { divisionId: division.id },
+        update: {
+          operatingDays: normalizeOperatingDays(input.operatingDays),
+          studyTracks: normalizeStudyTracks(input.studyTracks),
+        },
+        create: {
+          ...createDbDefaultSettingsCreateInput(division.id),
+          operatingDays: normalizeOperatingDays(input.operatingDays),
+          studyTracks: normalizeStudyTracks(input.studyTracks),
+        },
+      }),
+    ]);
+  } catch (error) {
+    if (
+      !isPrismaSchemaMismatchError(error, [
+        "division_settings",
+        "study_tracks",
+        "assistant_past_edit",
+      ])
+    ) {
+      throw error;
+    }
+
+    logSchemaCompatibilityFallback("division-settings:write-general", error);
+    await prisma.division.update({
       where: { slug: divisionSlug },
       data: {
         name: input.name,
@@ -605,20 +814,9 @@ export async function updateDivisionGeneralSettings(
         color: input.color,
         isActive: input.isActive,
       },
-    }),
-    prisma.divisionSettings.upsert({
-      where: { divisionId: division.id },
-      update: {
-        operatingDays: normalizeOperatingDays(input.operatingDays),
-        studyTracks: normalizeStudyTracks(input.studyTracks),
-      },
-      create: {
-        ...createDbDefaultSettingsCreateInput(division.id),
-        operatingDays: normalizeOperatingDays(input.operatingDays),
-        studyTracks: normalizeStudyTracks(input.studyTracks),
-      },
-    }),
-  ]);
+    });
+    await upsertLegacyDivisionGeneralSettings(prisma, division.id, input);
+  }
 
   revalidateTag(`division-settings:${divisionSlug}`);
   revalidateTag(`division-theme:${divisionSlug}`);

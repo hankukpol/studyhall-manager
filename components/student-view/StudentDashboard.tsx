@@ -89,7 +89,7 @@ export function StudentDashboard({ data }: StudentDashboardProps) {
         <section className={`${portalSectionClass} py-3.5`}>
           <div className="flex items-center gap-3">
             <div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]"
               style={{
                 backgroundColor: "var(--division-color)",
                 color: "var(--division-on-accent)",
@@ -112,7 +112,7 @@ export function StudentDashboard({ data }: StudentDashboardProps) {
               </p>
             </div>
             <div
-              className="rounded-[12px] px-3 py-1.5 text-[13px] font-bold"
+              className="rounded-[10px] px-3 py-1.5 text-[13px] font-bold"
               style={{
                 backgroundColor:
                   data.upcomingExamSchedule.dDayValue === 0 ? "#fee2e2" : "white",
@@ -179,11 +179,11 @@ export function StudentDashboard({ data }: StudentDashboardProps) {
               {data.recentAnnouncements.slice(0, 3).map((announcement) => (
                 <article key={announcement.id} className={`${portalCardClass} p-3.5`}>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex rounded-[12px] border border-[var(--border)] bg-white px-2 py-1 text-[11px] font-medium text-[var(--foreground)]">
+                    <span className="inline-flex rounded-[10px] border border-[var(--border)] bg-white px-2 py-1 text-[11px] font-medium text-[var(--foreground)]">
                       {announcement.divisionName || "전체 공지"}
                     </span>
                     {announcement.isPinned ? (
-                      <span className="inline-flex rounded-[12px] border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-700">
+                      <span className="inline-flex rounded-[10px] border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-700">
                         중요
                       </span>
                     ) : null}

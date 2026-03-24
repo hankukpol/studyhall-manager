@@ -208,7 +208,7 @@ export function InterviewManager({
           </article>
         </section>
 
-        <section className="rounded-[30px] border border-slate-200-black/5 bg-white p-5 shadow-[0_18px_44px_rgba(18,32,56,0.06)]">
+        <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_18px_44px_rgba(18,32,56,0.06)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <span className="inline-flex rounded-full border border-slate-200-slate-200 bg-white px-3 py-1 text-xs font-semibold tracking-[0.2em] text-slate-500">
@@ -243,14 +243,14 @@ export function InterviewManager({
           </div>
 
           <div className="mt-6 grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-            <section className="rounded-[26px] border border-slate-200-slate-200 bg-white p-4">
+            <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <p className="text-xl font-bold text-slate-950">면담 권장 학생</p>
               <p className="mt-1 text-sm text-slate-500">경고 기준 이상 학생을 먼저 확인하고 바로 면담 기록으로 연결할 수 있습니다.</p>
 
               <div className="mt-4 space-y-3">
                 {recommendedStudents.length > 0 ? (
                   recommendedStudents.map((student) => (
-                    <article key={student.id} className="rounded-[22px] border border-slate-200-slate-200 bg-white px-4 py-4">
+                    <article key={student.id} className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <p className="text-xl font-bold text-slate-950">
@@ -274,14 +274,14 @@ export function InterviewManager({
                     </article>
                   ))
                 ) : (
-                  <div className="rounded-[22px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-8 text-sm text-slate-600">
+                  <div className="rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-8 text-sm text-slate-600">
                     현재 기준을 넘는 학생이 없습니다.
                   </div>
                 )}
               </div>
             </section>
 
-            <section className="rounded-[26px] border border-slate-200-slate-200 bg-white p-4">
+            <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xl font-bold text-slate-950">면담 이력</p>
@@ -307,7 +307,7 @@ export function InterviewManager({
               <div className="mt-4 space-y-3">
                 {historyRows.length > 0 ? (
                   historyRows.map((interview) => (
-                    <article key={interview.id} className="rounded-[22px] border border-slate-200-slate-200 bg-white px-4 py-4">
+                    <article key={interview.id} className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-xl font-bold text-slate-950">{interview.studentName}</p>
                         <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${getInterviewResultTypeClasses(interview.resultType)}`}>
@@ -328,7 +328,7 @@ export function InterviewManager({
                     </article>
                   ))
                 ) : (
-                  <div className="rounded-[22px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-8 text-sm text-slate-600">
+                  <div className="rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-8 text-sm text-slate-600">
                     등록된 면담 기록이 없습니다.
                   </div>
                 )}
@@ -396,7 +396,7 @@ export function InterviewManager({
             </div>
 
             {selectedStudent ? (
-              <div className="mt-4 rounded-[22px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm text-slate-600">
+              <div className="mt-4 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm text-slate-600">
                 <p className="font-semibold text-slate-900">
                   {selectedStudent.name}
                   <span className="ml-2 text-xs font-medium text-slate-500">{selectedStudent.studentNumber}</span>

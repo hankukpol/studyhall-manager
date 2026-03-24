@@ -18,7 +18,7 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-white px-4 py-10 md:px-8 lg:px-12">
       <div className="mx-auto flex max-w-6xl flex-col gap-8">
-        <section className="overflow-hidden rounded-[32px] border border-slate-200-black/5 bg-white/90 shadow-[0_30px_80px_rgba(25,57,99,0.12)] backdrop-blur">
+        <section className="overflow-hidden rounded-[10px] border border-slate-200-black/5 bg-white/90 shadow-[0_30px_80px_rgba(25,57,99,0.12)] backdrop-blur">
           <div className="grid gap-8 px-6 py-8 md:grid-cols-[1.3fr_0.7fr] md:px-10 md:py-10">
             <div className="space-y-5">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">

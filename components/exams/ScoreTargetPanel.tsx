@@ -164,7 +164,7 @@ export function ScoreTargetPanel({
               <select
                 value={selectedExamTypeId}
                 onChange={(event) => setSelectedExamTypeId(event.target.value)}
-                className="w-full rounded-[12px] border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--division-color)]"
+                className="w-full rounded-[10px] border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--division-color)]"
               >
                 {availableExamTypes.length > 0 ? (
                   availableExamTypes.map((examType) => (
@@ -187,7 +187,7 @@ export function ScoreTargetPanel({
                 step={1}
                 value={targetScore}
                 onChange={(event) => setTargetScore(event.target.value)}
-                className="w-full rounded-[12px] border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--division-color)]"
+                className="w-full rounded-[10px] border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--division-color)]"
                 placeholder="예: 420"
               />
             </label>
@@ -198,7 +198,7 @@ export function ScoreTargetPanel({
             <textarea
               value={note}
               onChange={(event) => setNote(event.target.value)}
-              className="min-h-[96px] w-full rounded-[12px] border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--division-color)]"
+              className="min-h-[96px] w-full rounded-[10px] border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--division-color)]"
               placeholder="예: 4월까지 주간 모의고사 420점 이상 유지"
             />
           </label>
@@ -243,7 +243,7 @@ export function ScoreTargetPanel({
                 </div>
 
                 <span
-                  className={`rounded-[12px] border px-3 py-1.5 text-[12px] font-medium ${getStatusTone(target)}`}
+                  className={`rounded-[10px] border px-3 py-1.5 text-[12px] font-medium ${getStatusTone(target)}`}
                 >
                   {target.isAchieved
                     ? "달성"
@@ -254,7 +254,7 @@ export function ScoreTargetPanel({
               </div>
 
               <div className="mt-4 grid grid-cols-3 gap-3">
-                <div className="rounded-[12px] border border-[var(--border)] bg-white px-4 py-3">
+                <div className="rounded-[10px] border border-[var(--border)] bg-white px-4 py-3">
                   <p className="text-[12px] font-medium text-[var(--muted)]">
                     목표 점수
                   </p>
@@ -262,7 +262,7 @@ export function ScoreTargetPanel({
                     {target.targetScore}
                   </p>
                 </div>
-                <div className="rounded-[12px] border border-[var(--border)] bg-white px-4 py-3">
+                <div className="rounded-[10px] border border-[var(--border)] bg-white px-4 py-3">
                   <p className="text-[12px] font-medium text-[var(--muted)]">
                     최신 점수
                   </p>
@@ -270,7 +270,7 @@ export function ScoreTargetPanel({
                     {target.latestScore ?? "-"}
                   </p>
                 </div>
-                <div className="rounded-[12px] border border-[var(--border)] bg-white px-4 py-3">
+                <div className="rounded-[10px] border border-[var(--border)] bg-white px-4 py-3">
                   <p className="text-[12px] font-medium text-[var(--muted)]">
                     최신 회차
                   </p>

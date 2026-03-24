@@ -379,7 +379,7 @@ export const LeaveManager = memo(function LeaveManager({
           ))}
         </section>
 
-        <section className="rounded-[30px] border border-slate-200-black/5 bg-white p-5 shadow-[0_18px_44px_rgba(18,32,56,0.06)]">
+        <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_18px_44px_rgba(18,32,56,0.06)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <span className="inline-flex rounded-full border border-slate-200-slate-200 bg-white px-3 py-1 text-xs font-semibold tracking-[0.2em] text-slate-500">
@@ -414,7 +414,7 @@ export const LeaveManager = memo(function LeaveManager({
           </div>
 
           <div className="mt-6 grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-            <section className="rounded-[26px] border border-slate-200-slate-200 bg-white p-4">
+            <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xl font-bold text-slate-950">월별 사용 현황</p>
@@ -444,7 +444,7 @@ export const LeaveManager = memo(function LeaveManager({
                 </label>
               </div>
 
-              <div className="mt-4 rounded-[22px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm leading-6 text-slate-600">
+              <div className="mt-4 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm leading-6 text-slate-600">
                 {selectedSummaryStudent
                   ? `${selectedSummaryStudent.studentNumber} · ${selectedSummaryStudent.name}의 ${summaryMonth} 사용 현황입니다.`
                   : "학생을 선택하면 월별 사용 현황을 확인할 수 있습니다."}
@@ -452,7 +452,7 @@ export const LeaveManager = memo(function LeaveManager({
 
               <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 {usageCards.map((card) => (
-                  <article key={card.type} className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+                  <article key={card.type} className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
                     <p className="text-sm text-slate-500">{card.label}</p>
                     <p className="mt-3 text-2xl font-bold tracking-tight text-slate-950">{card.used}회</p>
                     <p className="mt-2 text-xs text-slate-500">
@@ -463,7 +463,7 @@ export const LeaveManager = memo(function LeaveManager({
               </div>
             </section>
 
-            <section className="rounded-[26px] border border-slate-200-slate-200 bg-white p-4">
+            <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xl font-bold text-slate-950">월말 미사용 휴가 정산</p>
@@ -501,35 +501,35 @@ export const LeaveManager = memo(function LeaveManager({
                 </div>
               </div>
 
-              <div className="mt-4 rounded-[22px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm leading-6 text-slate-600">
+              <div className="mt-4 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm leading-6 text-slate-600">
                 휴가 미사용 1회당 +{settings.holidayUnusedPts}점, 반차 미사용 1회당 +{settings.halfDayUnusedPts}점을 지급합니다.
               </div>
 
               {settlementPreview ? (
                 <div className="mt-4 space-y-4">
                   <div className="grid gap-4 md:grid-cols-3">
-                    <article className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+                    <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
                       <p className="text-sm text-slate-500">지급 대상</p>
                       <p className="mt-2 text-2xl font-bold tracking-tight text-slate-950">{settlementPreview.grantableCount}명</p>
                     </article>
-                    <article className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+                    <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
                       <p className="text-sm text-slate-500">총 지급 점수</p>
                       <p className="mt-2 text-2xl font-bold tracking-tight text-slate-950">{settlementPreview.totalRewardPoints}점</p>
                     </article>
-                    <article className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+                    <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
                       <p className="text-sm text-slate-500">이미 정산됨</p>
                       <p className="mt-2 text-2xl font-bold tracking-tight text-slate-950">{settlementPreview.alreadySettledCount}명</p>
                     </article>
                   </div>
 
                   {!settlementPreview.isClosedMonth ? (
-                    <div className="rounded-[22px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm text-amber-800">
+                    <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm text-amber-800">
                       진행 중인 월은 아직 정산할 수 없습니다. 지난달 또는 이전 월을 선택해 주세요.
                     </div>
                   ) : null}
                 </div>
               ) : (
-                <div className="mt-4 rounded-[22px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-8 text-sm text-slate-600">
+                <div className="mt-4 rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-8 text-sm text-slate-600">
                   정산 대상 월을 선택하고 미리보기를 조회해 주세요.
                 </div>
               )}
@@ -537,7 +537,7 @@ export const LeaveManager = memo(function LeaveManager({
           </div>
         </section>
 
-        <section className="rounded-[30px] border border-slate-200-black/5 bg-white p-5 shadow-[0_18px_44px_rgba(18,32,56,0.06)]">
+        <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_18px_44px_rgba(18,32,56,0.06)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">History</p>
@@ -674,7 +674,7 @@ export const LeaveManager = memo(function LeaveManager({
               />
             </label>
 
-            <div className="mt-4 rounded-[22px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm leading-6 text-slate-600">
+            <div className="mt-4 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm leading-6 text-slate-600">
               휴가, 반차, 병가는 월별 사용 한도와 연결되며, 미사용 권한은 월말 정산에서 상점으로 전환할 수 있습니다.
             </div>
           </section>

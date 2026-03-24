@@ -31,7 +31,7 @@ export function StudentPortalTabs({
               key={item.key}
               href={href}
               prefetch={false}
-              className={`flex min-h-[40px] items-center justify-center rounded-[12px] px-2 py-2 text-center text-[12px] font-medium leading-4 transition md:min-h-[44px] md:px-3 md:py-2.5 md:text-[13px] ${
+              className={`flex min-h-[40px] items-center justify-center rounded-[10px] px-2 py-2 text-center text-[12px] font-medium leading-4 transition md:min-h-[44px] md:px-3 md:py-2.5 md:text-[13px] ${
                 isActive
                   ? "font-semibold"
                   : "text-[var(--muted)] hover:bg-[#F4F4F2] hover:text-[var(--foreground)]"

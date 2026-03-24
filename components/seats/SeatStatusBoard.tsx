@@ -683,7 +683,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
 
           {/* 출입구 표시 */}
           <div className="mb-3 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-2.5 text-center text-sm font-medium text-slate-500">
-            출입구 방향
+            칠판
           </div>
 
           {/* 좌석 그리드 */}

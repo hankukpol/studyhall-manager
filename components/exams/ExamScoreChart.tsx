@@ -125,7 +125,7 @@ export function ExamScoreChart({ results }: ExamScoreChartProps) {
             key={group.examTypeId}
             type="button"
             onClick={() => setSelectedExamTypeId(group.examTypeId)}
-            className={`rounded-[12px] border px-3 py-2 text-[13px] font-medium transition ${
+            className={`rounded-[10px] border px-3 py-2 text-[13px] font-medium transition ${
               (selectedGroup?.examTypeId ?? "") === group.examTypeId
                 ? "border-transparent"
                 : "border-[var(--border)] bg-white text-[var(--muted)] hover:text-[var(--foreground)]"

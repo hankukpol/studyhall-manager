@@ -278,7 +278,7 @@ export const PointGrantManager = memo(function PointGrantManager({
   return (
     <div className="space-y-6">
       {/* 헤더: 요약 + 부여 버튼 */}
-      <section className="rounded-[30px] border border-slate-200/60 bg-white p-6 shadow-[0_18px_48px_rgba(18,32,56,0.07)]">
+      <section className="rounded-[10px] border border-slate-200/60 bg-white p-6 shadow-[0_18px_48px_rgba(18,32,56,0.07)]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-6">
             <div>
@@ -319,7 +319,7 @@ export const PointGrantManager = memo(function PointGrantManager({
       {/* 메인: 순위(좌/주) + 최근 기록(우/보조) */}
       <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
         {/* 상벌점 순위 (Primary) */}
-        <section className="rounded-[30px] border border-slate-200/60 bg-white p-6 shadow-[0_18px_48px_rgba(18,32,56,0.07)]">
+        <section className="rounded-[10px] border border-slate-200/60 bg-white p-6 shadow-[0_18px_48px_rgba(18,32,56,0.07)]">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-50 text-slate-600">
@@ -383,7 +383,7 @@ export const PointGrantManager = memo(function PointGrantManager({
         </section>
 
         {/* 최근 상벌점 기록 (Secondary, compact) */}
-        <section className="rounded-[30px] border border-slate-200/60 bg-white p-6 shadow-[0_18px_48px_rgba(18,32,56,0.07)]">
+        <section className="rounded-[10px] border border-slate-200/60 bg-white p-6 shadow-[0_18px_48px_rgba(18,32,56,0.07)]">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Recent</p>

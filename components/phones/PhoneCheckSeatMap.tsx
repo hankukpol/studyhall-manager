@@ -151,7 +151,7 @@ export function PhoneCheckSeatMap({
 
       {/* 출입구 */}
       <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-2.5 text-center text-sm font-medium text-slate-500">
-        출입구 방향
+        칠판
       </div>
 
       {/* 좌석 그리드 */}

@@ -12,6 +12,10 @@ import {
   type MockStudyRoomRecord,
 } from "@/lib/mock-store";
 import {
+  isPrismaSchemaMismatchError,
+  logSchemaCompatibilityFallback,
+} from "@/lib/service-helpers";
+import {
   DEFAULT_SEAT_AISLE_COLUMNS,
   DEFAULT_SEAT_LAYOUT_COLUMNS,
   DEFAULT_SEAT_LAYOUT_ROWS,
@@ -78,6 +82,19 @@ export type SeatOptionItem = {
   label: string;
   isActive: boolean;
   assignedStudentId: string | null;
+};
+
+type LegacySeatRow = {
+  id: string;
+  divisionId: string;
+  label: string;
+  positionX: number;
+  positionY: number;
+  isActive: boolean;
+  studentId: string | null;
+  studentName: string | null;
+  studentNumber: string | null;
+  studentStatus: SeatMapStudent["status"] | null;
 };
 
 async function getPrismaClient() {
@@ -193,6 +210,105 @@ function createEmptyLayout(room: StudyRoomItem | null): SeatLayout {
   };
 }
 
+async function readLegacySeatRows(
+  prisma: Awaited<ReturnType<typeof getPrismaClient>>,
+  divisionId: string,
+): Promise<LegacySeatRow[]> {
+  return prisma.$queryRaw<LegacySeatRow[]>`
+    SELECT
+      seat.id,
+      seat.division_id AS "divisionId",
+      seat.label,
+      seat.position_x AS "positionX",
+      seat.position_y AS "positionY",
+      seat.is_active AS "isActive",
+      student.id AS "studentId",
+      student.name AS "studentName",
+      student.student_number AS "studentNumber",
+      student.status::text AS "studentStatus"
+    FROM seats seat
+    LEFT JOIN students student
+      ON student.seat_id = seat.id
+    WHERE seat.division_id = ${divisionId}
+    ORDER BY seat.position_y ASC, seat.position_x ASC
+  `;
+}
+
+function buildLegacyStudyRoom(divisionId: string, seatRows: LegacySeatRow[]): StudyRoomItem {
+  const maxColumn = seatRows.reduce((current, seat) => Math.max(current, seat.positionX), 0);
+  const maxRow = seatRows.reduce((current, seat) => Math.max(current, seat.positionY), 0);
+  const now = new Date().toISOString();
+
+  return {
+    id: `legacy-study-room-${divisionId}`,
+    divisionId,
+    name: "기본 자습실",
+    columns: Math.max(DEFAULT_SEAT_LAYOUT_COLUMNS, maxColumn || 0),
+    rows: Math.max(DEFAULT_SEAT_LAYOUT_ROWS, maxRow || 0),
+    aisleColumns: [...DEFAULT_SEAT_AISLE_COLUMNS],
+    isActive: true,
+    displayOrder: 0,
+    seatsCount: seatRows.length,
+    assignedStudentsCount: seatRows.filter((seat) => seat.studentId).length,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+function buildLegacySeatOptions(
+  room: StudyRoomItem,
+  seatRows: LegacySeatRow[],
+  activeOnly: boolean,
+): SeatOptionItem[] {
+  return sortSeats(
+    seatRows
+      .filter((seat) => !activeOnly || seat.isActive)
+      .map((seat) => ({
+        id: seat.id,
+        studyRoomId: room.id,
+        studyRoomName: room.name,
+        label: seat.label,
+        isActive: seat.isActive,
+        assignedStudentId: seat.studentId,
+        positionX: seat.positionX,
+        positionY: seat.positionY,
+      })),
+  ).map(({ positionX, positionY, ...seat }) => {
+    void positionX;
+    void positionY;
+    return seat;
+  });
+}
+
+function buildLegacySeatLayout(room: StudyRoomItem, seatRows: LegacySeatRow[]): SeatLayout {
+  return {
+    room,
+    columns: room.columns,
+    rows: room.rows,
+    aisleColumns: room.aisleColumns,
+    seats: sortSeats(
+      seatRows.map((seat) => ({
+        id: seat.id,
+        studyRoomId: room.id,
+        label: seat.label,
+        positionX: seat.positionX,
+        positionY: seat.positionY,
+        isActive: seat.isActive,
+        assignedStudent: seat.studentId
+          ? {
+              id: seat.studentId,
+              name: seat.studentName ?? "",
+              studentNumber: seat.studentNumber ?? "",
+              status: seat.studentStatus ?? "ACTIVE",
+              studyTrack: null,
+              studyRoomName: room.name,
+            }
+          : null,
+      })),
+    ),
+  };
+}
+
 function validateRoomInput(input: StudyRoomInput) {
   const name = normalizeText(input.name);
   const columns = Math.max(3, Math.min(20, Math.trunc(input.columns)));
@@ -220,8 +336,8 @@ function validateSeatDrafts(seats: SeatDraftLayoutItem[], room: Pick<StudyRoomIt
   for (const seat of seats) {
     const label = seat.label.trim();
 
-    if (!label) {
-      throw badRequest("좌석 번호를 입력해 주세요.");
+    if (!label && seat.isActive) {
+      throw badRequest("운영 좌석은 좌석 번호를 입력해 주세요.");
     }
 
     if (seat.positionX < 1 || seat.positionX > room.columns) {
@@ -236,7 +352,7 @@ function validateSeatDrafts(seats: SeatDraftLayoutItem[], room: Pick<StudyRoomIt
       throw badRequest("복도 칸에는 좌석을 배치할 수 없습니다.");
     }
 
-    if (labelSet.has(label)) {
+    if (label && labelSet.has(label)) {
       throw conflict("같은 자습실 안에 동일한 좌석 번호가 있습니다.");
     }
 
@@ -246,7 +362,9 @@ function validateSeatDrafts(seats: SeatDraftLayoutItem[], room: Pick<StudyRoomIt
       throw conflict("같은 위치에 좌석을 두 번 배치할 수 없습니다.");
     }
 
-    labelSet.add(label);
+    if (label) {
+      labelSet.add(label);
+    }
     positionSet.add(positionKey);
   }
 }
@@ -371,7 +489,19 @@ export async function listStudyRooms(divisionSlug: string): Promise<StudyRoomIte
     );
   }
 
-  return getListStudyRoomsCached(divisionSlug)();
+  try {
+    return await getListStudyRoomsCached(divisionSlug)();
+  } catch (error) {
+    if (!isPrismaSchemaMismatchError(error, ["study_rooms", "study_room_id"])) {
+      throw error;
+    }
+
+    logSchemaCompatibilityFallback("study-rooms:list", error);
+    const division = await getDivisionOrThrow(divisionSlug);
+    const prisma = await getPrismaClient();
+    const seatRows = await readLegacySeatRows(prisma, division.id);
+    return [buildLegacyStudyRoom(division.id, seatRows)];
+  }
 }
 
 export async function listSeatOptions(
@@ -403,7 +533,22 @@ export async function listSeatOptions(
     });
   }
 
-  return getListSeatOptionsCached(divisionSlug, options?.activeOnly ?? false)();
+  const activeOnly = options?.activeOnly ?? false;
+
+  try {
+    return await getListSeatOptionsCached(divisionSlug, activeOnly)();
+  } catch (error) {
+    if (!isPrismaSchemaMismatchError(error, ["study_rooms", "study_room_id"])) {
+      throw error;
+    }
+
+    logSchemaCompatibilityFallback("seat-options:list", error);
+    const division = await getDivisionOrThrow(divisionSlug);
+    const prisma = await getPrismaClient();
+    const seatRows = await readLegacySeatRows(prisma, division.id);
+    const room = buildLegacyStudyRoom(division.id, seatRows);
+    return buildLegacySeatOptions(room, seatRows, activeOnly);
+  }
 }
 
 export async function getSeatLayout(
@@ -444,7 +589,25 @@ export async function getSeatLayout(
     };
   }
 
-  return getSeatLayoutCached(divisionSlug, roomId)();
+  try {
+    return await getSeatLayoutCached(divisionSlug, roomId)();
+  } catch (error) {
+    if (!isPrismaSchemaMismatchError(error, ["study_rooms", "study_room_id"])) {
+      throw error;
+    }
+
+    logSchemaCompatibilityFallback("seat-layout:get", error);
+    const division = await getDivisionOrThrow(divisionSlug);
+    const prisma = await getPrismaClient();
+    const seatRows = await readLegacySeatRows(prisma, division.id);
+    const room = buildLegacyStudyRoom(division.id, seatRows);
+
+    if (roomId && roomId !== room.id) {
+      return createEmptyLayout(room);
+    }
+
+    return buildLegacySeatLayout(room, seatRows);
+  }
 }
 
 async function listStudyRoomsUncached(divisionSlug: string): Promise<StudyRoomItem[]> {
@@ -930,6 +1093,13 @@ export async function saveSeatLayout(
   }
 
   validateSeatDrafts(seats, room);
+
+  // 비활성 좌석에 빈 label이면 위치 기반 placeholder 자동 생성 (unique 제약 대응)
+  for (const seat of seats) {
+    if (!seat.label.trim() && !seat.isActive) {
+      seat.label = `_${seat.positionX}-${seat.positionY}`;
+    }
+  }
 
   if (isMockMode()) {
     await updateMockState(async (state) => {

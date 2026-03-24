@@ -488,7 +488,7 @@ export function ExamScoreManager({
   return (
     <>
       <div className="space-y-6 pb-28">
-        <section className="rounded-[30px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_48px_rgba(18,32,56,0.07)]">
+        <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_48px_rgba(18,32,56,0.07)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -650,7 +650,7 @@ export function ExamScoreManager({
           </div>
         </section>
 
-        <section className="rounded-[30px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_48px_rgba(18,32,56,0.07)]">
+        <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_48px_rgba(18,32,56,0.07)]">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">

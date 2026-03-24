@@ -6,6 +6,10 @@ import {
   updateMockState,
   type MockTuitionPlanRecord,
 } from "@/lib/mock-store";
+import {
+  isPrismaSchemaMismatchError,
+  logSchemaCompatibilityFallback,
+} from "@/lib/service-helpers";
 import { getDefaultTuitionPlanTemplates } from "@/lib/tuition-meta";
 
 export type TuitionPlanItem = {
@@ -161,9 +165,20 @@ export async function listTuitionPlans(
   divisionSlug: string,
   options?: { activeOnly?: boolean },
 ) {
-  return isMockMode()
-    ? listTuitionPlansUncached(divisionSlug, options)
-    : listTuitionPlansCached(divisionSlug, options);
+  if (isMockMode()) {
+    return listTuitionPlansUncached(divisionSlug, options);
+  }
+
+  try {
+    return await listTuitionPlansCached(divisionSlug, options);
+  } catch (error) {
+    if (!isPrismaSchemaMismatchError(error, ["tuition_plans", "tuition_plan_id"])) {
+      throw error;
+    }
+
+    logSchemaCompatibilityFallback("tuition-plans:list", error);
+    return [];
+  }
 }
 
 export async function getTuitionPlanById(divisionSlug: string, planId: string) {

@@ -6,7 +6,12 @@ import { normalizeYmdDate, parseUtcDateFromYmd } from "@/lib/date-utils";
 import { badRequest, conflict, notFound } from "@/lib/errors";
 import { getMockDivisionBySlug, isMockMode } from "@/lib/mock-data";
 import { readMockState, updateMockState, type MockStudentRecord } from "@/lib/mock-store";
-import { getPrismaClient, normalizeOptionalText } from "@/lib/service-helpers";
+import {
+  getPrismaClient,
+  isPrismaSchemaMismatchError,
+  logSchemaCompatibilityFallback,
+  normalizeOptionalText,
+} from "@/lib/service-helpers";
 import { getDivisionSettings } from "@/lib/services/settings.service";
 import { getWarningStage, type StudentStatusValue, type WarningStageValue } from "@/lib/student-meta";
 
@@ -101,6 +106,23 @@ type DbStudentRecord = {
   } | null;
 };
 
+type LegacyStudentRow = {
+  id: string;
+  divisionId: string;
+  name: string;
+  studentNumber: string;
+  phone: string | null;
+  status: StudentStatusValue;
+  enrolledAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  withdrawnAt: Date | null;
+  withdrawnNote: string | null;
+  memo: string | null;
+  seatId: string | null;
+  seatLabel: string | null;
+};
+
 function normalizeText(value: string) {
   return value.trim();
 }
@@ -135,6 +157,19 @@ function isPrismaUniqueConstraintError(error: unknown, target: string) {
 }
 
 function toStudentWriteError(error: unknown) {
+  if (
+    isPrismaSchemaMismatchError(error, [
+      "students",
+      "study_track",
+      "course_start_date",
+      "course_end_date",
+      "tuition_plan_id",
+      "tuition_amount",
+    ])
+  ) {
+    return badRequest("학생 관련 데이터베이스 변경이 아직 반영되지 않았습니다. DB 마이그레이션 상태를 확인해 주세요.");
+  }
+
   if (isPrismaUniqueConstraintError(error, "seat")) {
     return conflict("이미 다른 학생에게 배정된 좌석입니다. 다른 좌석을 선택해 주세요.");
   }
@@ -286,6 +321,69 @@ function serializeDbStudent(
   };
 }
 
+function serializeLegacyStudent(
+  student: LegacyStudentRow,
+  netPoints: number,
+  warningStage: WarningStageValue,
+): StudentDetail {
+  return {
+    id: student.id,
+    divisionId: student.divisionId,
+    name: student.name,
+    studentNumber: student.studentNumber,
+    studyTrack: null,
+    phone: student.phone,
+    seatId: student.seatId,
+    seatLabel: student.seatLabel,
+    seatDisplay: formatSeatDisplay(null, student.seatLabel),
+    studyRoomId: null,
+    studyRoomName: null,
+    courseStartDate: null,
+    courseEndDate: null,
+    tuitionPlanId: null,
+    tuitionPlanName: null,
+    tuitionAmount: null,
+    status: student.status,
+    enrolledAt: student.enrolledAt.toISOString(),
+    createdAt: student.createdAt.toISOString(),
+    updatedAt: student.updatedAt.toISOString(),
+    withdrawnAt: student.withdrawnAt?.toISOString() ?? null,
+    withdrawnNote: student.withdrawnNote,
+    memo: student.memo,
+    netPoints,
+    warningStage,
+  };
+}
+
+async function readLegacyStudents(
+  prisma: Awaited<ReturnType<typeof getPrismaClient>>,
+  divisionSlug: string,
+): Promise<LegacyStudentRow[]> {
+  return prisma.$queryRaw<LegacyStudentRow[]>`
+    SELECT
+      s.id,
+      s.division_id AS "divisionId",
+      s.name,
+      s.student_number AS "studentNumber",
+      s.phone,
+      s.status::text AS "status",
+      s.enrolled_at AS "enrolledAt",
+      s.created_at AS "createdAt",
+      s.updated_at AS "updatedAt",
+      s.withdrawn_at AS "withdrawnAt",
+      s.withdrawn_note AS "withdrawnNote",
+      s.memo,
+      seat.id AS "seatId",
+      seat.label AS "seatLabel"
+    FROM students s
+    JOIN divisions d
+      ON d.id = s.division_id
+    LEFT JOIN seats seat
+      ON seat.id = s.seat_id
+    WHERE d.slug = ${divisionSlug}
+  `;
+}
+
 async function getMockStudentsWithMetrics(divisionSlug: string) {
   const [state, settings] = await Promise.all([
     readMockState(),
@@ -333,10 +431,19 @@ async function getDbStudentsWithMetrics(divisionSlug: string) {
     select: { id: true },
   });
   const divisionId = division?.id;
+  const settingsPromise = getDivisionSettings(divisionSlug);
+  const pointAggregatesPromise = divisionId
+    ? prisma.pointRecord.groupBy({
+        by: ["studentId"],
+        where: { student: { divisionId } },
+        _sum: { points: true },
+      })
+    : Promise.resolve([] as { studentId: string; _sum: { points: number | null } }[]);
 
-  const [settings, students, pointAggregates] = await Promise.all([
-    getDivisionSettings(divisionSlug),
-    prisma.student.findMany({
+  let students: DbStudentRecord[];
+
+  try {
+    students = await prisma.student.findMany({
       where: { division: { slug: divisionSlug } },
       include: {
         seat: {
@@ -348,14 +455,47 @@ async function getDbStudentsWithMetrics(divisionSlug: string) {
         },
         tuitionPlan: { select: { id: true, name: true } },
       },
-    }),
-    divisionId
-      ? prisma.pointRecord.groupBy({
-          by: ["studentId"],
-          where: { student: { divisionId } },
-          _sum: { points: true },
-        })
-      : Promise.resolve([] as { studentId: string; _sum: { points: number | null } }[]),
+    });
+  } catch (error) {
+    if (
+      !isPrismaSchemaMismatchError(error, [
+        "students",
+        "study_track",
+        "course_start_date",
+        "course_end_date",
+        "tuition_plan_id",
+        "tuition_amount",
+        "study_room_id",
+        "tuition_plans",
+        "study_rooms",
+      ])
+    ) {
+      throw error;
+    }
+
+    logSchemaCompatibilityFallback("students:list", error);
+
+    const [settings, pointAggregates, legacyStudents] = await Promise.all([
+      settingsPromise,
+      pointAggregatesPromise,
+      readLegacyStudents(prisma, divisionSlug),
+    ]);
+
+    const pointTotals = new Map<string, number>(
+      pointAggregates.map((record) => [record.studentId, record._sum.points ?? 0]),
+    );
+
+    return sortBySeatAndName(
+      legacyStudents.map((student) => {
+        const netPoints = toNetPoints(pointTotals.get(student.id) ?? 0);
+        return serializeLegacyStudent(student, netPoints, getWarningStage(netPoints, settings));
+      }),
+    );
+  }
+
+  const [settings, pointAggregates] = await Promise.all([
+    settingsPromise,
+    pointAggregatesPromise,
   ]);
 
   const pointRecords = pointAggregates.map((a) => ({
@@ -604,7 +744,8 @@ export async function getStudentDetail(divisionSlug: string, studentId: string) 
   }
 
   const prisma = await getPrismaClient();
-  const [settings, raw, pointAggregate] = await Promise.all([
+  try {
+    const [settings, raw, pointAggregate] = await Promise.all([
     getDivisionSettings(divisionSlug),
     prisma.student.findFirst({
       where: {
@@ -655,7 +796,33 @@ export async function getStudentDetail(divisionSlug: string, studentId: string) 
 
   const netPoints = toNetPoints(pointAggregate._sum.points ?? 0);
 
-  return serializeDbStudent(raw, netPoints, getWarningStage(netPoints, settings));
+    return serializeDbStudent(raw, netPoints, getWarningStage(netPoints, settings));
+  } catch (error) {
+    if (
+      !isPrismaSchemaMismatchError(error, [
+        "students",
+        "study_track",
+        "course_start_date",
+        "course_end_date",
+        "tuition_plan_id",
+        "tuition_amount",
+        "study_room_id",
+        "tuition_plans",
+        "study_rooms",
+      ])
+    ) {
+      throw error;
+    }
+
+    logSchemaCompatibilityFallback("students:detail", error);
+    const student = (await listStudents(divisionSlug)).find((item) => item.id === studentId);
+
+    if (!student) {
+      throw notFound("학생 정보를 찾을 수 없습니다.");
+    }
+
+    return student;
+  }
 }
 
 export async function createStudent(divisionSlug: string, input: StudentUpsertInput) {

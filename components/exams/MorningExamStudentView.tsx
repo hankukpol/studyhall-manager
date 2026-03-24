@@ -28,7 +28,7 @@ function MetricCard({
   caption?: string;
 }) {
   return (
-    <div className="rounded-[12px] border border-[var(--border)] bg-white px-4 py-3">
+    <div className="rounded-[10px] border border-[var(--border)] bg-white px-4 py-3">
       <p className="text-[12px] font-medium text-[var(--muted)]">
         {label}
       </p>
@@ -69,7 +69,7 @@ export function MorningExamStudentView({ weeks }: MorningExamStudentViewProps) {
 
   if (weeks.length === 0) {
     return (
-      <div className="rounded-[16px] border border-dashed border-[var(--border)] bg-[#F4F4F2] px-4 py-8 text-center text-[13px] text-[var(--muted)]">
+      <div className="rounded-[10px] border border-dashed border-[var(--border)] bg-[#F4F4F2] px-4 py-8 text-center text-[13px] text-[var(--muted)]">
         아침모의고사 성적이 아직 없습니다. 시험 결과가 등록되면 주차별 성적이 여기에 표시됩니다.
       </div>
     );
@@ -97,7 +97,7 @@ export function MorningExamStudentView({ weeks }: MorningExamStudentViewProps) {
       )}
 
       {latestWeek && (
-        <section className="rounded-[16px] border border-[var(--border)] bg-white p-4">
+        <section className="rounded-[10px] border border-[var(--border)] bg-white p-4">
           <p className="text-[12px] font-medium text-[var(--muted)]">
             이번 주 일별 성적
           </p>
@@ -108,7 +108,7 @@ export function MorningExamStudentView({ weeks }: MorningExamStudentViewProps) {
             {latestWeek.dailyScores.map((ds) => (
               <div key={ds.date} className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-3">
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-[12px] bg-[#F4F4F2] text-xs font-bold text-[var(--foreground)]">
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-[10px] bg-[#F4F4F2] text-xs font-bold text-[var(--foreground)]">
                     {ds.dayOfWeek}
                   </span>
                   <span className="text-[14px] font-medium text-[var(--foreground)]">{ds.subjectName}</span>
@@ -123,7 +123,7 @@ export function MorningExamStudentView({ weeks }: MorningExamStudentViewProps) {
       )}
 
       {chartData.length >= 2 && (
-        <section className="rounded-[16px] border border-[var(--border)] bg-white p-4">
+        <section className="rounded-[10px] border border-[var(--border)] bg-white p-4">
           <p className="text-[14px] font-bold text-[var(--foreground)]">주차별 총점 추이</p>
           <div className="mt-3">
             <ResponsiveContainer width="100%" height={220}>
@@ -157,7 +157,7 @@ export function MorningExamStudentView({ weeks }: MorningExamStudentViewProps) {
             return (
               <div
                 key={key}
-                className="rounded-[16px] border border-[var(--border)] bg-white"
+                className="rounded-[10px] border border-[var(--border)] bg-white"
               >
                 <button
                   type="button"
@@ -195,7 +195,7 @@ export function MorningExamStudentView({ weeks }: MorningExamStudentViewProps) {
                       {week.dailyScores.map((ds) => (
                         <div key={ds.date} className="flex items-center justify-between py-2">
                           <div className="flex items-center gap-3">
-                            <span className="inline-flex h-7 w-7 items-center justify-center rounded-[12px] bg-[#F4F4F2] text-xs font-bold text-[var(--foreground)]">
+                            <span className="inline-flex h-7 w-7 items-center justify-center rounded-[10px] bg-[#F4F4F2] text-xs font-bold text-[var(--foreground)]">
                               {ds.dayOfWeek}
                             </span>
                             <span className="text-[13px] text-[var(--foreground)]">{ds.subjectName}</span>

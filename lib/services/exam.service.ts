@@ -11,6 +11,10 @@ import type {
   ExamScoresBatchSchemaInput,
   ExamTypeSchemaInput,
 } from "@/lib/exam-schemas";
+import {
+  isPrismaSchemaMismatchError,
+  logSchemaCompatibilityFallback,
+} from "@/lib/service-helpers";
 import { listStudents } from "@/lib/services/student.service";
 
 type ExamActor = {
@@ -89,6 +93,20 @@ export type StudentExamResultItem = {
     maxScore: number | null;
     score: number | null;
   }>;
+};
+
+type LegacyExamTypeRow = {
+  id: string;
+  divisionId: string;
+  name: string;
+  isActive: boolean;
+  displayOrder: number;
+  createdAt: Date;
+  subjectId: string | null;
+  subjectName: string | null;
+  subjectTotalItems: number | null;
+  subjectDisplayOrder: number | null;
+  subjectIsActive: boolean | null;
 };
 
 function normalizeText(value: string) {
@@ -191,6 +209,90 @@ function toExamTypeItem(examType: {
             : examType.createdAt.toISOString(),
     subjects: sortSubjects(examType.subjects).map((subject) => toSubjectItem(subject)),
   } satisfies ExamTypeItem;
+}
+
+async function readLegacyExamTypes(
+  prisma: { $queryRaw<T = unknown>(query: TemplateStringsArray, ...values: unknown[]): Promise<T> },
+  divisionSlug: string,
+): Promise<ExamTypeItem[]> {
+  const rows = await prisma.$queryRaw<LegacyExamTypeRow[]>`
+    SELECT
+      et.id,
+      et.division_id AS "divisionId",
+      et.name,
+      et.is_active AS "isActive",
+      et.display_order AS "displayOrder",
+      et.created_at AS "createdAt",
+      es.id AS "subjectId",
+      es.name AS "subjectName",
+      es.total_items AS "subjectTotalItems",
+      es.display_order AS "subjectDisplayOrder",
+      es.is_active AS "subjectIsActive"
+    FROM exam_types et
+    JOIN divisions d
+      ON d.id = et.division_id
+    LEFT JOIN exam_subjects es
+      ON es.exam_type_id = et.id
+    WHERE d.slug = ${divisionSlug}
+    ORDER BY et.display_order ASC, es.display_order ASC
+  `;
+
+  const examTypes = new Map<
+    string,
+    {
+      id: string;
+      divisionId: string;
+      name: string;
+      category: "REGULAR";
+      studyTrack: null;
+      isActive: boolean;
+      displayOrder: number;
+      createdAt: Date;
+      updatedAt: Date;
+      subjects: Array<{
+        id: string;
+        examTypeId: string;
+        name: string;
+        totalItems: number | null;
+        pointsPerItem: null;
+        displayOrder: number;
+        isActive: boolean;
+      }>;
+    }
+  >();
+
+  for (const row of rows) {
+    const current =
+      examTypes.get(row.id) ??
+      {
+        id: row.id,
+        divisionId: row.divisionId,
+        name: row.name,
+        category: "REGULAR" as const,
+        studyTrack: null,
+        isActive: row.isActive,
+        displayOrder: row.displayOrder,
+        createdAt: row.createdAt,
+        updatedAt: row.createdAt,
+        subjects: [],
+      };
+
+    if (row.subjectId) {
+      current.subjects.push({
+        id: row.subjectId,
+        examTypeId: row.id,
+        name: row.subjectName ?? "",
+        totalItems: row.subjectTotalItems,
+        pointsPerItem: null,
+        displayOrder: row.subjectDisplayOrder ?? current.subjects.length,
+        isActive: row.subjectIsActive ?? true,
+      });
+    }
+
+    examTypes.set(row.id, current);
+  }
+
+  return sortExamTypes(Array.from(examTypes.values())).map((examType) => toExamTypeItem(examType));
 }
 
 function toUtcDate(date: string | null) {
@@ -336,19 +438,36 @@ export async function listExamTypes(divisionSlug: string) {
   const division = await getDivisionOrThrow(divisionSlug);
   const { prisma } = await import("@/lib/prisma");
 
-  const examTypes = await prisma.examType.findMany({
-    where: {
-      divisionId: division.id,
-    },
-    include: {
-      subjects: true,
-    },
-    orderBy: {
-      displayOrder: "asc",
-    },
-  });
+  try {
+    const examTypes = await prisma.examType.findMany({
+      where: {
+        divisionId: division.id,
+      },
+      include: {
+        subjects: true,
+      },
+      orderBy: {
+        displayOrder: "asc",
+      },
+    });
 
-  return examTypes.map((examType) => toExamTypeItem(examType));
+    return examTypes.map((examType) => toExamTypeItem(examType));
+  } catch (error) {
+    if (
+      !isPrismaSchemaMismatchError(error, [
+        "exam_types",
+        "exam_subjects",
+        "category",
+        "study_track",
+        "points_per_item",
+      ])
+    ) {
+      throw error;
+    }
+
+    logSchemaCompatibilityFallback("exam-types:list", error);
+    return readLegacyExamTypes(prisma, divisionSlug);
+  }
 }
 
 export async function createExamType(divisionSlug: string, input: ExamTypeSchemaInput) {
@@ -1016,7 +1135,11 @@ export async function listStudentExamResults(
       });
   }
 
-  const { prisma } = await import("@/lib/prisma");
+  const [examTypes, { prisma }] = await Promise.all([
+    listExamTypes(divisionSlug),
+    import("@/lib/prisma"),
+  ]);
+  const examTypeMap = new Map(examTypes.map((examType) => [examType.id, examType]));
 
   const records = await prisma.examScore.findMany({
     where: {
@@ -1027,12 +1150,16 @@ export async function listStudentExamResults(
         },
       },
     },
-    include: {
-      examType: {
-        include: {
-          subjects: true,
-        },
-      },
+    select: {
+      id: true,
+      examTypeId: true,
+      examRound: true,
+      examDate: true,
+      totalScore: true,
+      rankInClass: true,
+      notes: true,
+      scores: true,
+      createdAt: true,
     },
     orderBy: [{ examDate: "desc" }, { createdAt: "desc" }],
   });
@@ -1042,17 +1169,18 @@ export async function listStudentExamResults(
       record.scores && typeof record.scores === "object" && !Array.isArray(record.scores)
         ? (record.scores as Record<string, unknown>)
         : {};
+    const examType = examTypeMap.get(record.examTypeId);
 
     return {
       id: record.id,
       examTypeId: record.examTypeId,
-      examTypeName: record.examType.name,
+      examTypeName: examType?.name ?? "紐⑥쓽怨좎궗",
       examRound: record.examRound,
       examDate: toDateString(record.examDate),
       totalScore: record.totalScore,
       rankInClass: record.rankInClass,
       notes: record.notes,
-      subjects: sortSubjects(record.examType.subjects)
+      subjects: sortSubjects(examType?.subjects ?? [])
         .filter((subject) => subject.isActive)
         .map((subject) => ({
           subjectId: subject.id,

@@ -21,7 +21,7 @@ export default async function AssistantLayout({ children, params }: AssistantLay
     <div className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#eef3f8_100%)] text-slate-900">
       <header className="sticky top-0 z-40 border-b border-black/5 bg-[rgb(238_243_248/0.9)] backdrop-blur">
         <div className="mx-auto max-w-4xl px-4 py-3">
-          <div className="flex items-center justify-between gap-3 rounded-[22px] border border-black/5 bg-white px-4 py-3">
+          <div className="flex items-center justify-between gap-3 rounded-[10px] border border-black/5 bg-white px-4 py-3">
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--division-color)]">
                 Assistant Mode
