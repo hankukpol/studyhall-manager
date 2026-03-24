@@ -171,6 +171,7 @@ export function SeatEditor({
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   const [isDeletingRoom, setIsDeletingRoom] = useState(false);
   const [movingSeatId, setMovingSeatId] = useState<string | null>(null);
+  const [extraSelectedLocalIds, setExtraSelectedLocalIds] = useState<Set<string>>(new Set());
 
   const assignableStudents = useMemo(
     () => students.filter((student) => student.status === "ACTIVE" || student.status === "ON_LEAVE"),
@@ -186,6 +187,23 @@ export function SeatEditor({
     [currentRoom?.name, draftSeats, students],
   );
   const selectedSeat = draftSeats.find((seat) => seat.localId === selectedLocalId) ?? null;
+  const allSelectedLocalIds = useMemo(() => {
+    const ids = new Set(extraSelectedLocalIds);
+    if (selectedLocalId) ids.add(selectedLocalId);
+    return ids;
+  }, [selectedLocalId, extraSelectedLocalIds]);
+  const allSelectedSeats = useMemo(
+    () => draftSeats.filter((seat) => allSelectedLocalIds.has(seat.localId)),
+    [draftSeats, allSelectedLocalIds],
+  );
+  const isMultiSelect = allSelectedSeats.length > 1;
+  const selectedSeatIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const seat of allSelectedSeats) {
+      ids.add(seat.id ?? seat.localId);
+    }
+    return ids;
+  }, [allSelectedSeats]);
   const selectedAssignedStudent = useMemo(
     () =>
       selectedSeat?.assignedStudentId
@@ -293,10 +311,28 @@ export function SeatEditor({
     setSelectedLocalId(null);
   }, [previewAisleColumns, roomForm.columns, roomForm.rows, selectedRoomId]);
 
-  function selectSeatByCell(positionX: number, positionY: number, seatId: string | null) {
+  function selectSeatByCell(positionX: number, positionY: number, seatId: string | null, shiftKey: boolean) {
     if (seatId) {
       const target = draftSeats.find((seat) => (seat.id ?? seat.localId) === seatId);
-      setSelectedLocalId(target?.localId ?? null);
+      if (!target) return;
+
+      if (shiftKey) {
+        setExtraSelectedLocalIds((prev) => {
+          const next = new Set(prev);
+          if (selectedLocalId) next.add(selectedLocalId);
+          if (next.has(target.localId)) {
+            next.delete(target.localId);
+          } else {
+            next.add(target.localId);
+          }
+          return next;
+        });
+        if (!selectedLocalId) setSelectedLocalId(target.localId);
+        return;
+      }
+
+      setSelectedLocalId(target.localId);
+      setExtraSelectedLocalIds(new Set());
       return;
     }
 
@@ -314,12 +350,22 @@ export function SeatEditor({
       },
     ]);
     setSelectedLocalId(localId);
+    setExtraSelectedLocalIds(new Set());
   }
 
   function updateSelectedSeat(
     value: Partial<Omit<DraftSeat, "localId" | "id" | "positionX" | "positionY">>,
   ) {
     if (!selectedSeat) {
+      return;
+    }
+
+    if (isMultiSelect) {
+      setDraftSeats((current) =>
+        current.map((seat) =>
+          allSelectedLocalIds.has(seat.localId) ? { ...seat, ...value } : seat,
+        ),
+      );
       return;
     }
 
@@ -335,6 +381,13 @@ export function SeatEditor({
   }
 
   function deleteSelectedSeat() {
+    if (isMultiSelect) {
+      setDraftSeats((current) => current.filter((seat) => !allSelectedLocalIds.has(seat.localId)));
+      setSelectedLocalId(null);
+      setExtraSelectedLocalIds(new Set());
+      return;
+    }
+
     if (!selectedSeat) {
       return;
     }
@@ -931,7 +984,38 @@ export function SeatEditor({
           </div>
         ) : selectedRoomId ? (
           <>
-            {selectedSeat ? (
+            {isMultiSelect ? (
+              <div className="mt-6 flex flex-wrap items-center gap-4 rounded-[10px] border border-slate-200-slate-200 bg-white px-5 py-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-slate-950">{allSelectedSeats.length}개 좌석 선택</span>
+                  <span className="text-xs text-slate-500">(Shift+클릭으로 추가/해제)</span>
+                </div>
+                <label className="flex items-center gap-2 rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-2">
+                  <input
+                    type="checkbox"
+                    checked={allSelectedSeats.every((s) => s.isActive)}
+                    onChange={(event) => updateSelectedSeat({ isActive: event.target.checked })}
+                    className="h-4 w-4 rounded border-slate-300"
+                  />
+                  <span className="text-sm font-medium text-slate-800">운영 좌석</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={deleteSelectedSeat}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-white"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  선택 좌석 삭제
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setExtraSelectedLocalIds(new Set())}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                >
+                  선택 해제
+                </button>
+              </div>
+            ) : selectedSeat ? (
               <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
                 <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Position</p>
@@ -997,11 +1081,11 @@ export function SeatEditor({
               </div>
             ) : (
               <div className="mt-6 rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-4 text-center text-sm text-slate-600">
-                좌석을 선택하거나 빈 칸을 눌러 새 좌석을 추가해 주세요.
+                좌석을 선택하거나 빈 칸을 눌러 새 좌석을 추가해 주세요. <span className="text-slate-400">(Shift+클릭으로 다중 선택)</span>
               </div>
             )}
 
-            {selectedAssignedStudent ? (
+            {!isMultiSelect && selectedAssignedStudent ? (
               <div className="mt-4 flex flex-wrap items-center gap-4 rounded-[10px] border border-slate-200-slate-200 bg-white px-5 py-3">
                 <p className="text-lg font-bold text-slate-950">{selectedAssignedStudent.name}</p>
                 <span
@@ -1023,21 +1107,17 @@ export function SeatEditor({
             ) : null}
 
             <div className="mt-6">
-              <div className="flex items-center gap-4">
-                <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-                  칠판
-                </div>
-                <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-                  선택 자습실 <span className="font-semibold text-slate-900">{currentRoom?.name}</span>
-                </div>
+              <div className="mb-3 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-2 text-sm text-slate-600">
+                선택 자습실 <span className="font-semibold text-slate-900">{currentRoom?.name}</span>
               </div>
-              <div className="mt-4 overflow-x-auto">
+              <div className="overflow-x-auto">
                 <SeatMap
                   seats={seatMapSeats}
                   columns={roomForm.columns}
                   rows={roomForm.rows}
                   aisleColumns={previewAisleColumns}
                   selectedSeatId={selectedSeat?.id ?? selectedSeat?.localId ?? null}
+                  selectedSeatIds={selectedSeatIds}
                   onCellClick={selectSeatByCell}
                   onSeatDrop={handleSeatDrop}
                 />

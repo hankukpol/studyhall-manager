@@ -15,8 +15,9 @@ type SeatMapProps = {
   rows: number;
   aisleColumns: number[];
   selectedSeatId?: string | null;
+  selectedSeatIds?: ReadonlySet<string>;
   highlightStudentId?: string | null;
-  onCellClick?: (positionX: number, positionY: number, seatId: string | null) => void;
+  onCellClick?: (positionX: number, positionY: number, seatId: string | null, shiftKey: boolean) => void;
   onSeatDrop?: (fromSeatId: string, toSeatId: string) => void;
 };
 
@@ -45,12 +46,15 @@ function getSeatTone(seat: SeatMapSeat | null) {
   }
 }
 
+const EMPTY_SET = new Set<string>();
+
 export const SeatMap = memo(function SeatMap({
   seats,
   columns,
   rows,
   aisleColumns,
   selectedSeatId,
+  selectedSeatIds = EMPTY_SET,
   highlightStudentId,
   onCellClick,
   onSeatDrop,
@@ -63,13 +67,13 @@ export const SeatMap = memo(function SeatMap({
         칠판
       </div>
 
-      <div className="overflow-x-auto">
-        <div className="rounded-[10px] border border-slate-200-black/5 bg-white p-4 shadow-[0_12px_30px_rgba(18,32,56,0.05)]">
+      <div className="overflow-x-auto [-webkit-overflow-scrolling:touch]">
+        <div className="rounded-[10px] border border-slate-200-black/5 bg-white p-3 shadow-[0_12px_30px_rgba(18,32,56,0.05)] sm:p-4">
           <div
-            className="grid gap-3"
+            className="grid gap-1.5 sm:gap-2"
             style={{
-              gridTemplateColumns: `repeat(${columns}, minmax(92px, 1fr))`,
-              gridAutoRows: "minmax(120px, auto)",
+              gridTemplateColumns: `repeat(${columns}, 100px)`,
+              gridAutoRows: "100px",
             }}
           >
             {Array.from({ length: rows }).flatMap((_, rowIndex) =>
@@ -81,7 +85,7 @@ export const SeatMap = memo(function SeatMap({
                   return (
                     <div
                       key={`aisle-${positionX}-${positionY}`}
-                      className="flex h-full items-center justify-center rounded-[10px] border border-slate-200-dashed border-slate-200 bg-white text-xs font-semibold tracking-[0.2em] text-slate-400"
+                      className="flex h-full items-center justify-center rounded-[8px] border border-dashed border-slate-200 bg-white text-[10px] font-semibold tracking-[0.2em] text-slate-400"
                     >
                       복도
                     </div>
@@ -89,33 +93,30 @@ export const SeatMap = memo(function SeatMap({
                 }
 
                 const seat = seatMap.get(getSeatPositionKey(positionX, positionY)) ?? null;
-                const isSelected = seat?.id === selectedSeatId;
+                const seatId = seat?.id ?? null;
+                const isSelected = seatId === selectedSeatId || (seatId != null && selectedSeatIds.has(seatId));
                 const isHighlighted = seat?.assignedStudent?.id === highlightStudentId;
                 const isInteractive = Boolean(onCellClick);
-                const canDragSeat = Boolean(onSeatDrop && seat?.id && seat.assignedStudent && seat.isActive);
-                const canDropSeat = Boolean(onSeatDrop && seat?.id && seat.isActive);
+                const canDragSeat = Boolean(onSeatDrop && seatId && seat?.assignedStudent && seat.isActive);
+                const canDropSeat = Boolean(onSeatDrop && seatId && seat?.isActive);
                 const classes = getSeatTone(seat);
-                const trackLabel = formatStudyTrackLabel(seat?.assignedStudent?.studyTrack);
+                const displayLabel = seat ? (seat.isActive || seat.label.startsWith("_") ? seat.label : seat.label || "") : "빈 칸";
 
                 const content = (
                   <div
-                    className={`flex h-full flex-col justify-between rounded-[10px] border p-3 text-left transition ${
+                    className={`flex h-full flex-col justify-between rounded-[8px] border p-2 text-left transition ${
                       isSelected
                         ? "border-slate-950 bg-slate-950 text-white shadow-[0_8px_24px_rgba(15,23,42,0.2)]"
                         : classes
-                    } ${isHighlighted && !isSelected ? "ring-2 ring-offset-2 ring-sky-500" : ""}`}
+                    } ${isHighlighted && !isSelected ? "ring-2 ring-offset-1 ring-sky-500" : ""}`}
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <span className="text-xs font-semibold tracking-[0.18em]">
-                          {seat?.label ?? "빈 칸"}
-                        </span>
-                        {!seat ? <p className="mt-1 text-[11px] opacity-80">클릭해서 좌석 추가</p> : null}
-                      </div>
-
+                    <div className="flex items-start justify-between gap-1">
+                      <span className="text-[11px] font-bold leading-tight">
+                        {!seat?.isActive && (!seat?.label || seat.label.startsWith("_")) ? "" : displayLabel}
+                      </span>
                       {seat?.assignedStudent ? (
                         <span
-                          className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStudyTrackBadgeClasses(
+                          className={`inline-flex shrink-0 rounded-full border px-1.5 py-0.5 text-[9px] font-semibold leading-tight ${getStudyTrackBadgeClasses(
                             seat.assignedStudent.studyTrack,
                           )}`}
                         >
@@ -124,22 +125,18 @@ export const SeatMap = memo(function SeatMap({
                       ) : null}
                     </div>
 
-                    <div className="space-y-1">
-                      <p className="text-sm font-semibold">
-                        {seat?.assignedStudent?.name ?? (seat ? "공석" : "좌석 없음")}
+                    <div className="min-w-0">
+                      <p className="truncate text-[11px] font-semibold leading-tight">
+                        {seat?.assignedStudent?.name ?? (seat ? "공석" : "")}
                       </p>
-
                       {seat?.assignedStudent ? (
-                        <>
-                          <p className="text-xs opacity-80">{seat.assignedStudent.studentNumber}</p>
-                          <p className="text-xs font-medium opacity-90">직렬 {trackLabel}</p>
-                        </>
+                        <p className="mt-0.5 truncate text-[10px] opacity-80">{seat.assignedStudent.studentNumber}</p>
                       ) : seat ? (
-                        <p className="text-xs opacity-80">
-                          {seat.isActive ? "배정 가능" : "비활성 좌석"}
+                        <p className="mt-0.5 text-[10px] opacity-70">
+                          {seat.isActive ? "배정 가능" : "비활성"}
                         </p>
                       ) : (
-                        <p className="text-xs opacity-80">클릭해서 좌석 생성</p>
+                        <p className="mt-0.5 text-[10px] opacity-70">클릭 추가</p>
                       )}
                     </div>
                   </div>
@@ -153,15 +150,15 @@ export const SeatMap = memo(function SeatMap({
                   <button
                     key={`seat-${positionX}-${positionY}`}
                     type="button"
-                    onClick={() => onCellClick?.(positionX, positionY, seat?.id ?? null)}
+                    onClick={(event) => onCellClick?.(positionX, positionY, seatId, event.shiftKey)}
                     className="h-full text-left"
                     draggable={canDragSeat}
                     onDragStart={(event) => {
-                      if (!canDragSeat || !seat?.id) {
+                      if (!canDragSeat || !seatId) {
                         return;
                       }
 
-                      event.dataTransfer.setData("text/plain", seat.id);
+                      event.dataTransfer.setData("text/plain", seatId);
                       event.dataTransfer.effectAllowed = "move";
                     }}
                     onDragOver={(event) => {
@@ -173,7 +170,7 @@ export const SeatMap = memo(function SeatMap({
                       event.dataTransfer.dropEffect = "move";
                     }}
                     onDrop={(event) => {
-                      if (!canDropSeat || !seat?.id) {
+                      if (!canDropSeat || !seatId) {
                         return;
                       }
 
@@ -181,7 +178,7 @@ export const SeatMap = memo(function SeatMap({
                       const fromSeatId = event.dataTransfer.getData("text/plain");
 
                       if (fromSeatId) {
-                        onSeatDrop?.(fromSeatId, seat.id);
+                        onSeatDrop?.(fromSeatId, seatId);
                       }
                     }}
                   >
