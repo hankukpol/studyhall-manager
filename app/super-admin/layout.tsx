@@ -18,7 +18,7 @@ export default function SuperAdminLayout({ children }: SuperAdminLayoutProps) {
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="min-h-screen bg-[#F7F7F5]">
       {/* 상단 헤더 */}
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-screen-2xl px-6 md:px-10">

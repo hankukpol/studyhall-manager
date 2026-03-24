@@ -47,7 +47,7 @@ export function SuperAdminAttendanceComparisonChart({
       </div>
       <div className="mt-4 h-44">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} layout="vertical" barSize={32} margin={{ left: 4, right: 24, top: 4, bottom: 4 }}>
+          <BarChart data={chartData} layout="vertical" barSize={32} margin={{ left: 8, right: 24, top: 4, bottom: 4 }}>
             <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="#f1f5f9" />
             <XAxis
               type="number"
@@ -60,7 +60,7 @@ export function SuperAdminAttendanceComparisonChart({
             <YAxis
               type="category"
               dataKey="name"
-              width={56}
+              width={100}
               tick={{ fontSize: 13, fontWeight: 600, fill: "#334155" }}
               axisLine={false}
               tickLine={false}
