@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { LoaderCircle, Plus, RefreshCcw, Save, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { Modal } from "@/components/ui/Modal";
 import { SeatMap } from "@/components/seats/SeatMap";
 import {
   buildSeatLabel,
@@ -1018,93 +1019,11 @@ export function SeatEditor({
                   선택 해제
                 </button>
               </div>
-            ) : selectedSeat ? (
-              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
-                <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Position</p>
-                  <p className="mt-1 text-lg font-bold text-slate-950">
-                    {selectedSeat.positionX}열 {selectedSeat.positionY}행
-                  </p>
-                </div>
-                <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Status</p>
-                  <p className="mt-1 text-lg font-bold text-slate-950">
-                    {selectedSeat.isActive ? "운영 좌석" : "비활성 좌석"}
-                  </p>
-                </div>
-                <label className="block">
-                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">좌석 번호</span>
-                  <input
-                    value={selectedSeat.label}
-                    onChange={(event) => updateSelectedSeat({ label: event.target.value })}
-                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
-                    placeholder="예: A-01"
-                  />
-                </label>
-                <label className="block">
-                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">학생 배정</span>
-                  <select
-                    value={selectedSeat.assignedStudentId ?? ""}
-                    onChange={(event) =>
-                      updateSelectedSeat({ assignedStudentId: event.target.value || null })
-                    }
-                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
-                    disabled={!selectedSeat.isActive}
-                  >
-                    <option value="">배정 안 함</option>
-                    {assignableStudents.map((student) => (
-                      <option key={student.id} value={student.id}>
-                        {student.name} · {student.studentNumber} · {formatStudyTrackLabel(student.studyTrack)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="flex items-center gap-3 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-2.5">
-                  <input
-                    type="checkbox"
-                    checked={selectedSeat.isActive}
-                    onChange={(event) => {
-                      const active = event.target.checked;
-                      updateSelectedSeat(active ? { isActive: true } : { isActive: false, label: "" });
-                    }}
-                    className="h-5 w-5 rounded border-slate-300"
-                  />
-                  <span>
-                    <span className="block text-sm font-medium text-slate-800">운영 좌석</span>
-                    <span className="block text-xs text-slate-500">비활성 시 배정 제외</span>
-                  </span>
-                </label>
-                <div className="flex items-center">
-                  <button
-                    type="button"
-                    onClick={deleteSelectedSeat}
-                    className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-4 py-2.5 text-sm font-medium text-rose-700 transition hover:bg-white"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    선택 좌석 삭제
-                  </button>
-                </div>
-              </div>
             ) : (
-              <div className="mt-6 rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-4 text-center text-sm text-slate-600">
-                좌석을 선택하거나 빈 칸을 눌러 새 좌석을 추가해 주세요. <span className="text-slate-400">(Shift+클릭으로 다중 선택)</span>
+              <div className="mt-6 rounded-[10px] border border-dashed border-slate-300 bg-white px-4 py-4 text-center text-sm text-slate-600">
+                좌석을 클릭하면 편집 모달이 열립니다. <span className="text-slate-400">(Shift+클릭으로 다중 선택)</span>
               </div>
             )}
-
-            {!isMultiSelect && selectedAssignedStudent ? (
-              <div className="mt-4 flex flex-wrap items-center gap-4 rounded-[10px] border border-slate-200-slate-200 bg-white px-5 py-3">
-                <p className="text-lg font-bold text-slate-950">{selectedAssignedStudent.name}</p>
-                <span
-                  className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${getStudyTrackBadgeClasses(
-                    selectedAssignedStudent.studyTrack,
-                  )}`}
-                >
-                  {formatStudyTrackLabel(selectedAssignedStudent.studyTrack)}
-                </span>
-                <span className="text-sm text-slate-600">수험번호 {selectedAssignedStudent.studentNumber}</span>
-                <span className="text-sm text-slate-600">상태 {getStudentStatusLabel(selectedAssignedStudent.status)}</span>
-              </div>
-            ) : null}
 
             {movingSeatId ? (
               <div className="mt-4 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm text-sky-700">
@@ -1135,6 +1054,98 @@ export function SeatEditor({
             자습실을 선택하면 좌석 배치를 바로 편집할 수 있습니다.
           </div>
         )}
+
+        <Modal
+          open={selectedSeat !== null && !isMultiSelect}
+          onClose={() => setSelectedLocalId(null)}
+          title="좌석 편집"
+          badge={selectedSeat ? `${selectedSeat.positionX}열 ${selectedSeat.positionY}행` : ""}
+          widthClassName="max-w-md"
+        >
+          {selectedSeat ? (
+            <div className="space-y-5">
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-slate-700">좌석 번호</span>
+                <input
+                  value={selectedSeat.label}
+                  onChange={(event) => updateSelectedSeat({ label: event.target.value })}
+                  className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
+                  placeholder="예: A-01"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-slate-700">학생 배정</span>
+                <select
+                  value={selectedSeat.assignedStudentId ?? ""}
+                  onChange={(event) =>
+                    updateSelectedSeat({ assignedStudentId: event.target.value || null })
+                  }
+                  className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
+                  disabled={!selectedSeat.isActive}
+                >
+                  <option value="">배정 안 함</option>
+                  {assignableStudents.map((student) => (
+                    <option key={student.id} value={student.id}>
+                      {student.name} · {student.studentNumber} · {formatStudyTrackLabel(student.studyTrack)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="flex items-center gap-3 rounded-[10px] border border-slate-200 bg-slate-50 px-4 py-3">
+                <input
+                  type="checkbox"
+                  checked={selectedSeat.isActive}
+                  onChange={(event) => {
+                    const active = event.target.checked;
+                    updateSelectedSeat(active ? { isActive: true } : { isActive: false, label: "" });
+                  }}
+                  className="h-5 w-5 rounded border-slate-300"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-slate-800">운영 좌석</span>
+                  <span className="block text-xs text-slate-500">비활성 시 배정 제외</span>
+                </span>
+              </label>
+
+              {selectedAssignedStudent ? (
+                <div className="flex flex-wrap items-center gap-3 rounded-[10px] border border-slate-200 bg-slate-50 px-4 py-3">
+                  <p className="text-sm font-bold text-slate-950">{selectedAssignedStudent.name}</p>
+                  <span
+                    className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-semibold ${getStudyTrackBadgeClasses(
+                      selectedAssignedStudent.studyTrack,
+                    )}`}
+                  >
+                    {formatStudyTrackLabel(selectedAssignedStudent.studyTrack)}
+                  </span>
+                  <span className="text-xs text-slate-600">{selectedAssignedStudent.studentNumber}</span>
+                </div>
+              ) : null}
+
+              <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    deleteSelectedSeat();
+                    setSelectedLocalId(null);
+                  }}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  좌석 삭제
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedLocalId(null)}
+                  className="rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+                >
+                  닫기
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </Modal>
       </article>
     </div>
   );
