@@ -325,7 +325,7 @@ export function AttendanceSeatView({
               return (
                 <div
                   key={period.id}
-                  className="space-y-2 rounded-[20px] border border-slate-100 bg-slate-50 p-4"
+                  className="space-y-2 rounded-[10px] border border-slate-100 bg-slate-50 p-4"
                 >
                   <div className="flex items-center justify-between">
                     <div>

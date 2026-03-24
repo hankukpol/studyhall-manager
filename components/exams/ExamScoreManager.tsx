@@ -455,7 +455,7 @@ export function ExamScoreManager({
 
   if (examTypes.length === 0) {
     return (
-      <section className="rounded-[28px] border border-slate-200-dashed border-slate-300 bg-white px-6 py-10 text-sm text-slate-600">
+      <section className="rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-6 py-10 text-sm text-slate-600">
         시험 템플릿이 아직 없습니다. 먼저 시험 설정 화면에서 직렬별 시험 템플릿을
         만들어 주세요.
       </section>
@@ -561,7 +561,7 @@ export function ExamScoreManager({
             {summaryCards.map((card) => (
               <article
                 key={card.label}
-                className="rounded-[24px] border border-slate-200-slate-200 bg-white px-5 py-4"
+                className="rounded-[10px] border border-slate-200-slate-200 bg-white px-5 py-4"
               >
                 <p className="text-sm font-medium text-slate-500">{card.label}</p>
                 <p className="mt-2 text-2xl font-bold text-slate-950">{card.value}</p>
@@ -625,7 +625,7 @@ export function ExamScoreManager({
               </label>
             </div>
 
-            <div className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+            <div className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <p className="text-xl font-bold text-slate-950">붙여넣기 입력</p>
               <p className="mt-2 text-xs leading-5 text-slate-500">
                 <code>수험번호 + 과목 점수</code> 또는 <code>과목 점수만</code> 탭으로 구분해
@@ -679,7 +679,7 @@ export function ExamScoreManager({
 
           {sheet ? (
             <>
-              <div className="mt-5 rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm text-slate-600">
+              <div className="mt-5 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm text-slate-600">
                 대상 직렬{" "}
                 <span className="font-semibold text-slate-900">{formatTrackLabel(sheet.studyTrack)}</span>
                 <span className="mx-2 text-slate-300">|</span>
@@ -759,7 +759,7 @@ export function ExamScoreManager({
               </div>
             </>
           ) : (
-            <div className="mt-6 rounded-[24px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
+            <div className="mt-6 rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
               {isLoading
                 ? "성적 시트를 불러오는 중입니다."
                 : "시험 템플릿과 회차를 선택해 주세요."}
@@ -770,7 +770,7 @@ export function ExamScoreManager({
 
       {sheet && blockingChangeMessage ? (
         <div className="fixed bottom-6 left-4 right-4 z-40 mx-auto max-w-5xl">
-          <div className="rounded-[28px] border border-slate-200-slate-200 bg-white/95 px-5 py-4 shadow-[0_18px_44px_rgba(15,23,42,0.18)] backdrop-blur">
+          <div className="rounded-[10px] border border-slate-200-slate-200 bg-white/95 px-5 py-4 shadow-[0_18px_44px_rgba(15,23,42,0.18)] backdrop-blur">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-amber-700">

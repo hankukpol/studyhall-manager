@@ -14,7 +14,7 @@ export default async function ExamScheduleSettingsPage({ params }: ExamScheduleS
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_50px_rgba(18,32,56,0.08)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_50px_rgba(18,32,56,0.08)]">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
           Settings / Exam Schedules
         </p>
@@ -25,7 +25,7 @@ export default async function ExamScheduleSettingsPage({ params }: ExamScheduleS
         </p>
       </section>
 
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <ExamScheduleManager
           divisionSlug={params.division}
           initialSchedules={schedules}

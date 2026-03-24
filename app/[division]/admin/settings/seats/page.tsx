@@ -18,7 +18,7 @@ export default async function SeatSettingsPage({ params }: SeatSettingsPageProps
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-950">
           자습실 / 좌석 배치 설정
         </h1>

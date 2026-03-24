@@ -75,7 +75,7 @@ export function ConfirmDialog({
             role="dialog"
             aria-modal="true"
             aria-labelledby="confirm-dialog-title"
-            className="relative z-10 w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-xl"
+            className="relative z-10 w-full max-w-sm rounded-[10px] border border-slate-200 bg-white p-6 shadow-xl"
           >
             {/* 헤더 */}
             <div className="flex items-start justify-between gap-4">

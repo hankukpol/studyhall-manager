@@ -307,7 +307,7 @@ export function AnnouncementManager({
     <>
       <div className="space-y-6">
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <article className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(15,23,42,0.06)]">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(15,23,42,0.06)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm text-slate-500">전체 공지</p>
@@ -322,7 +322,7 @@ export function AnnouncementManager({
             </div>
           </article>
 
-          <article className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(245,158,11,0.10)]">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(245,158,11,0.10)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm text-amber-700">상단 고정</p>
@@ -337,7 +337,7 @@ export function AnnouncementManager({
             </div>
           </article>
 
-          <article className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(14,165,233,0.10)]">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(14,165,233,0.10)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm text-sky-700">예약 공지</p>
@@ -352,7 +352,7 @@ export function AnnouncementManager({
             </div>
           </article>
 
-          <article className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(16,185,129,0.10)]">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(16,185,129,0.10)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm text-emerald-700">공개 중</p>
@@ -555,7 +555,7 @@ export function AnnouncementManager({
                 </>
               ) : (
                 <div className="px-4 py-8 text-sm text-slate-600">
-                  <div className="rounded-[24px] border border-dashed border-slate-300 bg-white px-4 py-8">
+                  <div className="rounded-[10px] border border-dashed border-slate-300 bg-white px-4 py-8">
                     조건에 맞는 공지가 없습니다.
                   </div>
                 </div>
@@ -591,7 +591,7 @@ export function AnnouncementManager({
                   </div>
 
                   <div className="mt-4 grid gap-3">
-                    <div className="rounded-[20px] border border-slate-200 bg-white px-4 py-4">
+                    <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                         노출 시각
                       </p>
@@ -600,7 +600,7 @@ export function AnnouncementManager({
                       </p>
                     </div>
 
-                    <div className="rounded-[20px] border border-slate-200 bg-white px-4 py-4">
+                    <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                         작성 및 수정
                       </p>
@@ -643,7 +643,7 @@ export function AnnouncementManager({
                   ) : null}
                 </>
               ) : (
-                <div className="rounded-[24px] border border-dashed border-slate-300 bg-white px-4 py-8 text-sm text-slate-600">
+                <div className="rounded-[10px] border border-dashed border-slate-300 bg-white px-4 py-8 text-sm text-slate-600">
                   목록에서 공지를 선택하면 상세 내용이 여기 표시됩니다.
                 </div>
               )}
@@ -660,7 +660,7 @@ export function AnnouncementManager({
         description="제목, 본문, 노출 범위와 예약 발행 시점을 우측 패널에서 바로 관리합니다."
       >
         <form onSubmit={handleSubmit} className="space-y-6">
-          <section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">
                 <Megaphone className="h-5 w-5" />
@@ -696,7 +696,7 @@ export function AnnouncementManager({
             </div>
           </section>
 
-          <section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-amber-700">
                 <Pin className="h-5 w-5" />
@@ -733,7 +733,7 @@ export function AnnouncementManager({
               </label>
             </div>
 
-            <label className="mt-4 flex items-center gap-3 rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm text-slate-700">
+            <label className="mt-4 flex items-center gap-3 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm text-slate-700">
               <input
                 type="checkbox"
                 checked={form.isPinned}
@@ -751,7 +751,7 @@ export function AnnouncementManager({
             </div>
           </section>
 
-          <div className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4 sm:flex sm:items-center sm:justify-between">
+          <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-900">저장 후 목록과 노출 상태가 즉시 반영됩니다.</p>
               <p className="mt-1 text-sm text-slate-500">

@@ -75,7 +75,7 @@ export function WarningStudentsManager({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -197,7 +197,7 @@ export function WarningStudentsManager({
             </table>
           </div>
         ) : (
-          <div className="mt-5 rounded-[24px] border border-slate-200-dashed border-slate-300 bg-white px-5 py-8 text-center">
+          <div className="mt-5 rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-5 py-8 text-center">
             <TriangleAlert className="mx-auto h-5 w-5 text-slate-400" />
             <p className="mt-3 text-sm font-medium text-slate-700">조건에 맞는 경고 대상자가 없습니다.</p>
           </div>

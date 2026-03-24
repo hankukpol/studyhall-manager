@@ -36,9 +36,9 @@ export default async function AssistantPage({ params }: AssistantPageProps) {
 
   return (
     <div className="grid gap-3">
-      <section className="rounded-[24px] border border-black/5 bg-white p-4 shadow-[0_4px_12px_rgba(15,23,42,0.03)]">
+      <section className="rounded-[10px] border border-black/5 bg-white p-4 shadow-[0_4px_12px_rgba(15,23,42,0.03)]">
         <div className="grid gap-4 lg:grid-cols-[1.04fr_0.96fr]">
-          <div className="rounded-[20px] border border-[#dce8fb] bg-[linear-gradient(135deg,var(--division-color-light)_0%,#ffffff_72%)] p-5">
+          <div className="rounded-[10px] border border-[#dce8fb] bg-[linear-gradient(135deg,var(--division-color-light)_0%,#ffffff_72%)] p-5">
             <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--division-color)]">
               Assistant
             </p>
@@ -64,7 +64,7 @@ export default async function AssistantPage({ params }: AssistantPageProps) {
           </div>
 
           <div className="grid grid-cols-2 gap-2.5">
-            <article className="rounded-[20px] border border-black/5 bg-[#f8fafc] p-4 text-center">
+            <article className="rounded-[10px] border border-black/5 bg-[#f8fafc] p-4 text-center">
               <div className="flex flex-col items-center gap-1.5 text-slate-500">
                 <Clock3 className="h-4 w-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">현재 교시</span>
@@ -77,7 +77,7 @@ export default async function AssistantPage({ params }: AssistantPageProps) {
               </p>
             </article>
 
-            <article className="rounded-[20px] border border-black/5 bg-[#f8fafc] p-4 text-center">
+            <article className="rounded-[10px] border border-black/5 bg-[#f8fafc] p-4 text-center">
               <div className="flex flex-col items-center gap-1.5 text-slate-500">
                 <BookOpenCheck className="h-4 w-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">처리 현황</span>
@@ -90,7 +90,7 @@ export default async function AssistantPage({ params }: AssistantPageProps) {
               </p>
             </article>
 
-            <article className="rounded-[20px] border border-black/5 bg-[#f8fafc] p-4 text-center">
+            <article className="rounded-[10px] border border-black/5 bg-[#f8fafc] p-4 text-center">
               <div className="flex flex-col items-center gap-1.5 text-slate-500">
                 <Users className="h-4 w-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">대상 인원</span>
@@ -103,7 +103,7 @@ export default async function AssistantPage({ params }: AssistantPageProps) {
               </p>
             </article>
 
-            <article className="rounded-[20px] border border-black/5 bg-[#f8fafc] p-4 text-center">
+            <article className="rounded-[10px] border border-black/5 bg-[#f8fafc] p-4 text-center">
               <div className="flex flex-col items-center gap-1.5 text-slate-500">
                 <CalendarDays className="h-4 w-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">기타 정보</span>

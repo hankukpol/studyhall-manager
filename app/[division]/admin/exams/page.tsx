@@ -16,7 +16,7 @@ export default async function AdminExamsPage({ params }: AdminExamsPageProps) {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[28px] border border-slate-200/80 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200/80 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
           Exams
         </p>

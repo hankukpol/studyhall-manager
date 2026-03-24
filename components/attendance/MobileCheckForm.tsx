@@ -594,13 +594,13 @@ export function MobileCheckForm({
         </div>
 
         {isLoading ? (
-          <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
+          <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
             출석 정보를 불러오는 중입니다.
           </div>
         ) : null}
 
         {!isLoading && visibleStudents.length === 0 ? (
-          <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
+          <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
             {showOnlyUnchecked ? "미처리 학생이 없습니다." : "출석 대상 학생이 없습니다."}
           </div>
         ) : null}

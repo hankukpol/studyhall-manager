@@ -140,7 +140,7 @@ export function RulesSettingsManager({
   return (
     <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr]">
       <section className="space-y-4">
-        <article className="rounded-[28px] border border-slate-200-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+        <article className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
             Settings / Rules
           </p>
@@ -194,7 +194,7 @@ export function RulesSettingsManager({
           </div>
         </article>
 
-        <article className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5">
+        <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5">
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-700" />
             <div>
@@ -208,7 +208,7 @@ export function RulesSettingsManager({
         </article>
       </section>
 
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -233,7 +233,7 @@ export function RulesSettingsManager({
         </div>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-          <div className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+          <div className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
             <h3 className="text-sm font-semibold text-slate-900">출석 기준</h3>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <label className="block">
@@ -290,7 +290,7 @@ export function RulesSettingsManager({
             </label>
           </div>
 
-          <div className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+          <div className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
             <h3 className="text-sm font-semibold text-slate-900">경고 임계값</h3>
             <p className="mt-2 text-sm text-slate-600">
               1차 &lt; 2차 &lt; 면담 &lt; 퇴실 순서로 설정해야 합니다.
@@ -351,7 +351,7 @@ export function RulesSettingsManager({
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+          <div className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
             <h3 className="text-sm font-semibold text-slate-900">외출/휴가 한도</h3>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <label className="block">
@@ -422,7 +422,7 @@ export function RulesSettingsManager({
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+          <div className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
             <h3 className="text-sm font-semibold text-slate-900">경고 문자 템플릿</h3>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               사용 가능 변수: {"{학원명}"} {"{직렬명}"} {"{학생이름}"} {"{벌점}"} {"{경고단계}"}

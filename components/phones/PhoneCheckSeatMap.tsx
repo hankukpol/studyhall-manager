@@ -267,7 +267,7 @@ export function PhoneCheckSeatMap({
                     : "border-slate-100 bg-white";
 
             return (
-              <div key={student.id} className={`rounded-[20px] border p-3 transition ${cardBg}`}>
+              <div key={student.id} className={`rounded-[10px] border p-3 transition ${cardBg}`}>
                 <div className="flex items-center gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-slate-900">{student.name}</p>

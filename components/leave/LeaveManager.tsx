@@ -369,7 +369,7 @@ export const LeaveManager = memo(function LeaveManager({
       <div className="space-y-6">
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {usageCards.map((card) => (
-            <article key={card.type} className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(15,23,42,0.06)]">
+            <article key={card.type} className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(15,23,42,0.06)]">
               <p className="text-sm text-slate-500">{card.label}</p>
               <p className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950">{card.used}회</p>
               <p className="mt-2 text-xs text-slate-500">
@@ -611,7 +611,7 @@ export const LeaveManager = memo(function LeaveManager({
         description="학생 선택, 유형, 날짜, 사유를 입력하면 사용 현황과 이력이 즉시 갱신됩니다."
       >
         <form onSubmit={handleSubmit} className="space-y-6">
-          <section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">
                 <CalendarClock className="h-5 w-5" />
@@ -679,7 +679,7 @@ export const LeaveManager = memo(function LeaveManager({
             </div>
           </section>
 
-          <div className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4 sm:flex sm:items-center sm:justify-between">
+          <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-900">등록 후 사용 현황과 이력이 즉시 반영됩니다.</p>
               <p className="mt-1 text-sm text-slate-500">외출은 허가 이력만 남고, 휴가 계열은 출결에도 바로 연결됩니다.</p>

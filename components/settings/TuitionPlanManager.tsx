@@ -154,7 +154,7 @@ export function TuitionPlanManager({ divisionSlug, initialPlans }: TuitionPlanMa
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -176,7 +176,7 @@ export function TuitionPlanManager({ divisionSlug, initialPlans }: TuitionPlanMa
 
         <div className="mt-5 grid gap-3">
           {sortedPlans.map((plan) => (
-            <article key={plan.id} className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+            <article key={plan.id} className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
@@ -225,7 +225,7 @@ export function TuitionPlanManager({ divisionSlug, initialPlans }: TuitionPlanMa
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Plan Editor</p>
         <h2 className="mt-2 text-2xl font-bold text-slate-950">
           {editingPlanId ? "등록 플랜 수정" : "등록 플랜 추가"}

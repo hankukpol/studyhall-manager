@@ -25,7 +25,7 @@ export default async function StudentsPage({ params, searchParams }: StudentsPag
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-950">
           학생 명단 관리
         </h1>

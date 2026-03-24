@@ -186,22 +186,22 @@ export function InterviewManager({
     <>
       <div className="space-y-6">
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <article className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(244,63,94,0.10)]">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(244,63,94,0.10)]">
             <p className="text-sm text-rose-700">면담 권장</p>
             <p className="mt-3 text-3xl font-extrabold tracking-tight text-rose-950">{recommendedStudents.length}</p>
             <p className="mt-2 text-xs text-rose-700/80">기준 벌점 {warnInterview}점 이상</p>
           </article>
-          <article className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(15,23,42,0.06)]">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(15,23,42,0.06)]">
             <p className="text-sm text-slate-500">전체 면담</p>
             <p className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950">{interviews.length}</p>
             <p className="mt-2 text-xs text-slate-500">{filterMonth} 조회 월 면담 기록 수</p>
           </article>
-          <article className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(14,165,233,0.10)]">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(14,165,233,0.10)]">
             <p className="text-sm text-sky-700">필터 결과</p>
             <p className="mt-3 text-3xl font-extrabold tracking-tight text-sky-950">{historyRows.length}</p>
             <p className="mt-2 text-xs text-sky-700/80">현재 선택한 학생 기준 이력</p>
           </article>
-          <article className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(245,158,11,0.10)]">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(245,158,11,0.10)]">
             <p className="text-sm text-amber-700">현재 선택 학생 벌점</p>
             <p className="mt-3 text-3xl font-extrabold tracking-tight text-amber-950">{selectedStudent?.netPoints ?? 0}</p>
             <p className="mt-2 text-xs text-amber-700/80">{selectedStudent?.name ?? "학생을 선택해 주세요."}</p>
@@ -346,7 +346,7 @@ export function InterviewManager({
         description="면담 사유, 내용, 후속 조치를 저장하면 추천 학생 목록과 이력이 즉시 업데이트됩니다."
       >
         <form onSubmit={handleSubmit} className="space-y-6">
-          <section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">
                 <MessageSquareWarning className="h-5 w-5" />
@@ -406,7 +406,7 @@ export function InterviewManager({
             ) : null}
           </section>
 
-          <section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-rose-700">
                 <MessageSquareWarning className="h-5 w-5" />
@@ -461,7 +461,7 @@ export function InterviewManager({
             </div>
           </section>
 
-          <div className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4 sm:flex sm:items-center sm:justify-between">
+          <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-900">저장 후 추천 학생 목록과 이력이 즉시 갱신됩니다.</p>
               <p className="mt-1 text-sm text-slate-500">기록은 학생 상세와 관리자 이력 화면에서 함께 확인할 수 있습니다.</p>

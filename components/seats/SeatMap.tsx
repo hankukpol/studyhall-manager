@@ -59,12 +59,12 @@ export const SeatMap = memo(function SeatMap({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-3 text-center text-sm font-medium text-slate-600">
+      <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-center text-sm font-medium text-slate-600">
         출입구 방향
       </div>
 
       <div className="overflow-x-auto">
-        <div className="rounded-[28px] border border-slate-200-black/5 bg-white p-4 shadow-[0_12px_30px_rgba(18,32,56,0.05)]">
+        <div className="rounded-[10px] border border-slate-200-black/5 bg-white p-4 shadow-[0_12px_30px_rgba(18,32,56,0.05)]">
           <div
             className="grid gap-3"
             style={{

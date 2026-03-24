@@ -591,19 +591,19 @@ export function SeatEditor({
   return (
     <div className="space-y-6">
       <section className="grid gap-3 md:grid-cols-4">
-        <article className="rounded-[24px] border border-slate-200-slate-200 bg-white px-5 py-4 shadow-[0_12px_28px_rgba(18,32,56,0.05)]">
+        <article className="rounded-[10px] border border-slate-200-slate-200 bg-white px-5 py-4 shadow-[0_12px_28px_rgba(18,32,56,0.05)]">
           <p className="text-sm font-medium text-slate-500">자습실 수</p>
           <p className="mt-2 text-2xl font-bold text-slate-950">{rooms.length}개</p>
         </article>
-        <article className="rounded-[24px] border border-slate-200-slate-200 bg-white px-5 py-4 shadow-[0_12px_28px_rgba(18,32,56,0.05)]">
+        <article className="rounded-[10px] border border-slate-200-slate-200 bg-white px-5 py-4 shadow-[0_12px_28px_rgba(18,32,56,0.05)]">
           <p className="text-sm font-medium text-slate-500">운영 좌석</p>
           <p className="mt-2 text-2xl font-bold text-slate-950">{activeSeatCount}석</p>
         </article>
-        <article className="rounded-[24px] border border-slate-200-slate-200 bg-white px-5 py-4 shadow-[0_12px_28px_rgba(18,32,56,0.05)]">
+        <article className="rounded-[10px] border border-slate-200-slate-200 bg-white px-5 py-4 shadow-[0_12px_28px_rgba(18,32,56,0.05)]">
           <p className="text-sm font-medium text-slate-500">배정 학생</p>
           <p className="mt-2 text-2xl font-bold text-slate-950">{assignedSeatCount}명</p>
         </article>
-        <article className="rounded-[24px] border border-slate-200-slate-200 bg-white px-5 py-4 shadow-[0_12px_28px_rgba(18,32,56,0.05)]">
+        <article className="rounded-[10px] border border-slate-200-slate-200 bg-white px-5 py-4 shadow-[0_12px_28px_rgba(18,32,56,0.05)]">
           <p className="text-sm font-medium text-slate-500">즉시 배정 가능</p>
           <p className="mt-2 text-2xl font-bold text-slate-950">{availableSeatCount}석</p>
         </article>
@@ -634,7 +634,7 @@ export function SeatEditor({
                   key={room.id}
                   type="button"
                   onClick={() => setSelectedRoomId(room.id)}
-                  className={`rounded-[24px] border px-4 py-4 text-left transition ${
+                  className={`rounded-[10px] border px-4 py-4 text-left transition ${
                     selectedRoomId === room.id
                       ? "border-[var(--division-color)] bg-[var(--division-color)] text-white"
                       : "border-slate-200 bg-white text-slate-700 hover:bg-white"
@@ -870,7 +870,7 @@ export function SeatEditor({
                 </label>
               </>
             ) : (
-              <div className="mt-5 rounded-[24px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-8 text-sm text-slate-600">
+              <div className="mt-5 rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-8 text-sm text-slate-600">
                 먼저 자습실을 생성해 주세요.
               </div>
             )}
@@ -923,12 +923,12 @@ export function SeatEditor({
               </div>
             ) : null}
 
-            <div className="mt-4 rounded-[20px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+            <div className="mt-4 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
               학생이 배정된 좌석은 드래그해서 다른 빈 좌석으로 바로 이동할 수 있습니다. 이미 학생이 있는 좌석에는 덮어쓸 수 없습니다.
             </div>
 
             {isLoadingLayout ? (
-              <div className="mt-6 rounded-[24px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-600">
+              <div className="mt-6 rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-600">
                 좌석 배치를 불러오는 중입니다.
               </div>
             ) : selectedRoomId ? (
@@ -946,12 +946,12 @@ export function SeatEditor({
                 </div>
 
                 <div className="space-y-4">
-                  <div className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+                  <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
                     선택 자습실 <span className="font-semibold text-slate-900">{currentRoom?.name}</span>
                   </div>
 
                   {movingSeatId ? (
-                    <div className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm text-sky-700">
+                    <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm text-sky-700">
                       좌석 이동을 반영하는 중입니다.
                     </div>
                   ) : null}
@@ -959,13 +959,13 @@ export function SeatEditor({
                   {selectedSeat ? (
                     <>
                       <div className="grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-3">
+                        <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
                           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Position</p>
                           <p className="mt-2 text-xl font-bold text-slate-950">
                             {selectedSeat.positionX}열 {selectedSeat.positionY}행
                           </p>
                         </div>
-                        <div className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-3">
+                        <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
                           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Status</p>
                           <p className="mt-2 text-xl font-bold text-slate-950">
                             {selectedSeat.isActive ? "운영 좌석" : "비활성 좌석"}
@@ -1003,7 +1003,7 @@ export function SeatEditor({
                       </label>
 
                       {selectedAssignedStudent ? (
-                        <div className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+                        <div className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
                           <div className="flex flex-wrap items-center gap-2">
                             <p className="text-xl font-bold text-slate-950">{selectedAssignedStudent.name}</p>
                             <span
@@ -1048,14 +1048,14 @@ export function SeatEditor({
                       </button>
                     </>
                   ) : (
-                    <div className="rounded-[24px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-600">
+                    <div className="rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-600">
                       좌석을 선택하거나 빈 칸을 눌러 새 좌석을 추가해 주세요.
                     </div>
                   )}
                 </div>
               </div>
             ) : (
-              <div className="mt-6 rounded-[24px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-600">
+              <div className="mt-6 rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-600">
                 자습실을 선택하면 좌석 배치를 바로 편집할 수 있습니다.
               </div>
             )}

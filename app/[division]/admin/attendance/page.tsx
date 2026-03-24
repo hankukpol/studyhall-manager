@@ -46,7 +46,7 @@ export default async function AdminAttendancePage({ params }: AdminAttendancePag
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_50px_rgba(18,32,56,0.08)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_50px_rgba(18,32,56,0.08)]">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Attendance Ledger</p>
         <h1 className="mt-3 text-3xl font-extrabold text-slate-950">관리자 출석부</h1>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">

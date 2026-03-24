@@ -14,7 +14,7 @@ import type { SeatLayout, StudyRoomItem } from "@/lib/services/seat.service";
 import { UnsavedChangesGuard } from "@/components/ui/UnsavedChangesGuard";
 
 const seatViewFallback = () => (
-  <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-6 text-sm text-slate-500">
+  <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-6 text-sm text-slate-500">
     좌석 출석 보드를 불러오는 중입니다.
   </div>
 );
@@ -302,7 +302,7 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
   return (
     <div className="space-y-6">
       <UnsavedChangesGuard isDirty={isDirty} />
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Daily Attendance</p>
@@ -373,7 +373,7 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
       </section>
 
       {viewMode === "seat" && hasSeatLayout && seatRooms && initialSeatLayout ? (
-        <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+        <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
           <AttendanceSeatView
             divisionSlug={divisionSlug}
             rooms={seatRooms}
@@ -387,7 +387,7 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
         </section>
       ) : null}
 
-      <section className={`overflow-hidden rounded-[28px] border border-slate-200-black/5 bg-white shadow-[0_16px_40px_rgba(18,32,56,0.06)] ${viewMode === "seat" ? "hidden" : ""}`}>
+      <section className={`overflow-hidden rounded-[10px] border border-slate-200-black/5 bg-white shadow-[0_16px_40px_rgba(18,32,56,0.06)] ${viewMode === "seat" ? "hidden" : ""}`}>
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
           <p className="text-sm font-medium text-slate-700">학생 x 교시 매트릭스</p>
           {isLoading ? (

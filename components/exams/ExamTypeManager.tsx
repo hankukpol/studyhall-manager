@@ -306,7 +306,7 @@ export function ExamTypeManager({
 
   return (
     <div className="grid gap-6 xl:grid-cols-[0.96fr_1.04fr]">
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -343,7 +343,7 @@ export function ExamTypeManager({
               return (
                 <article
                   key={examType.id}
-                  className={`rounded-[24px] border px-4 py-4 transition ${
+                  className={`rounded-[10px] border px-4 py-4 transition ${
                     selectedId === examType.id
                       ? "border-[var(--division-color)] bg-[var(--division-color)] text-white"
                       : "border-slate-200 bg-white text-slate-950"
@@ -442,14 +442,14 @@ export function ExamTypeManager({
               );
             })
           ) : (
-            <div className="rounded-[24px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
+            <div className="rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
               등록된 시험 템플릿이 없습니다. 지점별 운영 방식과 직렬에 맞는 템플릿을 먼저 추가해주세요.
             </div>
           )}
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
           {editingId ? "Edit Template" : "Create Template"}
         </p>
@@ -462,15 +462,15 @@ export function ExamTypeManager({
         </p>
 
         <div className="mt-5 grid gap-3 md:grid-cols-3">
-          <div className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4">
+          <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">직렬</p>
             <p className="mt-3 text-xl font-bold text-slate-950">{formatTrackLabel(form.studyTrack === COMMON_TRACK_VALUE ? null : form.studyTrack)}</p>
           </div>
-          <div className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4">
+          <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">과목 수</p>
             <p className="mt-3 text-xl font-bold text-slate-950">{previewSubjectCount}개</p>
           </div>
-          <div className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4">
+          <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">예상 총점</p>
             <p className="mt-3 text-xl font-bold text-slate-950">
               {previewMaxScore > 0 ? `${previewMaxScore}점` : "미설정"}
@@ -580,7 +580,7 @@ export function ExamTypeManager({
             />
           </label>
 
-          <div className="space-y-3 rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+          <div className="space-y-3 rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xl font-bold text-slate-950">과목 구성</p>

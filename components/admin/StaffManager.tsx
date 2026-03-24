@@ -150,7 +150,7 @@ export function StaffManager({ divisionSlug, initialStaff }: StaffManagerProps) 
       {/* 확인 모달 */}
       {confirmModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-[28px] bg-white p-6 shadow-[0_32px_80px_rgba(0,0,0,0.22)]">
+          <div className="w-full max-w-sm rounded-[10px] bg-white p-6 shadow-[0_32px_80px_rgba(0,0,0,0.22)]">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50">
               <AlertTriangle className="h-6 w-6 text-rose-600" />
             </div>
@@ -205,7 +205,7 @@ export function StaffManager({ divisionSlug, initialStaff }: StaffManagerProps) 
       ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1.2fr]">
-        <section className="rounded-[28px] border border-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.06)]">
+        <section className="rounded-[10px] border border-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.06)]">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Staff</p>
@@ -317,7 +317,7 @@ export function StaffManager({ divisionSlug, initialStaff }: StaffManagerProps) 
           ) : null}
         </section>
 
-        <section className="rounded-[28px] border border-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.06)]">
+        <section className="rounded-[10px] border border-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.06)]">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Accounts</p>
           <h3 className="mt-2 text-2xl font-bold text-slate-950">직원 목록</h3>
 

@@ -601,7 +601,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
         ].map((card) => (
           <div
             key={card.label}
-            className="rounded-[20px] border border-slate-200-black/5 bg-white px-5 py-4 shadow-[0_8px_24px_rgba(18,32,56,0.05)]"
+            className="rounded-[10px] border border-slate-200-black/5 bg-white px-5 py-4 shadow-[0_8px_24px_rgba(18,32,56,0.05)]"
           >
             <p className="text-xs font-medium text-slate-500">{card.label}</p>
             <p className={`mt-1 text-3xl font-extrabold tracking-tight ${card.color}`}>
@@ -613,7 +613,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
       </div>
 
       {/* 자습실 탭 + 배치도 */}
-      <div className="rounded-[28px] border border-slate-200-black/5 bg-white shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <div className="rounded-[10px] border border-slate-200-black/5 bg-white shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         {/* 자습실 탭 */}
         {rooms.length > 1 && (
           <div className="flex gap-1 border-b border-slate-100 px-5 pt-4">

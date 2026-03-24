@@ -87,21 +87,21 @@ export function StudyTimeStats({ divisionSlug, studentId }: StudyTimeStatsProps)
 
       {/* 요약 카드 3개 */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-[20px] border border-slate-100 bg-slate-50 p-4">
+        <div className="rounded-[10px] border border-slate-100 bg-slate-50 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Total</p>
           <p className="mt-2 text-2xl font-extrabold text-slate-950">
             {isLoading ? "—" : stats ? formatMinutes(stats.totalMinutes) : "0분"}
           </p>
           <p className="mt-1 text-xs text-slate-500">{month} 기준</p>
         </div>
-        <div className="rounded-[20px] border border-slate-100 bg-slate-50 p-4">
+        <div className="rounded-[10px] border border-slate-100 bg-slate-50 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">학습일</p>
           <p className="mt-2 text-2xl font-extrabold text-slate-950">
             {isLoading ? "—" : `${studyDays}일`}
           </p>
           <p className="mt-1 text-xs text-slate-500">출석 기록 있는 날</p>
         </div>
-        <div className="rounded-[20px] border border-slate-100 bg-slate-50 p-4">
+        <div className="rounded-[10px] border border-slate-100 bg-slate-50 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">일평균</p>
           <p className="mt-2 text-2xl font-extrabold text-slate-950">
             {isLoading ? "—" : formatMinutes(avgMinutes)}
@@ -117,12 +117,12 @@ export function StudyTimeStats({ divisionSlug, studentId }: StudyTimeStatsProps)
           <p className="text-sm">불러오는 중...</p>
         </div>
       ) : byDate.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-[24px] border border-dashed border-slate-300 py-12 text-slate-400">
+        <div className="flex flex-col items-center gap-3 rounded-[10px] border border-dashed border-slate-300 py-12 text-slate-400">
           <Clock className="h-7 w-7" />
           <p className="text-sm">해당 월의 학습 기록이 없습니다.</p>
         </div>
       ) : (
-        <div className="rounded-[20px] border border-slate-100 bg-white p-4">
+        <div className="rounded-[10px] border border-slate-100 bg-white p-4">
           <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
             일별 학습 시간
           </p>
@@ -149,7 +149,7 @@ export function StudyTimeStats({ divisionSlug, studentId }: StudyTimeStatsProps)
 
       {/* 교시별 평균 */}
       {byPeriod.filter((p) => p.avgMinutes > 0).length > 0 && (
-        <div className="rounded-[20px] border border-slate-100 bg-white p-4">
+        <div className="rounded-[10px] border border-slate-100 bg-white p-4">
           <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
             교시별 평균 학습 시간
           </p>

@@ -307,7 +307,7 @@ export function MorningExamScoreManager({
 
   if (morningExamTypes.length === 0) {
     return (
-      <div className="rounded-[24px] border border-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
+      <div className="rounded-[10px] border border-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
         등록된 아침모의고사 템플릿이 없습니다. 설정 &gt; 시험 템플릿에서 아침모의고사 템플릿을 먼저 추가해주세요.
       </div>
     );
@@ -315,7 +315,7 @@ export function MorningExamScoreManager({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200/80 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Daily Entry</p>
         <h2 className="mt-2 text-2xl font-bold text-slate-950">일일 성적 입력</h2>
 
@@ -483,7 +483,7 @@ export function MorningExamScoreManager({
         )}
       </section>
 
-      <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200/80 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">

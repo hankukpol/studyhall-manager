@@ -324,7 +324,7 @@ export function PaymentManager({
     <>
       <div className="space-y-6">
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <article className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(16,185,129,0.10)]">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(16,185,129,0.10)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm text-emerald-700">완납</p>
@@ -337,7 +337,7 @@ export function PaymentManager({
             </div>
           </article>
 
-          <article className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(245,158,11,0.10)]">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(245,158,11,0.10)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm text-amber-700">미납</p>
@@ -350,7 +350,7 @@ export function PaymentManager({
             </div>
           </article>
 
-          <article className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(15,23,42,0.06)]">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(15,23,42,0.06)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm text-slate-500">월 수납액</p>
@@ -363,7 +363,7 @@ export function PaymentManager({
             </div>
           </article>
 
-          <article className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(15,23,42,0.06)]">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_16px_36px_rgba(15,23,42,0.06)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm text-slate-500">이력 건수</p>
@@ -661,7 +661,7 @@ export function PaymentManager({
         description="학생 선택, 수납 유형, 금액과 메모를 입력하면 목록과 월별 현황이 즉시 갱신됩니다."
       >
         <form onSubmit={handleSubmit} className="space-y-6">
-          <section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">
                 <WalletCards className="h-5 w-5" />
@@ -727,7 +727,7 @@ export function PaymentManager({
           </section>
 
           {tuitionPlans.length > 0 && (
-            <section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+            <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
                   <CreditCard className="h-5 w-5" />
@@ -776,7 +776,7 @@ export function PaymentManager({
             </section>
           )}
 
-          <section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700">
                 <CircleDollarSign className="h-5 w-5" />
@@ -822,7 +822,7 @@ export function PaymentManager({
             </label>
           </section>
 
-          <div className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4 sm:flex sm:items-center sm:justify-between">
+          <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-900">저장 후 월별 현황과 수납 이력이 바로 갱신됩니다.</p>
               <p className="mt-1 text-sm text-slate-500">수납 오류를 줄이려면 학생과 수납 유형을 먼저 확인한 뒤 금액을 입력하세요.</p>

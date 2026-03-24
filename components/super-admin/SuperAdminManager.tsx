@@ -320,7 +320,7 @@ export function SuperAdminManager({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[28px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.08)]">
+      <div className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.08)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -352,7 +352,7 @@ export function SuperAdminManager({
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.06)]">
+        <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.06)]">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -552,7 +552,7 @@ export function SuperAdminManager({
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.06)]">
+        <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.06)]">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">

@@ -25,7 +25,7 @@ const ReportsTrendChart = dynamic(
   () => import("@/components/reports/ReportsTrendChart").then((mod) => mod.ReportsTrendChart),
   {
     ssr: false,
-    loading: () => <div className="h-full rounded-[20px] bg-slate-50 animate-pulse" />,
+    loading: () => <div className="h-full rounded-[10px] bg-slate-50 animate-pulse" />,
   },
 );
 
@@ -169,7 +169,7 @@ export function ReportsDashboard({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-slate-950">
@@ -371,7 +371,7 @@ export function ReportsDashboard({
 
       {tab === "report" ? (
         <>
-          <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+          <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -381,14 +381,14 @@ export function ReportsDashboard({
                 <p className="mt-2 text-sm leading-6 text-slate-600">{data.subtitle}</p>
               </div>
 
-              <div className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm text-slate-700">
+              <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm text-slate-700">
                 기준 범위: <span className="font-semibold text-slate-950">{data.rangeLabel}</span>
               </div>
             </div>
           </section>
 
           <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-            <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+            <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
                   Attendance Trend
@@ -398,12 +398,12 @@ export function ReportsDashboard({
                 </h2>
               </div>
 
-              <div className="mt-5 h-[320px] rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+              <div className="mt-5 h-[320px] rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
                 <ReportsTrendChart color={data.division.color} trend={data.trend} />
               </div>
             </section>
 
-            <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+            <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
                   Point Movers
@@ -412,7 +412,7 @@ export function ReportsDashboard({
               </div>
 
               <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <article className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+                <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
                   <p className="text-sm font-medium text-slate-600">상위 5명</p>
                   <div className="mt-3 space-y-3">
                     {data.pointMovers.top.length > 0 ? (
@@ -433,7 +433,7 @@ export function ReportsDashboard({
                   </div>
                 </article>
 
-                <article className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+                <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
                   <p className="text-sm font-medium text-slate-600">하위 5명</p>
                   <div className="mt-3 space-y-3">
                     {data.pointMovers.bottom.length > 0 ? (
@@ -458,7 +458,7 @@ export function ReportsDashboard({
           </div>
 
           {data.period === "daily" ? (
-            <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+            <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
                   Daily Table
@@ -502,7 +502,7 @@ export function ReportsDashboard({
             </section>
           ) : null}
 
-          <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+          <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
                 Student Ranking
@@ -562,7 +562,7 @@ export function ReportsDashboard({
           </section>
         </>
       ) : (
-        <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+        <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">

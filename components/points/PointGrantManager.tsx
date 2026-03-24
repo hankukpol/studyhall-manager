@@ -375,7 +375,7 @@ export const PointGrantManager = memo(function PointGrantManager({
                 );
               })
             ) : (
-              <div className="rounded-[24px] border border-dashed border-slate-300 px-4 py-12 text-center text-sm text-slate-500">
+              <div className="rounded-[10px] border border-dashed border-slate-300 px-4 py-12 text-center text-sm text-slate-500">
                 운영 중인 학생이 없습니다.
               </div>
             )}
@@ -442,7 +442,7 @@ export const PointGrantManager = memo(function PointGrantManager({
                 </article>
               ))
             ) : (
-              <div className="rounded-[24px] border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-600">
+              <div className="rounded-[10px] border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-600">
                 기록이 없습니다.
               </div>
             )}
@@ -509,7 +509,7 @@ export const PointGrantManager = memo(function PointGrantManager({
               />
             </label>
           ) : selectedSingleRule ? (
-            <div className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+            <div className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <PointCategoryBadge category={selectedSingleRule.category} />
                 <PointValueBadge points={selectedSingleRule.points} />
@@ -606,7 +606,7 @@ export const PointGrantManager = memo(function PointGrantManager({
             <span className="text-xs text-slate-500">선택 학생 {selectedStudentIds.length}명</span>
           </div>
 
-          <div className="max-h-[320px] overflow-y-auto rounded-[24px] border border-slate-200-slate-200 bg-white">
+          <div className="max-h-[320px] overflow-y-auto rounded-[10px] border border-slate-200-slate-200 bg-white">
             {filteredStudents.length > 0 ? (
               filteredStudents.map((student) => {
                 const checked = selectedStudentIds.includes(student.id);
@@ -669,7 +669,7 @@ export const PointGrantManager = memo(function PointGrantManager({
               />
             </label>
           ) : selectedBatchRule ? (
-            <div className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+            <div className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <PointCategoryBadge category={selectedBatchRule.category} />
                 <PointValueBadge points={selectedBatchRule.points} />

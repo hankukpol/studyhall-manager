@@ -46,7 +46,7 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-slate-200-slate-200 bg-slate-950 p-6 text-white">
+            <div className="rounded-[10px] border border-slate-200-slate-200 bg-slate-950 p-6 text-white">
               <p className="text-sm uppercase tracking-[0.24em] text-white/55">시스템 개요</p>
               <div className="mt-5 space-y-4">
                 <div className="rounded-2xl border border-slate-200-white/10 bg-white/5 p-4">
@@ -71,7 +71,7 @@ export default async function HomePage() {
                 key={division.id}
                 href={`/${division.slug}/admin`}
                 prefetch={false}
-                className="group overflow-hidden rounded-[28px] border border-slate-200-black/5 bg-white shadow-[0_18px_40px_rgba(18,32,56,0.08)] transition hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(18,32,56,0.12)]"
+                className="group overflow-hidden rounded-[10px] border border-slate-200-black/5 bg-white shadow-[0_18px_40px_rgba(18,32,56,0.08)] transition hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(18,32,56,0.12)]"
               >
                 <div
                   className="p-6 text-white"

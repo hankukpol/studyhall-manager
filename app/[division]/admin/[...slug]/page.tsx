@@ -9,7 +9,7 @@ export default function AdminPlaceholderPage({ params }: AdminPlaceholderPagePro
   const currentPath = params.slug.join(" / ");
 
   return (
-    <div className="rounded-[28px] border border-slate-200-dashed border-slate-300 bg-white/80 p-8 shadow-[0_18px_50px_rgba(18,32,56,0.05)]">
+    <div className="rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white/80 p-8 shadow-[0_18px_50px_rgba(18,32,56,0.05)]">
       <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
         Placeholder
       </p>

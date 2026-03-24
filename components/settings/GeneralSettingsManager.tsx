@@ -125,9 +125,9 @@ export function GeneralSettingsManager({
 
   return (
     <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div
-          className="rounded-[24px] p-5 text-white"
+          className="rounded-[10px] p-5 text-white"
           style={{
             backgroundColor: `${form.color}`,
           }}
@@ -145,7 +145,7 @@ export function GeneralSettingsManager({
         </div>
 
         <div className="mt-5 space-y-3">
-          <article className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
             <p className="text-sm font-semibold text-slate-900">운영 요일</p>
             <p className="mt-2 text-sm text-slate-600">현재 {activeDayCount}일 운영 중입니다.</p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -164,7 +164,7 @@ export function GeneralSettingsManager({
             </div>
           </article>
 
-          <article className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
             <p className="text-sm font-semibold text-slate-900">직렬 목록 미리보기</p>
             <p className="mt-2 text-sm text-slate-600">
               학생 등록과 목록 필터에서 이 직렬 목록을 기준으로 사용합니다.
@@ -185,7 +185,7 @@ export function GeneralSettingsManager({
             </div>
           </article>
 
-          <article className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+          <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
             <p className="text-sm font-semibold text-slate-900">최종 저장</p>
             <p className="mt-2 text-sm text-slate-600">
               {new Date(settings.updatedAt).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
@@ -194,7 +194,7 @@ export function GeneralSettingsManager({
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -279,7 +279,7 @@ export function GeneralSettingsManager({
             />
           </label>
 
-          <div className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+          <div className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-slate-900">운영 요일</p>
@@ -320,7 +320,7 @@ export function GeneralSettingsManager({
             </div>
           </div>
 
-          <label className="block rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+          <label className="block rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
             <span className="block text-sm font-semibold text-slate-900">직렬 목록</span>
             <span className="mt-1 block text-sm leading-6 text-slate-600">
               학생 등록 시 선택할 직렬 목록입니다. 한 줄에 하나씩 입력하면 됩니다.

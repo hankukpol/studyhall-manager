@@ -139,7 +139,7 @@ export function PointRuleManager({ divisionSlug, initialRules }: PointRuleManage
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -170,7 +170,7 @@ export function PointRuleManager({ divisionSlug, initialRules }: PointRuleManage
                 {group.rules.map((rule) => (
                   <article
                     key={rule.id}
-                    className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4"
+                    className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
@@ -219,7 +219,7 @@ export function PointRuleManager({ divisionSlug, initialRules }: PointRuleManage
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-slate-200-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
           {editingId ? "Edit Rule" : "Create Rule"}
         </p>

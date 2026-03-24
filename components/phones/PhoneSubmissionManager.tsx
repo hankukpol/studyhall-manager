@@ -271,7 +271,7 @@ export function PhoneSubmissionManager({
 
       {/* 기록 목록 */}
       {records.length === 0 ? (
-        <div className="rounded-[24px] border border-dashed border-slate-300 px-4 py-16 text-center">
+        <div className="rounded-[10px] border border-dashed border-slate-300 px-4 py-16 text-center">
           <Smartphone className="mx-auto h-8 w-8 text-slate-300" />
           <p className="mt-3 text-sm text-slate-500">해당 기간의 기록이 없습니다.</p>
         </div>

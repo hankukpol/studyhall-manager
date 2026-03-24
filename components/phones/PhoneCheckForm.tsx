@@ -14,7 +14,7 @@ const PhoneCheckSeatMap = dynamic(
   () => import("@/components/phones/PhoneCheckSeatMap").then((mod) => mod.PhoneCheckSeatMap),
   {
     loading: () => (
-      <div className="rounded-[24px] border border-dashed border-slate-300 px-4 py-16 text-center text-sm text-slate-500">
+      <div className="rounded-[10px] border border-dashed border-slate-300 px-4 py-16 text-center text-sm text-slate-500">
         좌석 지도를 불러오는 중입니다.
       </div>
     ),
@@ -278,7 +278,7 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
       </div>
 
       {periods.length === 0 ? (
-        <div className="rounded-[24px] border border-dashed border-slate-300 px-4 py-16 text-center text-sm text-slate-500">
+        <div className="rounded-[10px] border border-dashed border-slate-300 px-4 py-16 text-center text-sm text-slate-500">
           활성화된 교시가 없습니다.
         </div>
       ) : (
@@ -369,7 +369,7 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
 
               {/* 학생 목록 */}
               {students.length === 0 ? (
-                <div className="rounded-[24px] border border-dashed border-slate-300 px-4 py-12 text-center text-sm text-slate-500">
+                <div className="rounded-[10px] border border-dashed border-slate-300 px-4 py-12 text-center text-sm text-slate-500">
                   재원 학생이 없습니다.
                 </div>
               ) : seatRooms && seatRooms.length > 0 && initialSeatLayout ? (
@@ -400,7 +400,7 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
                     return (
                       <div
                         key={student.id}
-                        className={`rounded-[20px] border p-3 transition ${cardBg}`}
+                        className={`rounded-[10px] border p-3 transition ${cardBg}`}
                       >
                         <div className="flex items-center gap-3">
                           <div className="min-w-0 flex-1">

@@ -11,7 +11,7 @@ const PhoneSubmissionManager = dynamic(
     import("@/components/phones/PhoneSubmissionManager").then((mod) => mod.PhoneSubmissionManager),
   {
     loading: () => (
-      <div className="rounded-[24px] border border-dashed border-slate-300 px-4 py-16 text-center text-sm text-slate-500">
+      <div className="rounded-[10px] border border-dashed border-slate-300 px-4 py-16 text-center text-sm text-slate-500">
         휴대폰 이력 데이터를 불러오는 중입니다.
       </div>
     ),
@@ -44,7 +44,7 @@ export default async function PhoneSubmissionsPage({ params }: PhoneSubmissionsP
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[28px] border border-black/5 bg-white p-6 shadow-[0_18px_50px_rgba(18,32,56,0.08)]">
+      <section className="rounded-[10px] border border-black/5 bg-white p-6 shadow-[0_18px_50px_rgba(18,32,56,0.08)]">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
           Phone Management
         </p>
@@ -55,7 +55,7 @@ export default async function PhoneSubmissionsPage({ params }: PhoneSubmissionsP
         </p>
       </section>
 
-      <section className="rounded-[28px] border border-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="mb-5 flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
             <Smartphone className="h-5 w-5" />
@@ -76,7 +76,7 @@ export default async function PhoneSubmissionsPage({ params }: PhoneSubmissionsP
         />
       </section>
 
-      <section className="rounded-[28px] border border-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="rounded-[10px] border border-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="mb-5 flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
             <ClipboardList className="h-5 w-5" />

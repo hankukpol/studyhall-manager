@@ -26,7 +26,7 @@ export function AssistantBottomNav({ divisionSlug }: AssistantBottomNavProps) {
 
   return (
     <nav className="fixed inset-x-0 bottom-4 z-40 px-4">
-      <div className="mx-auto max-w-3xl rounded-[28px] border border-black/5 bg-white p-2">
+      <div className="mx-auto max-w-3xl rounded-[10px] border border-black/5 bg-white p-2">
         <div className="grid grid-cols-2 gap-2">
           {NAV_ITEMS.map((item) => {
             const href = item.href(divisionSlug);
@@ -38,7 +38,7 @@ export function AssistantBottomNav({ divisionSlug }: AssistantBottomNavProps) {
               key={href}
               href={href}
               prefetch={false}
-              className={`inline-flex items-center justify-center gap-2 rounded-[20px] px-4 py-3 text-sm font-semibold transition ${
+              className={`inline-flex items-center justify-center gap-2 rounded-[10px] px-4 py-3 text-sm font-semibold transition ${
                 isActive
                   ? "bg-[var(--division-color)] text-white"
                     : "bg-slate-50 text-slate-600 hover:bg-slate-100"

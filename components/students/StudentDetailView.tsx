@@ -58,7 +58,7 @@ const tabs = [
 ] as const;
 
 const studentFormFallback = () => (
-  <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-6 text-sm text-slate-500">
+  <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-6 text-sm text-slate-500">
     학생 정보를 불러오는 중입니다.
   </div>
 );
@@ -272,7 +272,7 @@ export function StudentDetailView({
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-[28px] border border-slate-200-black/5 bg-white shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+      <section className="overflow-hidden rounded-[10px] border border-slate-200-black/5 bg-white shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="grid gap-5 px-6 py-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -307,7 +307,7 @@ export function StudentDetailView({
               </span>
             </div>
 
-            <div className="mt-5 rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4">
+            <div className="mt-5 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4">
               <p className="text-sm font-medium text-slate-700">메모</p>
               {canEdit ? (
                 isEditingMemo ? (
@@ -354,23 +354,23 @@ export function StudentDetailView({
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <article className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+            <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <p className="text-sm text-slate-500">누적 벌점</p>
               <p className="mt-3 text-3xl font-extrabold text-slate-950">{initialStudent.netPoints}점</p>
             </article>
-            <article className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+            <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <p className="text-sm text-slate-500">등록 플랜</p>
               <p className="mt-3 text-xl font-bold text-slate-950">
                 {initialStudent.tuitionPlanName || "직접 입력"}
               </p>
             </article>
-            <article className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+            <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <p className="text-sm text-slate-500">연락처</p>
               <p className="mt-3 text-xl font-bold text-slate-950">
                 {initialStudent.phone || "미등록"}
               </p>
             </article>
-            <article className="rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+            <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <p className="text-sm text-slate-500">퇴실일</p>
               <p className="mt-3 text-xl font-bold text-slate-950">
                 {formatDate(initialStudent.withdrawnAt)}
@@ -381,7 +381,7 @@ export function StudentDetailView({
       </section>
 
       {initialStudent.status === "WITHDRAWN" ? (
-        <section className="rounded-[24px] border border-slate-200-slate-200 bg-white px-5 py-4 text-sm leading-6 text-rose-800">
+        <section className="rounded-[10px] border border-slate-200-slate-200 bg-white px-5 py-4 text-sm leading-6 text-rose-800">
           <div className="flex items-start gap-3">
             <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" />
             <div>
@@ -395,7 +395,7 @@ export function StudentDetailView({
       ) : null}
 
       <div className="grid gap-6 xl:grid-cols-2 xl:items-start">
-        <section className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+        <section className="rounded-[10px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
@@ -430,7 +430,7 @@ export function StudentDetailView({
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
+        <section className="rounded-[10px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
           <div className="flex flex-wrap gap-2">
             {tabs.map((tab) => (
               <button
@@ -482,7 +482,7 @@ export function StudentDetailView({
         description="퇴실 사유를 남기면 학생 상태가 퇴실로 전환되고, 학생 관리 화면에도 바로 반영됩니다."
       >
         <form onSubmit={handleWithdraw} className="space-y-6">
-          <section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-600 text-white">
                 <Ban className="h-5 w-5" />
@@ -495,7 +495,7 @@ export function StudentDetailView({
               </div>
             </div>
 
-            <div className="mt-5 rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm text-slate-700">
+            <div className="mt-5 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm text-slate-700">
               <p className="font-semibold text-slate-950">
                 {initialStudent.name}
                 <span className="ml-2 text-xs font-medium text-slate-500">
@@ -512,7 +512,7 @@ export function StudentDetailView({
               </div>
             </div>
 
-            <div className="mt-4 rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm leading-6 text-rose-800">
+            <div className="mt-4 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 text-sm leading-6 text-rose-800">
               <div className="flex items-start gap-3">
                 <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" />
                 <div>
@@ -527,7 +527,7 @@ export function StudentDetailView({
             </div>
           </section>
 
-          <section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-slate-700">퇴실 사유</span>
               <textarea
@@ -541,7 +541,7 @@ export function StudentDetailView({
             </label>
           </section>
 
-          <section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <label className="flex cursor-pointer items-center gap-3">
               <input
                 type="checkbox"
@@ -623,7 +623,7 @@ export function StudentDetailView({
             )}
           </section>
 
-          <div className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4 sm:flex sm:items-center sm:justify-between">
+          <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-900">
                 퇴실 처리 내용은 학생 목록과 상세 화면에 즉시 반영됩니다.

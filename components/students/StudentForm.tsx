@@ -327,7 +327,7 @@ export function StudentForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {!showSeatSectionOnly && (<><section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+      {!showSeatSectionOnly && (<><section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">
             <UserRound className="h-5 w-5" />
@@ -399,7 +399,7 @@ export function StudentForm({
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+      <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-amber-600">
             <CreditCard className="h-5 w-5" />
@@ -421,7 +421,7 @@ export function StudentForm({
                   type="button"
                   onClick={() => applyTuitionPlan(plan.id)}
                   disabled={!canEdit || isSaving}
-                  className={`rounded-[24px] border px-4 py-4 text-left transition ${
+                  className={`rounded-[10px] border px-4 py-4 text-left transition ${
                     selected
                       ? "border-[var(--division-color)] bg-[var(--division-color)] text-white shadow-[0_18px_40px_rgba(15,23,42,0.18)]"
                       : "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-white"
@@ -530,7 +530,7 @@ export function StudentForm({
         </p>
       </section></>)}
 
-      {!hideSeatSection && <section className="rounded-[28px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+      {!hideSeatSection && <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-sky-600">
             <MapPinned className="h-5 w-5" />
@@ -570,7 +570,7 @@ export function StudentForm({
             </select>
           </label>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[20px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-4">
             <p className="text-sm text-slate-500">
               아래 좌석 맵을 열면 자습실별 배치도를 한눈에 확인하고 빈 자리를 바로 선택할 수 있습니다. 원하는 좌석을 선택하면 즉시 배정 내용을 확인할 수 있습니다.
             </p>
@@ -585,7 +585,7 @@ export function StudentForm({
           </div>
 
           {isSeatBrowserOpen && rooms.length > 0 ? (
-            <div className="space-y-4 rounded-[24px] border border-slate-200-slate-200 bg-white p-4">
+            <div className="space-y-4 rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-slate-900">좌석 현황에서 바로 배정</p>
@@ -626,7 +626,7 @@ export function StudentForm({
                   onCellClick={(_, __, clickedSeatId) => handleSeatMapSelect(clickedSeatId)}
                 />
               ) : (
-                <div className="rounded-[20px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-center text-sm text-slate-500">
+                <div className="rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-center text-sm text-slate-500">
                   {isSeatLayoutLoading ? "좌석 현황을 불러오는 중입니다." : "선택한 자습실의 좌석 현황이 없습니다."}
                 </div>
               )}
@@ -652,7 +652,7 @@ export function StudentForm({
           ) : null}
 
           {isSeatBrowserOpen && !hasLoadedSeatBrowser ? (
-            <div className="rounded-[20px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-center text-sm text-slate-500">
+            <div className="rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-center text-sm text-slate-500">
               <span className="inline-flex items-center gap-2">
                 <LoaderCircle className="h-4 w-4 animate-spin" />
                 좌석 현황을 불러오는 중입니다.
@@ -661,7 +661,7 @@ export function StudentForm({
           ) : null}
 
           {isSeatBrowserOpen && hasLoadedSeatBrowser && rooms.length === 0 ? (
-            <div className="rounded-[20px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-center text-sm text-slate-500">
+            <div className="rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-center text-sm text-slate-500">
               등록된 자습실이 없습니다.
             </div>
           ) : null}
@@ -711,7 +711,7 @@ export function StudentForm({
         </div>
       </section>}
 
-      <div className="rounded-[24px] border border-slate-200-slate-200 bg-white px-4 py-4 sm:flex sm:items-center sm:justify-between">
+      <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4 sm:flex sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-slate-900">
             {mode === "create" ? "등록 즉시 학생 목록에 반영됩니다." : "변경 내용은 저장 후 바로 반영됩니다."}
