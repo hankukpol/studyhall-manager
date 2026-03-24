@@ -65,7 +65,7 @@ export function AdminShell({
               <button
                 type="button"
                 onClick={closeSidebar}
-                className="absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200-white/10 bg-white text-white"
+                className="absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-slate-200-white/10 bg-white text-white"
                 aria-label="메뉴 닫기"
               >
                 <X className="h-4 w-4" />

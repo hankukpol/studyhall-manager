@@ -213,7 +213,7 @@ export function ReportsDashboard({
               <select
                 value={period}
                 onChange={(event) => setPeriod(event.target.value as ReportSelection["period"])}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               >
                 <option value="daily">일간</option>
                 <option value="weekly">주간</option>
@@ -228,7 +228,7 @@ export function ReportsDashboard({
                   type="month"
                   value={month}
                   onChange={(event) => setMonth(event.target.value)}
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 />
               </label>
             ) : (
@@ -240,7 +240,7 @@ export function ReportsDashboard({
                   type="date"
                   value={date}
                   onChange={(event) => setDate(event.target.value)}
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 />
               </label>
             )}
@@ -299,7 +299,7 @@ export function ReportsDashboard({
                 type="date"
                 value={activityDateFrom}
                 onChange={(event) => setActivityDateFrom(event.target.value)}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               />
             </label>
             <label className="block">
@@ -308,7 +308,7 @@ export function ReportsDashboard({
                 type="date"
                 value={activityDateTo}
                 onChange={(event) => setActivityDateTo(event.target.value)}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               />
             </label>
             <label className="block">
@@ -316,7 +316,7 @@ export function ReportsDashboard({
               <select
                 value={activityActorId}
                 onChange={(event) => setActivityActorId(event.target.value)}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               >
                 <option value="ALL">전체</option>
                 {activity.actorOptions.map((actor) => (
@@ -331,7 +331,7 @@ export function ReportsDashboard({
               <select
                 value={activityActionType}
                 onChange={(event) => setActivityActionType(event.target.value as ActivityActionType | "ALL")}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               >
                 <option value="ALL">전체</option>
                 {activityActionOptions.map((option) => (

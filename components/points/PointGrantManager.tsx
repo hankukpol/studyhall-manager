@@ -322,7 +322,7 @@ export const PointGrantManager = memo(function PointGrantManager({
         <section className="rounded-[30px] border border-slate-200/60 bg-white p-6 shadow-[0_18px_48px_rgba(18,32,56,0.07)]">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">
+              <div className="inline-flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-50 text-slate-600">
                 <Trophy className="h-5 w-5" />
               </div>
               <div>
@@ -330,18 +330,18 @@ export const PointGrantManager = memo(function PointGrantManager({
                 <h3 className="mt-1 text-2xl font-bold text-slate-950">상벌점 순위</h3>
               </div>
             </div>
-            <div className="flex rounded-2xl border border-slate-200 bg-slate-50 p-1">
+            <div className="flex rounded-[10px] border border-slate-200 bg-slate-50 p-1">
               <button
                 type="button"
                 onClick={() => setRankingOrder("top")}
-                className={`rounded-xl px-3 py-1.5 text-xs font-medium transition ${rankingOrder === "top" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                className={`rounded-[10px] px-3 py-1.5 text-xs font-medium transition ${rankingOrder === "top" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
               >
                 상위
               </button>
               <button
                 type="button"
                 onClick={() => setRankingOrder("bottom")}
-                className={`rounded-xl px-3 py-1.5 text-xs font-medium transition ${rankingOrder === "bottom" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                className={`rounded-[10px] px-3 py-1.5 text-xs font-medium transition ${rankingOrder === "bottom" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
               >
                 하위
               </button>
@@ -357,7 +357,7 @@ export const PointGrantManager = memo(function PointGrantManager({
                 return (
                   <div
                     key={student.id}
-                    className={`flex items-center gap-4 rounded-2xl border px-5 py-3 ${isFirst ? "border-slate-200 bg-slate-50" : "border-slate-100 bg-white"}`}
+                    className={`flex items-center gap-4 rounded-[10px] border px-5 py-3 ${isFirst ? "border-slate-200 bg-slate-50" : "border-slate-100 bg-white"}`}
                   >
                     <span className={`w-7 shrink-0 text-center text-sm font-bold ${isFirst ? "text-slate-950" : index < 3 ? "text-slate-700" : "text-slate-400"}`}>
                       {index + 1}
@@ -409,7 +409,7 @@ export const PointGrantManager = memo(function PointGrantManager({
               records.map((record) => (
                 <article
                   key={record.id}
-                  className="rounded-2xl border border-slate-100 bg-white px-4 py-3"
+                  className="rounded-[10px] border border-slate-100 bg-white px-4 py-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
@@ -485,7 +485,7 @@ export const PointGrantManager = memo(function PointGrantManager({
             <select
               value={singleRuleId}
               onChange={(event) => setSingleRuleId(event.target.value)}
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
             >
               <option value="">직접 점수 입력</option>
               {activeRules.map((rule) => (
@@ -503,7 +503,7 @@ export const PointGrantManager = memo(function PointGrantManager({
                 type="number"
                 value={singleManualPoints}
                 onChange={(event) => setSingleManualPoints(event.target.value)}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 placeholder="예: -2 또는 5"
                 required
               />
@@ -526,7 +526,7 @@ export const PointGrantManager = memo(function PointGrantManager({
             <textarea
               value={singleNotes}
               onChange={(event) => setSingleNotes(event.target.value)}
-              className="min-h-[140px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="min-h-[140px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               placeholder="예: 주간 모의고사 무단 결석"
             />
           </label>
@@ -570,7 +570,7 @@ export const PointGrantManager = memo(function PointGrantManager({
                 type="text"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 placeholder="이름, 수험번호, 직렬 검색"
               />
             </label>
@@ -581,7 +581,7 @@ export const PointGrantManager = memo(function PointGrantManager({
                 type="date"
                 value={batchDate}
                 onChange={(event) => setBatchDate(event.target.value)}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 required
               />
             </label>
@@ -645,7 +645,7 @@ export const PointGrantManager = memo(function PointGrantManager({
             <select
               value={batchRuleId}
               onChange={(event) => setBatchRuleId(event.target.value)}
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
             >
               <option value="">직접 점수 입력</option>
               {activeRules.map((rule) => (
@@ -663,7 +663,7 @@ export const PointGrantManager = memo(function PointGrantManager({
                 type="number"
                 value={batchManualPoints}
                 onChange={(event) => setBatchManualPoints(event.target.value)}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 placeholder="예: -1 또는 3"
                 required
               />
@@ -686,7 +686,7 @@ export const PointGrantManager = memo(function PointGrantManager({
             <textarea
               value={batchNotes}
               onChange={(event) => setBatchNotes(event.target.value)}
-              className="min-h-[120px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="min-h-[120px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               placeholder="예: 3월 전체 청소 점검 가산점"
             />
           </label>

@@ -238,7 +238,7 @@ export function PointRuleManager({ divisionSlug, initialRules }: PointRuleManage
                   category: event.target.value as FormState["category"],
                 }))
               }
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
             >
               {POINT_CATEGORY_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -253,7 +253,7 @@ export function PointRuleManager({ divisionSlug, initialRules }: PointRuleManage
             <input
               value={form.name}
               onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               placeholder="예: 지각"
               required
             />
@@ -267,7 +267,7 @@ export function PointRuleManager({ divisionSlug, initialRules }: PointRuleManage
               onChange={(event) =>
                 setForm((current) => ({ ...current, points: Number(event.target.value) }))
               }
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               required
             />
           </label>
@@ -277,12 +277,12 @@ export function PointRuleManager({ divisionSlug, initialRules }: PointRuleManage
             <textarea
               value={form.description}
               onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
-              className="min-h-[120px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="min-h-[120px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               placeholder="규칙 적용 기준을 남겨둘 수 있습니다."
             />
           </label>
 
-          <label className="flex items-center justify-between rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3">
+          <label className="flex items-center justify-between rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
             <span>
               <span className="block text-sm font-medium text-slate-800">활성화</span>
               <span className="block text-xs text-slate-500">비활성 규칙은 부여 폼에서 숨겨집니다.</span>

@@ -225,7 +225,7 @@ export function GeneralSettingsManager({
               <input
                 value={form.name}
                 onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 placeholder="예: 경찰"
                 required
               />
@@ -233,12 +233,12 @@ export function GeneralSettingsManager({
 
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-slate-700">브랜드 색상</span>
-              <div className="flex items-center gap-3 rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3">
+              <div className="flex items-center gap-3 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
                 <input
                   type="color"
                   value={form.color}
                   onChange={(event) => setForm((current) => ({ ...current, color: event.target.value }))}
-                  className="h-10 w-14 rounded-xl border border-slate-200-slate-200 bg-white"
+                  className="h-10 w-14 rounded-[10px] border border-slate-200-slate-200 bg-white"
                 />
                 <input
                   value={form.color}
@@ -256,13 +256,13 @@ export function GeneralSettingsManager({
             <input
               value={form.fullName}
               onChange={(event) => setForm((current) => ({ ...current, fullName: event.target.value }))}
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               placeholder="예: 시간통제 경찰학원"
               required
             />
           </label>
 
-          <label className="flex items-center justify-between rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-4">
+          <label className="flex items-center justify-between rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-4">
             <span>
               <span className="block text-sm font-medium text-slate-800">지점 활성 상태</span>
               <span className="block text-xs text-slate-500">
@@ -296,7 +296,7 @@ export function GeneralSettingsManager({
               {OPERATING_DAY_KEYS.map((key) => (
                 <label
                   key={key}
-                  className="flex items-center justify-between rounded-2xl border border-slate-200-white bg-white px-4 py-3"
+                  className="flex items-center justify-between rounded-[10px] border border-slate-200-white bg-white px-4 py-3"
                 >
                   <span className="text-sm font-medium text-slate-800">
                     {OPERATING_DAY_LABELS[key]}요일
@@ -331,7 +331,7 @@ export function GeneralSettingsManager({
               onChange={(event) =>
                 setForm((current) => ({ ...current, studyTracksText: event.target.value }))
               }
-              className="mt-4 min-h-[180px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="mt-4 min-h-[180px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               placeholder={`예:\n경찰\n소방\n9급공무원\n행정직`}
             />
             <div className="mt-4 flex flex-wrap gap-2">

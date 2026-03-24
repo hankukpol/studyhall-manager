@@ -264,7 +264,7 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
           value={date}
           max={getKstToday()}
           onChange={(e) => handleDateChange(e.target.value)}
-          className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
+          className="rounded-[10px] border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
         />
         <button
           type="button"
@@ -285,7 +285,7 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
         <>
           {/* 교시 탭 */}
           <div className="overflow-x-auto">
-            <div className="flex min-w-max gap-1 rounded-2xl border border-slate-200 bg-slate-50 p-1.5">
+            <div className="flex min-w-max gap-1 rounded-[10px] border border-slate-200 bg-slate-50 p-1.5">
               {periods.map((period) => {
                 const isActive = period.periodId === activePeriodId;
                 return (
@@ -445,7 +445,7 @@ export function PhoneCheckForm({ divisionSlug, initialDate, initialSnapshot, sea
                               }
                               placeholder="대여 사유 (예: 인강 수강)"
                               maxLength={200}
-                              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs outline-none transition focus:border-slate-400 placeholder:text-slate-400"
+                              className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-2 text-xs outline-none transition focus:border-slate-400 placeholder:text-slate-400"
                             />
                           </div>
                         )}

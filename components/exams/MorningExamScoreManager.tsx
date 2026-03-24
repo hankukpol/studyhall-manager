@@ -328,7 +328,7 @@ export function MorningExamScoreManager({
                 setSelectedExamTypeId(e.target.value);
                 setWeekOffset(0);
               }}
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400"
             >
               {morningExamTypes.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -343,7 +343,7 @@ export function MorningExamScoreManager({
             <select
               value={selectedSubjectId}
               onChange={(e) => setSelectedSubjectId(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400"
             >
               {activeSubjects.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -362,7 +362,7 @@ export function MorningExamScoreManager({
                 setExamDate(e.target.value);
                 setWeekOffset(0);
               }}
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400"
             />
           </label>
         </div>
@@ -381,7 +381,7 @@ export function MorningExamScoreManager({
                 <textarea
                   ref={pasteRef}
                   rows={4}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm outline-none focus:border-slate-400"
+                  className="mt-2 w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 font-mono text-sm outline-none focus:border-slate-400"
                   placeholder={"P-001\t홍길동\t85\t\nP-002\t김철수\t92\t잘함"}
                 />
                 <button
@@ -448,7 +448,7 @@ export function MorningExamScoreManager({
                           inputMode="numeric"
                           value={row.score}
                           onChange={(e) => handleRowScoreChange(row.studentId, e.target.value)}
-                          className="w-24 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                          className="w-24 rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
                           placeholder="-"
                         />
                       </td>
@@ -457,7 +457,7 @@ export function MorningExamScoreManager({
                           type="text"
                           value={row.notes}
                           onChange={(e) => handleRowNotesChange(row.studentId, e.target.value)}
-                          className="w-32 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                          className="w-32 rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
                           placeholder=""
                         />
                       </td>
@@ -496,7 +496,7 @@ export function MorningExamScoreManager({
             <button
               type="button"
               onClick={() => setWeekOffset((prev) => prev - 1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 text-slate-600 transition hover:bg-slate-50"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-slate-200 text-slate-600 transition hover:bg-slate-50"
               aria-label="이전 주"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -515,7 +515,7 @@ export function MorningExamScoreManager({
             <button
               type="button"
               onClick={() => setWeekOffset((prev) => prev + 1)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 text-slate-600 transition hover:bg-slate-50"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-slate-200 text-slate-600 transition hover:bg-slate-50"
               aria-label="다음 주"
             >
               <ChevronRight className="h-5 w-5" />

@@ -80,7 +80,7 @@ export function StudyTimeStats({ divisionSlug, studentId }: StudyTimeStatsProps)
             value={month}
             max={getKstMonth()}
             onChange={(e) => handleMonthChange(e.target.value)}
-            className="mt-1 block rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
+            className="mt-1 block rounded-[10px] border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
           />
         </div>
       </div>

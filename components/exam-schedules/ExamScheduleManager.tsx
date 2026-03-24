@@ -177,7 +177,7 @@ export function ExamScheduleManager({ divisionSlug, initialSchedules }: ExamSche
       </div>
 
       {(isCreating || editingId) && (
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 space-y-4">
+        <div className="rounded-[10px] border border-slate-200 bg-slate-50 p-5 space-y-4">
           <p className="text-sm font-semibold text-slate-900">
             {editingId ? "일정 수정" : "새 일정 추가"}
           </p>
@@ -265,7 +265,7 @@ export function ExamScheduleManager({ divisionSlug, initialSchedules }: ExamSche
           {schedules.map((item) => (
             <div
               key={item.id}
-              className={`flex items-center gap-4 rounded-2xl border p-4 ${
+              className={`flex items-center gap-4 rounded-[10px] border p-4 ${
                 item.isActive ? "border-slate-200 bg-white" : "border-slate-100 bg-slate-50 opacity-60"
               }`}
             >

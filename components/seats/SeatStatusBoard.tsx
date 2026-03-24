@@ -682,7 +682,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
           </div>
 
           {/* 출입구 표시 */}
-          <div className="mb-3 rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-2.5 text-center text-sm font-medium text-slate-500">
+          <div className="mb-3 rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-2.5 text-center text-sm font-medium text-slate-500">
             출입구 방향
           </div>
 
@@ -701,7 +701,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                     return (
                       <div
                         key={`aisle-${positionX}-${positionY}`}
-                        className="flex min-h-[108px] items-center justify-center rounded-3xl border border-slate-200-dashed border-slate-200 bg-white text-xs font-semibold tracking-widest text-slate-400"
+                        className="flex min-h-[108px] items-center justify-center rounded-[10px] border border-slate-200-dashed border-slate-200 bg-white text-xs font-semibold tracking-widest text-slate-400"
                       >
                         복도
                       </div>
@@ -714,7 +714,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                     return (
                       <div
                         key={`empty-${positionX}-${positionY}`}
-                        className="min-h-[108px] rounded-3xl border border-slate-200-dashed border-slate-100 bg-slate-50"
+                        className="min-h-[108px] rounded-[10px] border border-slate-200-dashed border-slate-100 bg-slate-50"
                       />
                     );
                   }
@@ -769,7 +769,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                         setPendingMove({ fromSeat, toSeat: seat });
                         setDraggingFromSeatId(null);
                       }}
-                      className={`relative flex min-h-[108px] w-full flex-col justify-between rounded-3xl border p-3 text-left transition hover:opacity-80 ${tone} ${
+                      className={`relative flex min-h-[108px] w-full flex-col justify-between rounded-[10px] border p-3 text-left transition hover:opacity-80 ${tone} ${
                         isSelected ? "ring-2 ring-slate-900 ring-offset-1" : ""
                       } ${isDragging ? "cursor-grabbing opacity-40" : canDrag ? "cursor-grab" : ""} ${
                         isDropTarget
@@ -779,7 +779,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                     >
                       {/* 이동 중 로딩 오버레이 */}
                       {isMoving && (
-                        <div className="absolute inset-0 flex items-center justify-center rounded-3xl bg-slate-900/40 backdrop-blur-sm">
+                        <div className="absolute inset-0 flex items-center justify-center rounded-[10px] bg-slate-900/40 backdrop-blur-sm">
                           <LoaderCircle className="h-5 w-5 animate-spin text-white" />
                         </div>
                       )}
@@ -849,7 +849,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
         {panelInfo?.seat.assignedStudent && (
           <div className="space-y-4">
             {/* 탭 버튼 */}
-            <div className="flex gap-1 rounded-2xl bg-slate-100 p-1.5">
+            <div className="flex gap-1 rounded-[10px] bg-slate-100 p-1.5">
               {(
                 [
                   { key: "info", label: "기본 정보" },
@@ -862,7 +862,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                   key={key}
                   type="button"
                   onClick={() => setPanelTab(key)}
-                  className={`flex-1 rounded-xl py-3 text-sm font-semibold transition ${
+                  className={`flex-1 rounded-[10px] py-3 text-sm font-semibold transition ${
                     panelTab === key
                       ? "bg-white text-slate-900 shadow-sm"
                       : "text-slate-500 hover:text-slate-700"
@@ -877,7 +877,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
             {panelTab === "info" && (
               <div className="space-y-4">
                 {/* 학생 기본 정보 */}
-                <div className="rounded-2xl border border-slate-200-slate-200 bg-white p-4">
+                <div className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-slate-500">수험번호</p>
@@ -914,7 +914,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                       {localPeriodRecords.map((rec) => (
                         <div
                           key={rec.periodId}
-                          className="flex items-center justify-between rounded-xl border border-slate-200-slate-100 bg-white px-3 py-2"
+                          className="flex items-center justify-between rounded-[10px] border border-slate-200-slate-100 bg-white px-3 py-2"
                         >
                           <span className="text-sm text-slate-600">{rec.periodName}</span>
                           <span
@@ -1002,7 +1002,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                   <Link
                     href={`/${divisionSlug}/admin/students/${panelInfo.seat.assignedStudent.id}`}
                     onClick={closePanel}
-                    className="flex w-full items-center justify-between rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                    className="flex w-full items-center justify-between rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                   >
                     <span className="flex items-center gap-2">
                       <Users className="h-4 w-4 text-slate-400" />
@@ -1014,7 +1014,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                   <Link
                     href={`/${divisionSlug}/admin/attendance`}
                     onClick={closePanel}
-                    className="flex w-full items-center justify-between rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                    className="flex w-full items-center justify-between rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                   >
                     <span className="flex items-center gap-2">
                       <BookOpenCheck className="h-4 w-4 text-slate-400" />
@@ -1036,7 +1036,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                   <p className="py-4 text-center text-sm text-slate-400">교시가 없습니다.</p>
                 ) : (
                   localPeriodRecords.map((rec) => (
-                    <div key={rec.periodId} className="rounded-2xl border border-slate-200-slate-100 bg-white p-3">
+                    <div key={rec.periodId} className="rounded-[10px] border border-slate-200-slate-100 bg-white p-3">
                       <div className="mb-2 flex items-center justify-between">
                         <span className="text-sm font-medium text-slate-700">{rec.periodName}</span>
                         <span
@@ -1091,7 +1091,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                       {fetchedPayments.map((p) => (
                         <div
                           key={p.id}
-                          className="rounded-2xl border border-slate-200-slate-100 bg-white px-3 py-2.5"
+                          className="rounded-[10px] border border-slate-200-slate-100 bg-white px-3 py-2.5"
                         >
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-sm font-semibold text-slate-800">
@@ -1130,7 +1130,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                               setPaymentAmount(String(plan.amount));
                               setPaymentNotes(plan.name);
                             }}
-                            className={`rounded-2xl border p-3 text-left transition ${
+                            className={`rounded-[10px] border p-3 text-left transition ${
                               selectedPlanId === plan.id
                                 ? "border-slate-800 bg-slate-800 text-white"
                                 : "border-slate-200 bg-white text-slate-700 hover:border-slate-400"
@@ -1160,7 +1160,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                       value={paymentTypeId}
                       onChange={(e) => setPaymentTypeId(e.target.value)}
                       disabled={isLoadingPaymentMeta}
-                      className="w-full rounded-xl border border-slate-200-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
+                      className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
                     >
                       <option value="">유형 선택</option>
                       {paymentCategories.map((c) => (
@@ -1178,7 +1178,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                         type="date"
                         value={paymentDate}
                         onChange={(e) => setPaymentDate(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
+                        className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
                       />
                     </div>
                     <div className="space-y-1">
@@ -1190,7 +1190,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                         value={paymentAmount}
                         onChange={(e) => setPaymentAmount(e.target.value)}
                         placeholder="0"
-                        className="w-full rounded-xl border border-slate-200-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
+                        className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
                       />
                     </div>
                   </div>
@@ -1200,7 +1200,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                     <select
                       value={paymentMethod}
                       onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
+                      className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
                     >
                       <option value="현금">현금</option>
                       <option value="계좌이체">계좌이체</option>
@@ -1215,7 +1215,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                       value={paymentNotes}
                       onChange={(e) => setPaymentNotes(e.target.value)}
                       placeholder="선택 사항"
-                      className="w-full rounded-xl border border-slate-200-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
+                      className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
                     />
                   </div>
 
@@ -1223,7 +1223,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                     type="button"
                     disabled={!paymentTypeId || !paymentAmount || isSavingPayment || isLoadingPaymentMeta}
                     onClick={() => void handlePaymentSave()}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-50"
+                    className="flex w-full items-center justify-center gap-2 rounded-[10px] bg-slate-900 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-50"
                   >
                     {isSavingPayment ? (
                       <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -1248,7 +1248,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                       setPointsValue("");
                     }}
                     disabled={isLoadingPointRules}
-                    className="w-full rounded-xl border border-slate-200-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-slate-400"
+                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-slate-400"
                   >
                     <option value="">직접 점수 입력</option>
                     {pointRules.map((rule) => (
@@ -1260,7 +1260,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                 </div>
 
                 {pointRuleId && selectedRule ? (
-                  <div className="rounded-2xl border border-slate-200-slate-200 bg-slate-50 p-3">
+                  <div className="rounded-[10px] border border-slate-200-slate-200 bg-slate-50 p-3">
                     <div className="flex items-center gap-2">
                       <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                         selectedRule.points > 0
@@ -1285,7 +1285,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                       value={pointsValue}
                       onChange={(e) => setPointsValue(e.target.value)}
                       placeholder="예: +3 또는 -2"
-                      className="w-full rounded-xl border border-slate-200-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
+                      className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
                     />
                   </div>
                 )}
@@ -1297,7 +1297,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                     value={pointsNotes}
                     onChange={(e) => setPointsNotes(e.target.value)}
                     placeholder="사유 입력 (선택)"
-                    className="w-full rounded-xl border border-slate-200-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
+                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-400"
                   />
                 </div>
 
@@ -1305,7 +1305,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                   type="button"
                   disabled={(!pointRuleId && !pointsValue) || isSavingPoints || isLoadingPointRules}
                   onClick={() => void handlePointsSave()}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-[10px] bg-slate-900 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-50"
                 >
                   {isSavingPoints ? (
                     <LoaderCircle className="h-4 w-4 animate-spin" />

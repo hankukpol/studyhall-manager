@@ -323,7 +323,7 @@ export function StudentDetailView({
                     }}
                     disabled={isSavingMemo}
                     autoFocus
-                    className="mt-3 min-h-[110px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-700 outline-none transition focus:border-slate-400"
+                    className="mt-3 min-h-[110px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-700 outline-none transition focus:border-slate-400"
                     placeholder="메모 추가..."
                   />
                 ) : (
@@ -333,13 +333,13 @@ export function StudentDetailView({
                       setMemoDraft(memo);
                       setIsEditingMemo(true);
                     }}
-                    className="mt-3 block w-full rounded-2xl border border-slate-200-dashed border-slate-300 bg-white px-4 py-3 text-left text-sm leading-6 text-slate-700 transition hover:border-slate-400"
+                    className="mt-3 block w-full rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-3 text-left text-sm leading-6 text-slate-700 transition hover:border-slate-400"
                   >
                     {memo || "메모 추가..."}
                   </button>
                 )
               ) : (
-                <div className="mt-3 rounded-2xl border border-slate-200-dashed border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-700">
+                <div className="mt-3 rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-700">
                   {memo || "등록된 메모가 없습니다."}
                 </div>
               )}
@@ -484,7 +484,7 @@ export function StudentDetailView({
         <form onSubmit={handleWithdraw} className="space-y-6">
           <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-600 text-white">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-rose-600 text-white">
                 <Ban className="h-5 w-5" />
               </div>
               <div>
@@ -533,7 +533,7 @@ export function StudentDetailView({
               <textarea
                 value={withdrawnNote}
                 onChange={(event) => setWithdrawnNote(event.target.value)}
-                className="min-h-[160px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="min-h-[160px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 placeholder="예: 개인 사정으로 자진 퇴실"
                 disabled={isWithdrawing}
                 required
@@ -589,7 +589,7 @@ export function StudentDetailView({
                       inputMode="numeric"
                       value={refundAmount}
                       onChange={(event) => setRefundAmount(event.target.value)}
-                      className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                      className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                       placeholder="예: 100000"
                       disabled={isWithdrawing}
                     />
@@ -601,7 +601,7 @@ export function StudentDetailView({
                       type="text"
                       value={refundMethod}
                       onChange={(event) => setRefundMethod(event.target.value)}
-                      className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                      className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                       placeholder="예: 계좌이체, 현금"
                       disabled={isWithdrawing}
                     />
@@ -614,7 +614,7 @@ export function StudentDetailView({
                     type="text"
                     value={refundNotes}
                     onChange={(event) => setRefundNotes(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                     placeholder="예: 이용 기간 미사용분 환불"
                     disabled={isWithdrawing}
                   />
@@ -683,7 +683,7 @@ export function StudentDetailView({
                   key={target.stage}
                   type="button"
                   onClick={() => setSelectedWarnTarget(target.stage)}
-                  className={`w-full rounded-2xl border px-4 py-3 text-left text-sm transition ${
+                  className={`w-full rounded-[10px] border px-4 py-3 text-left text-sm transition ${
                     isSelected
                       ? "border-slate-800 bg-slate-900 text-white"
                       : "border-slate-200 bg-white text-slate-700 hover:border-slate-400"
@@ -711,7 +711,7 @@ export function StudentDetailView({
           </div>
 
           {selectedWarnTarget && (
-            <div className="rounded-2xl border border-slate-200-slate-100 bg-white px-4 py-3 text-sm text-slate-600">
+            <div className="rounded-[10px] border border-slate-200-slate-100 bg-white px-4 py-3 text-sm text-slate-600">
               {(() => {
                 const t = warnTargets.find((x) => x.stage === selectedWarnTarget);
                 if (!t) return null;
@@ -728,7 +728,7 @@ export function StudentDetailView({
             <button
               type="button"
               onClick={() => setIsWarnAdjustOpen(false)}
-              className="flex-1 rounded-2xl border border-slate-200-slate-200 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              className="flex-1 rounded-[10px] border border-slate-200-slate-200 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
               취소
             </button>
@@ -741,7 +741,7 @@ export function StudentDetailView({
                   initialStudent.netPoints
               }
               onClick={() => void handleWarnAdjust()}
-              className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-slate-900 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-50"
+              className="flex flex-1 items-center justify-center gap-2 rounded-[10px] bg-slate-900 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-50"
             >
               {isAdjusting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
               조정 적용

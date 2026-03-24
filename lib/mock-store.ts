@@ -448,6 +448,8 @@ function createDefaultDivisionSettingsRecord(division: MockDivisionRecord): Mock
     healthLimit: 1,
     holidayUnusedPts: 5,
     halfDayUnusedPts: 2,
+    perfectAttendancePtsEnabled: false,
+    perfectAttendancePts: 0,
     operatingDays: {
       mon: true,
       tue: true,

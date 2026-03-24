@@ -42,6 +42,8 @@ type RawDbDivisionSettingsRecord = {
   halfDayUnusedPts: number;
   operatingDays: unknown;
   studyTracks: unknown;
+  perfectAttendancePtsEnabled: boolean;
+  perfectAttendancePts: number;
   updatedAt: Date;
 };
 
@@ -60,6 +62,8 @@ type DefaultRuleValues = {
   healthLimit: number;
   holidayUnusedPts: number;
   halfDayUnusedPts: number;
+  perfectAttendancePtsEnabled: boolean;
+  perfectAttendancePts: number;
 };
 
 const DEFAULT_RULE_VALUES: DefaultRuleValues = {
@@ -75,6 +79,8 @@ const DEFAULT_RULE_VALUES: DefaultRuleValues = {
   healthLimit: 1,
   holidayUnusedPts: 5,
   halfDayUnusedPts: 2,
+  perfectAttendancePtsEnabled: false,
+  perfectAttendancePts: 0,
 };
 
 const DIVISION_NOT_FOUND_ERROR = "지점 정보를 찾을 수 없습니다.";
@@ -103,6 +109,8 @@ export type DivisionSettingsRecord = {
   healthLimit: number;
   holidayUnusedPts: number;
   halfDayUnusedPts: number;
+  perfectAttendancePtsEnabled: boolean;
+  perfectAttendancePts: number;
   operatingDays: OperatingDays;
   studyTracks: StudyTrackList;
   updatedAt: string;
@@ -211,6 +219,8 @@ function serializeSettingsRecord(record: RawDivisionSettingsRecord): DivisionSet
     healthLimit: record.healthLimit,
     holidayUnusedPts: record.holidayUnusedPts,
     halfDayUnusedPts: record.halfDayUnusedPts,
+    perfectAttendancePtsEnabled: record.perfectAttendancePtsEnabled ?? false,
+    perfectAttendancePts: record.perfectAttendancePts ?? 0,
     operatingDays: normalizeOperatingDays(record.operatingDays),
     studyTracks: normalizeStudyTracks(record.studyTracks),
     updatedAt:
@@ -238,6 +248,8 @@ function getDivisionRuleSettingsFromRecord(
     healthLimit: settings.healthLimit,
     holidayUnusedPts: settings.holidayUnusedPts,
     halfDayUnusedPts: settings.halfDayUnusedPts,
+    perfectAttendancePtsEnabled: settings.perfectAttendancePtsEnabled,
+    perfectAttendancePts: settings.perfectAttendancePts,
     updatedAt: settings.updatedAt,
   };
 }
@@ -472,6 +484,8 @@ export async function updateDivisionRuleSettings(
         healthLimit: input.healthLimit,
         holidayUnusedPts: input.holidayUnusedPts,
         halfDayUnusedPts: input.halfDayUnusedPts,
+        perfectAttendancePtsEnabled: input.perfectAttendancePtsEnabled,
+        perfectAttendancePts: input.perfectAttendancePts,
         updatedAt: new Date().toISOString(),
       };
 
@@ -503,6 +517,8 @@ export async function updateDivisionRuleSettings(
       healthLimit: input.healthLimit,
       holidayUnusedPts: input.holidayUnusedPts,
       halfDayUnusedPts: input.halfDayUnusedPts,
+      perfectAttendancePtsEnabled: input.perfectAttendancePtsEnabled,
+      perfectAttendancePts: input.perfectAttendancePts,
     },
     create: {
       ...createDbDefaultSettingsCreateInput(division.id),
@@ -522,6 +538,8 @@ export async function updateDivisionRuleSettings(
       healthLimit: input.healthLimit,
       holidayUnusedPts: input.holidayUnusedPts,
       halfDayUnusedPts: input.halfDayUnusedPts,
+      perfectAttendancePtsEnabled: input.perfectAttendancePtsEnabled,
+      perfectAttendancePts: input.perfectAttendancePts,
     },
   });
 

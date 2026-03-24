@@ -299,7 +299,7 @@ export function InterviewManager({
                     type="month"
                     value={filterMonth}
                     onChange={(event) => setFilterMonth(event.target.value)}
-                    className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                    className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   />
                 </div>
               </div>
@@ -321,7 +321,7 @@ export function InterviewManager({
                       <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{interview.reason}</p>
                       {interview.content ? <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{interview.content}</p> : null}
                       {interview.result ? (
-                        <div className="mt-3 rounded-2xl border border-slate-200-slate-200 bg-white px-3 py-3 text-sm leading-6 text-slate-700">
+                        <div className="mt-3 rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-3 text-sm leading-6 text-slate-700">
                           {interview.result}
                         </div>
                       ) : null}
@@ -348,7 +348,7 @@ export function InterviewManager({
         <form onSubmit={handleSubmit} className="space-y-6">
           <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-50 text-slate-600">
                 <MessageSquareWarning className="h-5 w-5" />
               </div>
               <div>
@@ -374,7 +374,7 @@ export function InterviewManager({
                   type="date"
                   value={form.date}
                   onChange={(event) => setForm((current) => ({ ...current, date: event.target.value }))}
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   required
                 />
               </label>
@@ -384,7 +384,7 @@ export function InterviewManager({
                 <select
                   value={form.resultType}
                   onChange={(event) => setForm((current) => ({ ...current, resultType: event.target.value as InterviewResultTypeValue }))}
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 >
                   {INTERVIEW_RESULT_TYPE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -408,7 +408,7 @@ export function InterviewManager({
 
           <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-rose-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-white text-rose-700">
                 <MessageSquareWarning className="h-5 w-5" />
               </div>
               <div>
@@ -423,7 +423,7 @@ export function InterviewManager({
                 <input
                   value={form.trigger}
                   onChange={(event) => setForm((current) => ({ ...current, trigger: event.target.value }))}
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   placeholder="예: 벌점 25점 도달"
                 />
               </label>
@@ -433,7 +433,7 @@ export function InterviewManager({
                 <textarea
                   value={form.reason}
                   onChange={(event) => setForm((current) => ({ ...current, reason: event.target.value }))}
-                  className="min-h-[110px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="min-h-[110px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   placeholder="면담 사유를 입력해 주세요."
                   required
                 />
@@ -444,7 +444,7 @@ export function InterviewManager({
                 <textarea
                   value={form.content}
                   onChange={(event) => setForm((current) => ({ ...current, content: event.target.value }))}
-                  className="min-h-[140px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="min-h-[140px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   placeholder="면담 과정에서 확인한 내용을 기록합니다."
                 />
               </label>
@@ -454,7 +454,7 @@ export function InterviewManager({
                 <textarea
                   value={form.result}
                   onChange={(event) => setForm((current) => ({ ...current, result: event.target.value }))}
-                  className="min-h-[110px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="min-h-[110px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   placeholder="합의 내용, 추가 확인 일정, 보호자 연락 여부 등을 기록합니다."
                 />
               </label>

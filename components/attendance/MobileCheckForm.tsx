@@ -454,7 +454,7 @@ export function MobileCheckForm({
               </p>
             </div>
 
-            <div className="shrink-0 rounded-xl bg-slate-100 p-1.5 text-slate-500">
+            <div className="shrink-0 rounded-[10px] bg-slate-100 p-1.5 text-slate-500">
               {isSummaryCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
             </div>
           </button>

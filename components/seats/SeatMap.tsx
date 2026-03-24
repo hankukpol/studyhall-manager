@@ -81,7 +81,7 @@ export const SeatMap = memo(function SeatMap({
                   return (
                     <div
                       key={`aisle-${positionX}-${positionY}`}
-                      className="flex h-full items-center justify-center rounded-3xl border border-slate-200-dashed border-slate-200 bg-white text-xs font-semibold tracking-[0.2em] text-slate-400"
+                      className="flex h-full items-center justify-center rounded-[10px] border border-slate-200-dashed border-slate-200 bg-white text-xs font-semibold tracking-[0.2em] text-slate-400"
                     >
                       복도
                     </div>
@@ -99,7 +99,7 @@ export const SeatMap = memo(function SeatMap({
 
                 const content = (
                   <div
-                    className={`flex h-full flex-col justify-between rounded-3xl border p-3 text-left transition ${
+                    className={`flex h-full flex-col justify-between rounded-[10px] border p-3 text-left transition ${
                       isSelected
                         ? "border-slate-950 bg-slate-950 text-white shadow-[0_8px_24px_rgba(15,23,42,0.2)]"
                         : classes

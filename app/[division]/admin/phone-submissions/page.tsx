@@ -57,7 +57,7 @@ export default async function PhoneSubmissionsPage({ params }: PhoneSubmissionsP
 
       <section className="rounded-[10px] border border-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="mb-5 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+          <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-100 text-slate-600">
             <Smartphone className="h-5 w-5" />
           </div>
           <div>
@@ -78,7 +78,7 @@ export default async function PhoneSubmissionsPage({ params }: PhoneSubmissionsP
 
       <section className="rounded-[10px] border border-black/5 bg-white p-6 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
         <div className="mb-5 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+          <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-100 text-slate-600">
             <ClipboardList className="h-5 w-5" />
           </div>
           <div>

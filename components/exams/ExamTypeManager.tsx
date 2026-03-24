@@ -410,7 +410,7 @@ export function ExamTypeManager({
                       <button
                         type="button"
                         onClick={() => selectExamType(examType)}
-                        className={`inline-flex h-10 w-10 items-center justify-center rounded-2xl border transition ${
+                        className={`inline-flex h-10 w-10 items-center justify-center rounded-[10px] border transition ${
                           selectedId === examType.id
                             ? "border-white/20 text-white hover:bg-white/10"
                             : "border-slate-200 text-slate-600 hover:bg-white"
@@ -423,7 +423,7 @@ export function ExamTypeManager({
                         type="button"
                         onClick={() => void handleDelete(examType.id)}
                         disabled={deletingId === examType.id}
-                        className={`inline-flex h-10 w-10 items-center justify-center rounded-2xl border transition ${
+                        className={`inline-flex h-10 w-10 items-center justify-center rounded-[10px] border transition ${
                           selectedId === examType.id
                             ? "border-white/20 text-white hover:bg-white/10"
                             : "border-slate-200 text-rose-600 hover:bg-white"
@@ -483,7 +483,7 @@ export function ExamTypeManager({
             <span className="mb-2 block text-sm font-medium text-slate-700">시험 분류</span>
             <div className="flex gap-3">
               <label
-                className={`flex flex-1 cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition ${
+                className={`flex flex-1 cursor-pointer items-center gap-3 rounded-[10px] border px-4 py-3 transition ${
                   form.category === "MORNING"
                     ? "border-amber-400 bg-amber-50"
                     : "border-slate-200 bg-white hover:bg-slate-50"
@@ -506,7 +506,7 @@ export function ExamTypeManager({
                 </div>
               </label>
               <label
-                className={`flex flex-1 cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition ${
+                className={`flex flex-1 cursor-pointer items-center gap-3 rounded-[10px] border px-4 py-3 transition ${
                   form.category === "REGULAR"
                     ? "border-blue-400 bg-blue-50"
                     : "border-slate-200 bg-white hover:bg-slate-50"
@@ -540,7 +540,7 @@ export function ExamTypeManager({
               <input
                 value={form.name}
                 onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 placeholder="예: 주간 모의고사"
                 required
               />
@@ -553,7 +553,7 @@ export function ExamTypeManager({
                 onChange={(event) =>
                   setForm((current) => ({ ...current, studyTrack: event.target.value }))
                 }
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               >
                 <option value={COMMON_TRACK_VALUE}>공통 시험</option>
                 {trackOptions.map((track) => (
@@ -565,7 +565,7 @@ export function ExamTypeManager({
             </label>
           </div>
 
-          <label className="flex items-center justify-between rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3">
+          <label className="flex items-center justify-between rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
             <span>
               <span className="block text-sm font-medium text-slate-800">활성 상태</span>
               <span className="block text-xs text-slate-500">
@@ -602,14 +602,14 @@ export function ExamTypeManager({
               const maxScore = calculateMaxScore(subject.totalItems, subject.pointsPerItem);
 
               return (
-                <div key={subject.localId} className="rounded-2xl border border-slate-200-slate-200 bg-white p-4">
+                <div key={subject.localId} className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-slate-900">과목 {index + 1}</p>
                     <button
                       type="button"
                       onClick={() => removeSubject(subject.localId)}
                       disabled={form.subjects.length === 1}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200-slate-200 text-rose-600 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] border border-slate-200-slate-200 text-rose-600 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
                       aria-label="과목 삭제"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -627,7 +627,7 @@ export function ExamTypeManager({
                             name: event.target.value,
                           }))
                         }
-                        className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                        className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                         placeholder="예: 영어"
                         required
                       />
@@ -643,7 +643,7 @@ export function ExamTypeManager({
                             totalItems: event.target.value,
                           }))
                         }
-                        className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                        className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                         placeholder="20"
                         inputMode="numeric"
                       />
@@ -659,7 +659,7 @@ export function ExamTypeManager({
                             pointsPerItem: event.target.value,
                           }))
                         }
-                        className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                        className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                         placeholder="5"
                         inputMode="decimal"
                       />
@@ -667,11 +667,11 @@ export function ExamTypeManager({
                   </div>
 
                   <div className="mt-3 grid gap-3 md:grid-cols-2">
-                    <div className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+                    <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
                       {maxScore !== null ? `이 과목 만점은 ${maxScore}점입니다.` : "문항 수와 배점을 모두 입력하면 만점이 계산됩니다."}
                     </div>
 
-                    <label className="flex items-center justify-between rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3">
+                    <label className="flex items-center justify-between rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
                       <span>
                         <span className="block text-sm font-medium text-slate-800">과목 활성</span>
                         <span className="block text-xs text-slate-500">

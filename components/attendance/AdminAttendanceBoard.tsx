@@ -311,7 +311,7 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
 
           <div className="flex items-center gap-2">
             {hasSeatLayout && (
-              <div className="flex gap-1 rounded-2xl border border-slate-200 bg-slate-50 p-1">
+              <div className="flex gap-1 rounded-[10px] border border-slate-200 bg-slate-50 p-1">
                 <button
                   type="button"
                   onClick={() => setViewMode("table")}
@@ -342,7 +342,7 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
               type="date"
               value={selectedDate}
               onChange={(event) => setSelectedDate(event.target.value)}
-              className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none"
+              className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none"
             />
             {viewMode === "table" && (
               <button
@@ -360,14 +360,14 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
 
         <div className="mt-5 grid gap-3 md:grid-cols-4">
           {summaryCards.map((card) => (
-            <div key={card.label} className={`rounded-2xl px-4 py-4 ${card.className}`}>
+            <div key={card.label} className={`rounded-[10px] px-4 py-4 ${card.className}`}>
               <p className="text-sm font-medium opacity-80">{card.label}</p>
               <p className="mt-2 text-2xl font-bold">{card.value}</p>
             </div>
           ))}
         </div>
 
-        <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+        <div className="mt-4 rounded-[10px] border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
           출석 상태가 입력된 교시만 저장됩니다. 미입력 교시는 건너뛰므로, 현재 교시까지만 체크 후 저장하셔도 됩니다.
         </div>
       </section>
@@ -467,7 +467,7 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
                                   : "",
                             })
                           }
-                          className={`w-full rounded-2xl border px-2 py-2.5 text-xs font-semibold outline-none ${getAttendanceStatusClasses(cell.status)}`}
+                          className={`w-full rounded-[10px] border px-2 py-2.5 text-xs font-semibold outline-none ${getAttendanceStatusClasses(cell.status)}`}
                         >
                           {ATTENDANCE_STATUS_OPTIONS.map((option) => (
                             <option key={option.value || "empty"} value={option.value}>
@@ -480,7 +480,7 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
                             value={cell.reason}
                             onChange={(event) => updateCell(student.id, period.id, { reason: event.target.value })}
                             placeholder="사유"
-                            className="mt-1 h-7 w-full rounded-xl border border-slate-200 bg-white px-2 py-1 text-xs text-slate-900 outline-none focus:border-slate-400"
+                            className="mt-1 h-7 w-full rounded-[10px] border border-slate-200 bg-white px-2 py-1 text-xs text-slate-900 outline-none focus:border-slate-400"
                           />
                         )}
                       </td>

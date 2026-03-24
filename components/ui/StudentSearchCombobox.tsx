@@ -56,7 +56,7 @@ export function StudentSearchCombobox({
 
   return (
     <div ref={ref} className={`relative ${className}`}>
-      <div className="flex items-center rounded-2xl border border-slate-200 bg-white px-4 py-3 transition focus-within:border-slate-400 focus-within:bg-white">
+      <div className="flex items-center rounded-[10px] border border-slate-200 bg-white px-4 py-3 transition focus-within:border-slate-400 focus-within:bg-white">
         <Search className="mr-2 h-4 w-4 shrink-0 text-slate-400" />
         <input
           type="text"
@@ -75,7 +75,7 @@ export function StudentSearchCombobox({
       </div>
 
       {open && (
-        <ul className="absolute z-20 mt-1 max-h-52 w-full overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-lg">
+        <ul className="absolute z-20 mt-1 max-h-52 w-full overflow-y-auto rounded-[10px] border border-slate-200 bg-white shadow-lg">
           {allStudentsLabel && (
             <li>
               <button

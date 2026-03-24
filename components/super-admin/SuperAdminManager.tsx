@@ -381,7 +381,7 @@ export function SuperAdminManager({
                   onChange={(event) =>
                     setDivisionForm((current) => ({ ...current, name: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   required
                 />
               </label>
@@ -396,7 +396,7 @@ export function SuperAdminManager({
                       slug: event.target.value.toLowerCase(),
                     }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
                   disabled={Boolean(editingDivisionSlug)}
                   required
                 />
@@ -410,7 +410,7 @@ export function SuperAdminManager({
                 onChange={(event) =>
                   setDivisionForm((current) => ({ ...current, fullName: event.target.value }))
                 }
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 required
               />
             </label>
@@ -423,7 +423,7 @@ export function SuperAdminManager({
                   onChange={(event) =>
                     setDivisionForm((current) => ({ ...current, color: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   required
                 />
               </label>
@@ -440,7 +440,7 @@ export function SuperAdminManager({
                       displayOrder: event.target.value,
                     }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 />
               </label>
             </div>
@@ -470,7 +470,7 @@ export function SuperAdminManager({
                       copyFromSlug: event.target.value,
                     }))
                   }
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 >
                   <option value="">복사 안 함</option>
                   {divisions.map((division) => (
@@ -488,7 +488,7 @@ export function SuperAdminManager({
             <button
               type="submit"
               disabled={isSavingDivision}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-70"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-70"
             >
               {isSavingDivision ? (
                 <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -501,7 +501,7 @@ export function SuperAdminManager({
 
           <div className="mt-8 space-y-3">
             {divisions.map((division) => (
-              <div key={division.id} className="rounded-3xl border border-slate-200-slate-200 bg-white p-4">
+              <div key={division.id} className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
@@ -581,7 +581,7 @@ export function SuperAdminManager({
                   onChange={(event) =>
                     setAdminForm((current) => ({ ...current, name: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   required
                 />
               </label>
@@ -597,7 +597,7 @@ export function SuperAdminManager({
                       divisionSlug: event.target.value === "SUPER_ADMIN" ? "" : current.divisionSlug,
                     }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 >
                   <option value="SUPER_ADMIN">최고관리자</option>
                   <option value="ADMIN">관리자</option>
@@ -614,7 +614,7 @@ export function SuperAdminManager({
                   onChange={(event) =>
                     setAdminForm((current) => ({ ...current, email: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
                   disabled={Boolean(editingAdminId)}
                   required
                 />
@@ -629,7 +629,7 @@ export function SuperAdminManager({
                     onChange={(event) =>
                       setAdminForm((current) => ({ ...current, password: event.target.value }))
                     }
-                    className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                     required
                   />
                 </label>
@@ -644,7 +644,7 @@ export function SuperAdminManager({
                   setAdminForm((current) => ({ ...current, divisionSlug: event.target.value }))
                 }
                 disabled={adminForm.role === "SUPER_ADMIN"}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
               >
                 <option value="">선택하세요</option>
                 {divisions.map((division) => (
@@ -670,7 +670,7 @@ export function SuperAdminManager({
             <button
               type="submit"
               disabled={isSavingAdmin}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-70"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-70"
             >
               {isSavingAdmin ? (
                 <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -682,7 +682,7 @@ export function SuperAdminManager({
           </form>
 
           {editingAdminId ? (
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div className="mt-4 rounded-[10px] border border-slate-200 bg-slate-50 p-4">
               <p className="text-sm font-medium text-slate-700">비밀번호 재설정</p>
               <div className="mt-2 flex gap-2">
                 <input
@@ -690,13 +690,13 @@ export function SuperAdminManager({
                   placeholder="새 비밀번호 (8자 이상)"
                   value={resetPasswordValue}
                   onChange={(event) => setResetPasswordValue(event.target.value)}
-                  className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
+                  className="flex-1 rounded-[10px] border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
                 />
                 <button
                   type="button"
                   disabled={isResettingPassword}
                   onClick={() => handlePasswordReset(editingAdminId)}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
                 >
                   {isResettingPassword ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   변경
@@ -707,7 +707,7 @@ export function SuperAdminManager({
 
           <div className="mt-8 space-y-3">
             {admins.map((admin) => (
-              <div key={admin.id} className="rounded-3xl border border-slate-200-slate-200 bg-white p-4">
+              <div key={admin.id} className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">

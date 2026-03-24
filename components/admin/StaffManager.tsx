@@ -151,7 +151,7 @@ export function StaffManager({ divisionSlug, initialStaff }: StaffManagerProps) 
       {confirmModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-[10px] bg-white p-6 shadow-[0_32px_80px_rgba(0,0,0,0.22)]">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[10px] bg-rose-50">
               <AlertTriangle className="h-6 w-6 text-rose-600" />
             </div>
 
@@ -180,7 +180,7 @@ export function StaffManager({ divisionSlug, initialStaff }: StaffManagerProps) 
               <button
                 type="button"
                 onClick={() => setConfirmModal(null)}
-                className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                className="flex-1 rounded-[10px] border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 취소
               </button>
@@ -188,7 +188,7 @@ export function StaffManager({ divisionSlug, initialStaff }: StaffManagerProps) 
                 type="button"
                 onClick={handleConfirmAction}
                 disabled={isActioning}
-                className="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl bg-rose-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-rose-700 disabled:opacity-70"
+                className="flex-1 inline-flex items-center justify-center gap-2 rounded-[10px] bg-rose-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-rose-700 disabled:opacity-70"
               >
                 {isActioning ? (
                   <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -229,7 +229,7 @@ export function StaffManager({ divisionSlug, initialStaff }: StaffManagerProps) 
                 <input
                   value={form.name}
                   onChange={(e) => setForm((c) => ({ ...c, name: e.target.value }))}
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   required
                 />
               </label>
@@ -238,7 +238,7 @@ export function StaffManager({ divisionSlug, initialStaff }: StaffManagerProps) 
                 <select
                   value={form.role}
                   onChange={(e) => setForm((c) => ({ ...c, role: e.target.value as "ADMIN" | "ASSISTANT" }))}
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                 >
                   <option value="ADMIN">관리자</option>
                   <option value="ASSISTANT">조교</option>
@@ -253,7 +253,7 @@ export function StaffManager({ divisionSlug, initialStaff }: StaffManagerProps) 
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm((c) => ({ ...c, email: e.target.value }))}
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-100"
+                  className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-100"
                   disabled={Boolean(editingId)}
                   required={!editingId}
                 />
@@ -265,7 +265,7 @@ export function StaffManager({ divisionSlug, initialStaff }: StaffManagerProps) 
                     type="password"
                     value={form.password}
                     onChange={(e) => setForm((c) => ({ ...c, password: e.target.value }))}
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                    className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                     required
                   />
                 </label>
@@ -285,7 +285,7 @@ export function StaffManager({ divisionSlug, initialStaff }: StaffManagerProps) 
             <button
               type="submit"
               disabled={isSaving}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-70"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-70"
             >
               {isSaving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               {editingId ? "직원 저장" : "직원 추가"}
@@ -293,7 +293,7 @@ export function StaffManager({ divisionSlug, initialStaff }: StaffManagerProps) 
           </form>
 
           {editingId ? (
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div className="mt-4 rounded-[10px] border border-slate-200 bg-slate-50 p-4">
               <p className="text-sm font-medium text-slate-700">비밀번호 재설정</p>
               <div className="mt-2 flex gap-2">
                 <input
@@ -301,13 +301,13 @@ export function StaffManager({ divisionSlug, initialStaff }: StaffManagerProps) 
                   placeholder="새 비밀번호 (8자 이상)"
                   value={resetPasswordValue}
                   onChange={(e) => setResetPasswordValue(e.target.value)}
-                  className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
+                  className="flex-1 rounded-[10px] border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
                 />
                 <button
                   type="button"
                   disabled={isResettingPassword}
                   onClick={() => handlePasswordReset(editingId)}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
                 >
                   {isResettingPassword ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   변경
@@ -326,7 +326,7 @@ export function StaffManager({ divisionSlug, initialStaff }: StaffManagerProps) 
               <p className="py-8 text-center text-sm text-slate-400">등록된 직원이 없습니다.</p>
             ) : (
               staff.map((member) => (
-                <div key={member.id} className="rounded-3xl border border-slate-200 bg-white p-4">
+                <div key={member.id} className="rounded-[10px] border border-slate-200 bg-white p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">

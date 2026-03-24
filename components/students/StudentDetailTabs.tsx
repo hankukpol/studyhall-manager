@@ -260,7 +260,7 @@ export function StudentDetailTabs({
               {leavePermissions.slice(0, 5).map((permission) => (
                 <div
                   key={permission.id}
-                  className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3"
+                  className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3"
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full border border-slate-200-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700">
@@ -280,7 +280,7 @@ export function StudentDetailTabs({
               ))}
             </div>
           ) : (
-            <div className="mt-4 rounded-2xl border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
+            <div className="mt-4 rounded-[10px] border border-slate-200-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
               등록된 외출/휴가 기록이 없습니다.
             </div>
           )}
@@ -353,7 +353,7 @@ export function StudentDetailTabs({
                   setPointRuleId(e.target.value);
                   setManualPoints("");
                 }}
-                className="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950"
+                className="mt-1.5 w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950"
               >
                 <option value="">직접 점수 입력</option>
                 {pointRules.map((rule) => (
@@ -365,7 +365,7 @@ export function StudentDetailTabs({
             </div>
 
             {pointRuleId && selectedRule ? (
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <div className="rounded-[10px] border border-slate-200 bg-slate-50 px-4 py-3">
                 <div className="flex items-center gap-2">
                   <PointCategoryBadge category={selectedRule.category} />
                   <PointValueBadge points={selectedRule.points} />
@@ -386,7 +386,7 @@ export function StudentDetailTabs({
                   onChange={(e) => setManualPoints(e.target.value)}
                   required={!pointRuleId}
                   placeholder="예: 5 또는 -3"
-                  className="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950"
+                  className="mt-1.5 w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950"
                 />
               </div>
             )}
@@ -397,7 +397,7 @@ export function StudentDetailTabs({
                 value={pointsNotes}
                 onChange={(e) => setPointsNotes(e.target.value)}
                 rows={3}
-                className="mt-1.5 w-full resize-none rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950"
+                className="mt-1.5 w-full resize-none rounded-[10px] border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950"
                 placeholder="메모를 입력하세요"
               />
             </div>
@@ -473,13 +473,13 @@ export function StudentDetailTabs({
                     <p className="mt-2 text-sm text-slate-600">시험일 {formatDate(exam.examDate)}</p>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3">
+                    <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
                       <p className="text-sm text-slate-500">총점</p>
                       <p className="mt-2 text-xl font-bold text-slate-950">
                         {exam.totalScore ?? "-"}
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3">
+                    <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
                       <p className="text-sm text-slate-500">반 석차</p>
                       <p className="mt-2 text-xl font-bold text-slate-950">
                         {exam.rankInClass ? `${exam.rankInClass}등` : "-"}
@@ -492,7 +492,7 @@ export function StudentDetailTabs({
                   {exam.subjects.map((subject) => (
                     <div
                       key={`${exam.id}-${subject.subjectId}`}
-                      className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3"
+                      className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3"
                     >
                       <p className="text-sm font-medium text-slate-900">{subject.name}</p>
                       <p className="mt-2 text-xl font-bold text-slate-950">
@@ -605,7 +605,7 @@ export function StudentDetailTabs({
                         setPaymentAmount(String(plan.amount));
                         setPaymentNotes(plan.name);
                       }}
-                      className={`rounded-2xl border p-3 text-left transition ${
+                      className={`rounded-[10px] border p-3 text-left transition ${
                         selectedPlanId === plan.id
                           ? "border-slate-900 bg-slate-900 text-white"
                           : "border-slate-200 bg-white hover:border-slate-400"
@@ -632,7 +632,7 @@ export function StudentDetailTabs({
                 value={paymentTypeId}
                 onChange={(e) => setPaymentTypeId(e.target.value)}
                 required
-                className="mt-1.5 w-full rounded-2xl border border-slate-200-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950"
+                className="mt-1.5 w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950"
               >
                 <option value="">선택해 주세요</option>
                 {paymentCategories.map((cat) => (
@@ -648,7 +648,7 @@ export function StudentDetailTabs({
                 value={paymentDate}
                 onChange={(e) => setPaymentDate(e.target.value)}
                 required
-                className="mt-1.5 w-full rounded-2xl border border-slate-200-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950"
+                className="mt-1.5 w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950"
               />
             </div>
 
@@ -661,7 +661,7 @@ export function StudentDetailTabs({
                 required
                 min="1"
                 placeholder="0"
-                className="mt-1.5 w-full rounded-2xl border border-slate-200-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950"
+                className="mt-1.5 w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950"
               />
             </div>
 
@@ -670,7 +670,7 @@ export function StudentDetailTabs({
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
-                className="mt-1.5 w-full rounded-2xl border border-slate-200-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950"
+                className="mt-1.5 w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950"
               >
                 <option value="">선택 안 함</option>
                 <option value="현금">현금</option>
@@ -685,7 +685,7 @@ export function StudentDetailTabs({
                 value={paymentNotes}
                 onChange={(e) => setPaymentNotes(e.target.value)}
                 rows={3}
-                className="mt-1.5 w-full resize-none rounded-2xl border border-slate-200-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950"
+                className="mt-1.5 w-full resize-none rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-950"
                 placeholder="메모를 입력하세요"
               />
             </div>

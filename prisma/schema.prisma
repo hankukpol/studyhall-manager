@@ -477,6 +477,8 @@ model DivisionSettings {
   halfDayUnusedPts         Int      @default(2) @map("half_day_unused_pts")
   operatingDays            Json     @default("{}") @map("operating_days")
   studyTracks              Json     @default("[]") @map("study_tracks")
+  perfectAttendancePtsEnabled Boolean @default(false) @map("perfect_attendance_pts_enabled")
+  perfectAttendancePts     Int      @default(0) @map("perfect_attendance_pts")
   updatedAt                DateTime @updatedAt @map("updated_at")
   division                 Division @relation(fields: [divisionId], references: [id], onDelete: Cascade)
 

@@ -5,6 +5,7 @@ import {
   updateMockState,
   type MockAttendanceRecord,
   type MockAttendanceStatus,
+  type MockPointRecordRecord,
 } from "@/lib/mock-store";
 import { normalizeYmdDate } from "@/lib/date-utils";
 import { badRequest, notFound } from "@/lib/errors";
@@ -443,6 +444,158 @@ export async function listStudentAttendanceHistory(
     });
 }
 
+async function checkAndGrantPerfectAttendancePoints(
+  divisionSlug: string,
+  date: string,
+  actorId: string,
+): Promise<{ grantedCount: number }> {
+  const settings = await getDivisionSettings(divisionSlug);
+
+  if (!settings.perfectAttendancePtsEnabled || settings.perfectAttendancePts <= 0) {
+    return { grantedCount: 0 };
+  }
+
+  const periods = await getPeriods(divisionSlug);
+  const mandatoryActivePeriods = periods.filter(
+    (period) => period.isMandatory && period.isActive,
+  );
+
+  if (mandatoryActivePeriods.length === 0) {
+    return { grantedCount: 0 };
+  }
+
+  const mandatoryPeriodIds = new Set(mandatoryActivePeriods.map((period) => period.id));
+  const students = await getDivisionStudents(divisionSlug);
+  const dupCheckNotes = `[자동] 개근 상점 (${date})`;
+
+  if (isMockMode()) {
+    return updateMockState(async (state) => {
+      const allRecords = state.attendanceByDivision[divisionSlug] ?? [];
+      const dayRecords = allRecords.filter((record) => record.date === date);
+
+      // 학생별 필수 교시 출석 맵
+      const studentPresentMap = new Map<string, Set<string>>();
+      for (const record of dayRecords) {
+        if (!mandatoryPeriodIds.has(record.periodId)) continue;
+        if (record.status !== "PRESENT") continue;
+
+        if (!studentPresentMap.has(record.studentId)) {
+          studentPresentMap.set(record.studentId, new Set());
+        }
+        studentPresentMap.get(record.studentId)!.add(record.periodId);
+      }
+
+      // 이미 부여된 학생 확인
+      const existingPointRecords = state.pointRecordsByDivision[divisionSlug] ?? [];
+      const alreadyGranted = new Set(
+        existingPointRecords
+          .filter((record) => record.notes === dupCheckNotes)
+          .map((record) => record.studentId),
+      );
+
+      // 자격 학생 필터
+      const qualifiedStudents = students.filter((student) => {
+        if (alreadyGranted.has(student.id)) return false;
+        const presentPeriods = studentPresentMap.get(student.id);
+        return presentPeriods !== undefined && presentPeriods.size === mandatoryPeriodIds.size;
+      });
+
+      if (qualifiedStudents.length === 0) {
+        return { grantedCount: 0 };
+      }
+
+      const now = new Date().toISOString();
+      const newRecords: MockPointRecordRecord[] = qualifiedStudents.map((student, index) => ({
+        id: `mock-perfect-att-${divisionSlug}-${date}-${student.id}-${index}`,
+        studentId: student.id,
+        ruleId: null,
+        points: settings.perfectAttendancePts,
+        date: new Date(date + "T00:00:00Z").toISOString(),
+        notes: dupCheckNotes,
+        recordedById: actorId,
+        createdAt: now,
+      }));
+
+      state.pointRecordsByDivision[divisionSlug] = [
+        ...newRecords,
+        ...existingPointRecords,
+      ];
+
+      return { grantedCount: newRecords.length };
+    });
+  }
+
+  const prisma = await getPrismaClient();
+  const division = await getDivisionOrThrow(divisionSlug);
+  const { start } = toUtcDateRange(date);
+
+  // 해당 날짜 전체 출결 기록 조회
+  const dayRecords = await prisma.attendance.findMany({
+    where: {
+      date: start,
+      student: { divisionId: division.id },
+    },
+    select: {
+      studentId: true,
+      periodId: true,
+      status: true,
+    },
+  });
+
+  // 학생별 필수 교시 출석 맵
+  const studentPresentMap = new Map<string, Set<string>>();
+  for (const record of dayRecords) {
+    if (!mandatoryPeriodIds.has(record.periodId)) continue;
+    if (record.status !== "PRESENT") continue;
+
+    if (!studentPresentMap.has(record.studentId)) {
+      studentPresentMap.set(record.studentId, new Set());
+    }
+    studentPresentMap.get(record.studentId)!.add(record.periodId);
+  }
+
+  // 자격 학생 후보 (모든 필수 교시 출석)
+  const candidateStudentIds = students
+    .filter((student) => {
+      const presentPeriods = studentPresentMap.get(student.id);
+      return presentPeriods !== undefined && presentPeriods.size === mandatoryPeriodIds.size;
+    })
+    .map((student) => student.id);
+
+  if (candidateStudentIds.length === 0) {
+    return { grantedCount: 0 };
+  }
+
+  // 이미 부여된 학생 확인
+  const alreadyGrantedRecords = await prisma.pointRecord.findMany({
+    where: {
+      studentId: { in: candidateStudentIds },
+      notes: dupCheckNotes,
+    },
+    select: { studentId: true },
+  });
+
+  const alreadyGranted = new Set(alreadyGrantedRecords.map((record) => record.studentId));
+  const finalStudentIds = candidateStudentIds.filter((id) => !alreadyGranted.has(id));
+
+  if (finalStudentIds.length === 0) {
+    return { grantedCount: 0 };
+  }
+
+  await prisma.pointRecord.createMany({
+    data: finalStudentIds.map((studentId) => ({
+      studentId,
+      ruleId: null,
+      points: settings.perfectAttendancePts,
+      date: start,
+      notes: dupCheckNotes,
+      recordedById: actorId,
+    })),
+  });
+
+  return { grantedCount: finalStudentIds.length };
+}
+
 export async function upsertAttendanceBatch(
   divisionSlug: string,
   actor: AttendanceActor,
@@ -509,7 +662,7 @@ export async function upsertAttendanceBatch(
       const nextRecords = Array.from(touchedMap.values());
       state.attendanceByDivision[divisionSlug] = nextRecords;
 
-      return {
+      const snapshot = {
         date: normalizedDate,
         students,
         periods: serializePeriods([period]),
@@ -525,6 +678,14 @@ export async function upsertAttendanceBatch(
             checkInTime: record.checkInTime ?? null,
           })),
       };
+
+      try {
+        await checkAndGrantPerfectAttendancePoints(divisionSlug, normalizedDate, actor.id);
+      } catch (error) {
+        console.error("[PerfectAttendancePoints]", error);
+      }
+
+      return snapshot;
     });
   }
 
@@ -579,7 +740,7 @@ export async function upsertAttendanceBatch(
     },
   });
 
-  return {
+  const snapshot = {
     date: normalizedDate,
     students,
     periods: serializePeriods([period]),
@@ -593,6 +754,14 @@ export async function upsertAttendanceBatch(
       checkInTime: record.checkInTime ? record.checkInTime.toISOString() : null,
     })),
   };
+
+  try {
+    await checkAndGrantPerfectAttendancePoints(divisionSlug, normalizedDate, actor.id);
+  } catch (error) {
+    console.error("[PerfectAttendancePoints]", error);
+  }
+
+  return snapshot;
 }
 
 function enumerateDates(dateFrom: string, dateTo: string) {

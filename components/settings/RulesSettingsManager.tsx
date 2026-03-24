@@ -28,6 +28,8 @@ type FormState = {
   healthLimit: string;
   holidayUnusedPts: string;
   halfDayUnusedPts: string;
+  perfectAttendancePtsEnabled: boolean;
+  perfectAttendancePts: string;
 };
 
 function toFormState(settings: DivisionRuleSettings): FormState {
@@ -48,6 +50,8 @@ function toFormState(settings: DivisionRuleSettings): FormState {
     healthLimit: String(settings.healthLimit),
     holidayUnusedPts: String(settings.holidayUnusedPts),
     halfDayUnusedPts: String(settings.halfDayUnusedPts),
+    perfectAttendancePtsEnabled: settings.perfectAttendancePtsEnabled,
+    perfectAttendancePts: String(settings.perfectAttendancePts),
   };
 }
 
@@ -117,6 +121,8 @@ export function RulesSettingsManager({
           healthLimit: form.healthLimit,
           holidayUnusedPts: form.holidayUnusedPts,
           halfDayUnusedPts: form.halfDayUnusedPts,
+          perfectAttendancePtsEnabled: form.perfectAttendancePtsEnabled,
+          perfectAttendancePts: form.perfectAttendancePtsEnabled ? form.perfectAttendancePts : "0",
         }),
       });
       const data = await response.json();
@@ -176,6 +182,15 @@ export function RulesSettingsManager({
                 <span>건강휴무 {form.healthLimit}회</span>
                 <span>반휴 미사용 +{form.halfDayUnusedPts}점</span>
               </div>
+            </article>
+
+            <article className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
+              <p className="text-sm font-semibold text-slate-900">개근 상점</p>
+              <p className="mt-2 text-sm text-slate-600">
+                {form.perfectAttendancePtsEnabled
+                  ? `활성 — 매일 개근 시 +${form.perfectAttendancePts}점 자동 부여`
+                  : "비활성"}
+              </p>
             </article>
 
             <article className="rounded-[22px] border border-slate-200-slate-200 bg-white p-4">
@@ -246,12 +261,12 @@ export function RulesSettingsManager({
                   onChange={(event) =>
                     setForm((current) => ({ ...current, tardyMinutes: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   required
                 />
               </label>
 
-              <label className="flex items-center justify-between rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3">
+              <label className="flex items-center justify-between rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
                 <span>
                   <span className="block text-sm font-medium text-slate-800">조교 과거 출석 수정 허용</span>
                   <span className="block text-xs text-slate-500">끄면 당일 출석만 수정 가능합니다.</span>
@@ -284,7 +299,7 @@ export function RulesSettingsManager({
                 onChange={(event) =>
                   setForm((current) => ({ ...current, assistantPastEditDays: event.target.value }))
                 }
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-100"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-100"
                 required
               />
             </label>
@@ -305,7 +320,7 @@ export function RulesSettingsManager({
                   onChange={(event) =>
                     setForm((current) => ({ ...current, warnLevel1: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   required
                 />
               </label>
@@ -318,7 +333,7 @@ export function RulesSettingsManager({
                   onChange={(event) =>
                     setForm((current) => ({ ...current, warnLevel2: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   required
                 />
               </label>
@@ -331,7 +346,7 @@ export function RulesSettingsManager({
                   onChange={(event) =>
                     setForm((current) => ({ ...current, warnInterview: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   required
                 />
               </label>
@@ -344,7 +359,7 @@ export function RulesSettingsManager({
                   onChange={(event) =>
                     setForm((current) => ({ ...current, warnWithdraw: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   required
                 />
               </label>
@@ -363,7 +378,7 @@ export function RulesSettingsManager({
                   onChange={(event) =>
                     setForm((current) => ({ ...current, holidayLimit: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   required
                 />
               </label>
@@ -376,7 +391,7 @@ export function RulesSettingsManager({
                   onChange={(event) =>
                     setForm((current) => ({ ...current, halfDayLimit: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   required
                 />
               </label>
@@ -389,7 +404,7 @@ export function RulesSettingsManager({
                   onChange={(event) =>
                     setForm((current) => ({ ...current, healthLimit: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   required
                 />
               </label>
@@ -402,7 +417,7 @@ export function RulesSettingsManager({
                   onChange={(event) =>
                     setForm((current) => ({ ...current, holidayUnusedPts: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   required
                 />
               </label>
@@ -415,7 +430,51 @@ export function RulesSettingsManager({
                   onChange={(event) =>
                     setForm((current) => ({ ...current, halfDayUnusedPts: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  required
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
+            <h3 className="text-sm font-semibold text-slate-900">개근 상점</h3>
+            <p className="mt-2 text-sm text-slate-600">
+              당일 모든 필수 교시에 출석한 학생에게 자동으로 상점을 부여합니다.
+            </p>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <label className="flex items-center justify-between rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
+                <span>
+                  <span className="block text-sm font-medium text-slate-800">개근 상점 자동 부여</span>
+                  <span className="block text-xs text-slate-500">끄면 개근 시에도 상점이 부여되지 않습니다.</span>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={form.perfectAttendancePtsEnabled}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      perfectAttendancePtsEnabled: event.target.checked,
+                      perfectAttendancePts: event.target.checked
+                        ? current.perfectAttendancePts
+                        : "0",
+                    }))
+                  }
+                  className="h-5 w-5 rounded border-slate-300"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-sm font-medium text-slate-700">개근 시 부여 상점</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  disabled={!form.perfectAttendancePtsEnabled}
+                  value={form.perfectAttendancePtsEnabled ? form.perfectAttendancePts : "0"}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, perfectAttendancePts: event.target.value }))
+                  }
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-100"
                   required
                 />
               </label>
@@ -435,7 +494,7 @@ export function RulesSettingsManager({
                   onChange={(event) =>
                     setForm((current) => ({ ...current, warnMsgLevel1: event.target.value }))
                   }
-                  className="min-h-[110px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  className="min-h-[110px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   required
                 />
               </label>
@@ -446,7 +505,7 @@ export function RulesSettingsManager({
                   onChange={(event) =>
                     setForm((current) => ({ ...current, warnMsgLevel2: event.target.value }))
                   }
-                  className="min-h-[110px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  className="min-h-[110px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   required
                 />
               </label>
@@ -457,7 +516,7 @@ export function RulesSettingsManager({
                   onChange={(event) =>
                     setForm((current) => ({ ...current, warnMsgInterview: event.target.value }))
                   }
-                  className="min-h-[110px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  className="min-h-[110px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   required
                 />
               </label>
@@ -468,7 +527,7 @@ export function RulesSettingsManager({
                   onChange={(event) =>
                     setForm((current) => ({ ...current, warnMsgWithdraw: event.target.value }))
                   }
-                  className="min-h-[110px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  className="min-h-[110px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   required
                 />
               </label>

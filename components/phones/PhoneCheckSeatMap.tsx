@@ -150,7 +150,7 @@ export function PhoneCheckSeatMap({
       )}
 
       {/* 출입구 */}
-      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-center text-sm font-medium text-slate-500">
+      <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-2.5 text-center text-sm font-medium text-slate-500">
         출입구 방향
       </div>
 
@@ -169,7 +169,7 @@ export function PhoneCheckSeatMap({
                 return (
                   <div
                     key={`aisle-${posX}-${posY}`}
-                    className="flex min-h-[108px] items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white text-xs font-semibold tracking-widest text-slate-400"
+                    className="flex min-h-[108px] items-center justify-center rounded-[10px] border border-dashed border-slate-200 bg-white text-xs font-semibold tracking-widest text-slate-400"
                   >
                     복도
                   </div>
@@ -182,7 +182,7 @@ export function PhoneCheckSeatMap({
                 return (
                   <div
                     key={`empty-${posX}-${posY}`}
-                    className="min-h-[108px] rounded-3xl border border-dashed border-slate-100 bg-slate-50"
+                    className="min-h-[108px] rounded-[10px] border border-dashed border-slate-100 bg-slate-50"
                   />
                 );
               }
@@ -208,7 +208,7 @@ export function PhoneCheckSeatMap({
                   onClick={() => {
                     if (student) setModalStudentId(student.id);
                   }}
-                  className={`relative flex min-h-[108px] w-full flex-col justify-between rounded-3xl border p-3 text-left transition hover:opacity-80 ${tone} ${
+                  className={`relative flex min-h-[108px] w-full flex-col justify-between rounded-[10px] border p-3 text-left transition hover:opacity-80 ${tone} ${
                     isSelected ? "ring-2 ring-slate-900 ring-offset-1" : ""
                   } ${!student || !seat.isActive ? "cursor-default" : ""}`}
                 >
@@ -300,7 +300,7 @@ export function PhoneCheckSeatMap({
                       onChange={(e) => onRentalNoteChange(student.id, e.target.value)}
                       placeholder="대여 사유 (예: 인강 수강)"
                       maxLength={200}
-                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs outline-none transition focus:border-slate-400 placeholder:text-slate-400"
+                      className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-2 text-xs outline-none transition focus:border-slate-400 placeholder:text-slate-400"
                     />
                   </div>
                 )}
@@ -353,7 +353,7 @@ export function PhoneCheckSeatMap({
                   placeholder="대여 사유 (예: 인강 수강)"
                   maxLength={200}
                   autoFocus
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400 placeholder:text-slate-400"
+                  className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400 placeholder:text-slate-400"
                 />
                 <button
                   type="button"

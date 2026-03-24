@@ -577,7 +577,7 @@ export function ExamScoreManager({
                 <select
                   value={selectedExamTypeId}
                   onChange={(event) => handleExamTypeChange(event.target.value)}
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 >
                   {examTypes.map((examType) => (
                     <option key={examType.id} value={examType.id}>
@@ -598,7 +598,7 @@ export function ExamScoreManager({
                       handleApplyRound();
                     }
                   }}
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   inputMode="numeric"
                   placeholder="1"
                 />
@@ -608,7 +608,7 @@ export function ExamScoreManager({
                 <button
                   type="button"
                   onClick={handleApplyRound}
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
                 >
                   회차 적용
                 </button>
@@ -620,7 +620,7 @@ export function ExamScoreManager({
                   type="date"
                   value={examDate}
                   onChange={(event) => setExamDate(event.target.value)}
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 />
               </label>
             </div>
@@ -634,7 +634,7 @@ export function ExamScoreManager({
               <textarea
                 value={pasteText}
                 onChange={(event) => setPasteText(event.target.value)}
-                className="mt-3 min-h-[120px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                className="mt-3 min-h-[120px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                 placeholder={"P-2026-001\t80\t76\t72\t84\t88\nP-2026-002\t88\t80\t78\t86\t90"}
               />
               <div className="mt-3 flex justify-end">
@@ -728,7 +728,7 @@ export function ExamScoreManager({
                                     },
                                   }))
                                 }
-                                className="w-24 rounded-xl border border-slate-200-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                                className="w-24 rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                                 inputMode="numeric"
                                 placeholder="-"
                               />
@@ -747,7 +747,7 @@ export function ExamScoreManager({
                                   notes: event.target.value,
                                 }))
                               }
-                              className="w-56 rounded-xl border border-slate-200-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                              className="w-56 rounded-[10px] border border-slate-200-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                               placeholder="메모"
                             />
                           </td>
@@ -773,7 +773,7 @@ export function ExamScoreManager({
           <div className="rounded-[10px] border border-slate-200-slate-200 bg-white/95 px-5 py-4 shadow-[0_18px_44px_rgba(15,23,42,0.18)] backdrop-blur">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-amber-700">
+                <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-[10px] bg-white text-amber-700">
                   <AlertTriangle className="h-5 w-5" />
                 </div>
                 <div>

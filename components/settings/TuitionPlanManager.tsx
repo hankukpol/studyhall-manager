@@ -237,7 +237,7 @@ export function TuitionPlanManager({ divisionSlug, initialPlans }: TuitionPlanMa
             <input
               value={form.name}
               onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               placeholder="예: 4주반"
               required
             />
@@ -251,7 +251,7 @@ export function TuitionPlanManager({ divisionSlug, initialPlans }: TuitionPlanMa
                 min={1}
                 value={form.durationDays}
                 onChange={(event) => setForm((current) => ({ ...current, durationDays: event.target.value }))}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 placeholder="예: 28"
               />
             </label>
@@ -263,7 +263,7 @@ export function TuitionPlanManager({ divisionSlug, initialPlans }: TuitionPlanMa
                 min={0}
                 value={form.amount}
                 onChange={(event) => setForm((current) => ({ ...current, amount: event.target.value }))}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 placeholder="예: 320000"
                 required
               />
@@ -275,12 +275,12 @@ export function TuitionPlanManager({ divisionSlug, initialPlans }: TuitionPlanMa
             <textarea
               value={form.description}
               onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
-              className="min-h-[120px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="min-h-[120px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               placeholder="학생 등록 화면에서 참고할 안내 문구를 적어둘 수 있습니다."
             />
           </label>
 
-          <label className="flex items-center justify-between rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3">
+          <label className="flex items-center justify-between rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
             <span>
               <span className="block text-sm font-medium text-slate-800">사용 여부</span>
               <span className="block text-xs text-slate-500">

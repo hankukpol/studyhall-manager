@@ -681,7 +681,7 @@ export function SeatEditor({
                   onChange={(event) =>
                     setNewRoomForm((current) => ({ ...current, name: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   placeholder="예: 1열람실"
                 />
               </label>
@@ -692,7 +692,7 @@ export function SeatEditor({
                   onChange={(event) =>
                     setNewRoomForm((current) => ({ ...current, aisleColumnsText: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   placeholder="예: 5, 10"
                 />
               </label>
@@ -712,7 +712,7 @@ export function SeatEditor({
                       columns: Number(event.target.value) || 9,
                     }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 />
               </label>
               <label className="block">
@@ -728,12 +728,12 @@ export function SeatEditor({
                       rows: Number(event.target.value) || 6,
                     }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 />
               </label>
             </div>
 
-            <label className="mt-4 flex items-center justify-between rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3">
+            <label className="mt-4 flex items-center justify-between rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
               <span>
                 <span className="block text-sm font-medium text-slate-800">운영 상태</span>
                 <span className="block text-xs text-slate-500">
@@ -801,7 +801,7 @@ export function SeatEditor({
                     <input
                       value={roomForm.name}
                       onChange={(event) => setRoomForm((current) => ({ ...current, name: event.target.value }))}
-                      className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                      className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                     />
                   </label>
                   <label className="block">
@@ -811,7 +811,7 @@ export function SeatEditor({
                       onChange={(event) =>
                         setRoomForm((current) => ({ ...current, aisleColumnsText: event.target.value }))
                       }
-                      className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                      className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                       placeholder="예: 5, 10"
                     />
                   </label>
@@ -831,7 +831,7 @@ export function SeatEditor({
                           columns: Number(event.target.value) || 9,
                         }))
                       }
-                      className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                      className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                     />
                   </label>
                   <label className="block">
@@ -847,12 +847,12 @@ export function SeatEditor({
                           rows: Number(event.target.value) || 6,
                         }))
                       }
-                      className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                      className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                     />
                   </label>
                 </div>
 
-                <label className="mt-4 flex items-center justify-between rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3">
+                <label className="mt-4 flex items-center justify-between rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
                   <span>
                     <span className="block text-sm font-medium text-slate-800">운영 상태</span>
                     <span className="block text-xs text-slate-500">
@@ -978,7 +978,7 @@ export function SeatEditor({
                         <input
                           value={selectedSeat.label}
                           onChange={(event) => updateSelectedSeat({ label: event.target.value })}
-                          className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                          className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                           placeholder="예: A-01"
                         />
                       </label>
@@ -990,7 +990,7 @@ export function SeatEditor({
                           onChange={(event) =>
                             updateSelectedSeat({ assignedStudentId: event.target.value || null })
                           }
-                          className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                          className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                           disabled={!selectedSeat.isActive}
                         >
                           <option value="">배정 안 함</option>
@@ -1023,7 +1023,7 @@ export function SeatEditor({
                         </div>
                       ) : null}
 
-                      <label className="flex items-center justify-between rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3">
+                      <label className="flex items-center justify-between rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
                         <span>
                           <span className="block text-sm font-medium text-slate-800">운영 좌석</span>
                           <span className="block text-xs text-slate-500">

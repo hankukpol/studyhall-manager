@@ -126,7 +126,7 @@ export function WarningStudentsManager({
           <select
             value={stageFilter}
             onChange={(event) => setStageFilter(event.target.value as (typeof stageOptions)[number]["value"])}
-            className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+            className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
           >
             {stageOptions.map((option) => (
               <option key={option.value} value={option.value}>

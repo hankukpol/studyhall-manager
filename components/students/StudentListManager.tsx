@@ -292,7 +292,7 @@ export function StudentListManager({
                 <p className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950">{summary.total}</p>
                 <p className="mt-2 text-xs text-slate-500">현재 지점에 등록된 전체 학생 수</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-50 text-slate-600">
                 <Users className="h-5 w-5" />
               </div>
             </div>
@@ -305,7 +305,7 @@ export function StudentListManager({
                 <p className="mt-3 text-3xl font-extrabold tracking-tight text-emerald-950">{summary.active}</p>
                 <p className="mt-2 text-xs text-emerald-700/80">현재 출결 및 운영 관리 대상</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-white text-emerald-700">
                 <UserCheck className="h-5 w-5" />
               </div>
             </div>
@@ -318,7 +318,7 @@ export function StudentListManager({
                 <p className="mt-3 text-3xl font-extrabold tracking-tight text-amber-950">{summary.warning}</p>
                 <p className="mt-2 text-xs text-amber-700/80">추가 관리가 필요한 학생 수</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-amber-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-white text-amber-700">
                 <ShieldAlert className="h-5 w-5" />
               </div>
             </div>
@@ -331,7 +331,7 @@ export function StudentListManager({
                 <p className="mt-3 text-3xl font-extrabold tracking-tight text-rose-950">{summary.withdrawn}</p>
                 <p className="mt-2 text-xs text-rose-700/80">현재 운영 대상에서 제외된 학생</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-rose-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-white text-rose-700">
                 <UserMinus className="h-5 w-5" />
               </div>
             </div>
@@ -390,7 +390,7 @@ export function StudentListManager({
                 onChange={(event) => {
                   setSearch(event.target.value);
                 }}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white py-3 pl-11 pr-11 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white py-3 pl-11 pr-11 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 placeholder="이름, 수험번호, 직렬 검색"
               />
               {search ? (
@@ -413,7 +413,7 @@ export function StudentListManager({
                 setStatusFilter(event.target.value as StatusFilterValue);
                 updateListQuery({ status: event.target.value });
               }}
-              className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
             >
               <option value="ALL">상태 전체</option>
               {STUDENT_STATUS_OPTIONS.map((option) => (
@@ -429,7 +429,7 @@ export function StudentListManager({
                 setWarningFilter(event.target.value as WarningFilterValue);
                 updateListQuery({ warning: event.target.value });
               }}
-              className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
             >
               <option value="ALL">경고 단계 전체</option>
               {WARNING_STAGE_OPTIONS.map((option) => (
@@ -446,7 +446,7 @@ export function StudentListManager({
                 setSortBy(nextValue);
                 updateListQuery({ sort: nextValue });
               }}
-              className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
             >
               {sortOptions.map((option) => (
                 <option key={option.value} value={option.value}>

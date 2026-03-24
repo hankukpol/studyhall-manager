@@ -81,6 +81,8 @@ export const rulesSettingsSchema = z
     warnMsgLevel2: z.string().trim().min(1, "2차 경고 문자 템플릿을 입력해주세요.").max(1000),
     warnMsgInterview: z.string().trim().min(1, "면담 문자 템플릿을 입력해주세요.").max(1000),
     warnMsgWithdraw: z.string().trim().min(1, "퇴실 문자 템플릿을 입력해주세요.").max(1000),
+    perfectAttendancePtsEnabled: z.boolean().default(false),
+    perfectAttendancePts: z.coerce.number().int().min(0, "개근 상점은 0 이상이어야 합니다.").max(100),
   })
   .superRefine((value, ctx) => {
     if (value.warnLevel1 >= value.warnLevel2) {

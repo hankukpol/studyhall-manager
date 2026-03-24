@@ -594,7 +594,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
         <section className="rounded-[10px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-100 text-slate-700">
                 <CalendarDays className="h-5 w-5" />
               </div>
               <div>
@@ -648,7 +648,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
               className="rounded-[10px] border border-black/5 bg-white p-5 shadow-[0_12px_30px_rgba(18,32,56,0.06)]"
             >
               <div className="flex items-start justify-between">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-900">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-[10px] bg-slate-100 text-slate-900">
                   <Icon className="h-5 w-5" />
                 </div>
                 {card.gauge && (
@@ -694,7 +694,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
                 className={`group rounded-[10px] border ${card.borderClass} bg-white p-5 shadow-[0_12px_30px_rgba(18,32,56,0.05)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(18,32,56,0.08)]`}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${card.iconClass}`}>
+                  <div className={`inline-flex h-12 w-12 items-center justify-center rounded-[10px] ${card.iconClass}`}>
                     <Icon className="h-5 w-5" />
                   </div>
                   <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${card.badgeClass}`}>
@@ -724,7 +724,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
         <section className="flex h-full flex-col rounded-[10px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 text-slate-600">
+              <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-slate-50 text-slate-600">
                 <ClipboardList className="h-4 w-4" />
               </div>
               <h2 className="text-base font-bold text-slate-950">교시별 출결 현황</h2>
@@ -790,7 +790,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
           {/* 반복 지각/결석 */}
           <section className="rounded-[10px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 text-slate-600">
+              <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-slate-50 text-slate-600">
                 <AlertTriangle className="h-4 w-4" />
               </div>
               <h2 className="text-base font-bold text-slate-950">반복 지각 · 결석</h2>
@@ -862,7 +862,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
           {/* 경고 위험 학생 */}
           <section className="rounded-[10px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 text-slate-600">
+              <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-slate-50 text-slate-600">
                 <Phone className="h-4 w-4" />
               </div>
               <h2 className="text-base font-bold text-slate-950">경고 위험 학생</h2>
@@ -926,7 +926,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
         <section className="rounded-[10px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-100 text-slate-700">
                 <CalendarX className="h-5 w-5" />
               </div>
               <div>
@@ -1003,7 +1003,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
         <section className="rounded-[10px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-100 text-slate-700">
                 <UserCheck className="h-5 w-5" />
               </div>
               <div>
@@ -1076,7 +1076,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
         <section className="rounded-[10px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-100 text-slate-700">
                 <Star className="h-5 w-5" />
               </div>
               <div>
@@ -1140,7 +1140,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
         <section className="rounded-[10px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-100 text-slate-700">
                 <CreditCard className="h-5 w-5" />
               </div>
               <div>
@@ -1205,7 +1205,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
         <section className="rounded-[10px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-100 text-slate-700">
                 <DoorOpen className="h-5 w-5" />
               </div>
               <div>
@@ -1267,7 +1267,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
         <section className="rounded-[10px] border border-black/5 bg-white p-5 shadow-[0_16px_40px_rgba(18,32,56,0.06)]">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-100 text-slate-700">
                 <MessageSquare className="h-5 w-5" />
               </div>
               <div>

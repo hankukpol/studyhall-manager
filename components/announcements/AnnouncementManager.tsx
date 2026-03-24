@@ -316,7 +316,7 @@ export function AnnouncementManager({
                 </p>
                 <p className="mt-2 text-xs text-slate-500">지점 공지와 전체 공지를 함께 집계합니다.</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-50 text-slate-600">
                 <Megaphone className="h-5 w-5" />
               </div>
             </div>
@@ -331,7 +331,7 @@ export function AnnouncementManager({
                 </p>
                 <p className="mt-2 text-xs text-amber-700/80">학생 홈 상단에 우선 노출되는 공지입니다.</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-amber-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-white text-amber-700">
                 <Pin className="h-5 w-5" />
               </div>
             </div>
@@ -346,7 +346,7 @@ export function AnnouncementManager({
                 </p>
                 <p className="mt-2 text-xs text-sky-700/80">미래 시점에 자동 공개될 공지입니다.</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-sky-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-white text-sky-700">
                 <Clock3 className="h-5 w-5" />
               </div>
             </div>
@@ -361,7 +361,7 @@ export function AnnouncementManager({
                 </p>
                 <p className="mt-2 text-xs text-emerald-700/80">현재 화면에 노출되는 공지입니다.</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-white text-emerald-700">
                 <Megaphone className="h-5 w-5" />
               </div>
             </div>
@@ -387,7 +387,7 @@ export function AnnouncementManager({
                   <input
                     value={searchKeyword}
                     onChange={(event) => setSearchKeyword(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200-slate-200 bg-white py-2.5 pl-11 pr-4 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white py-2.5 pl-11 pr-4 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                     placeholder="제목, 본문, 지점명 검색"
                   />
                 </label>
@@ -395,7 +395,7 @@ export function AnnouncementManager({
                 <select
                   value={filterScope}
                   onChange={(event) => setFilterScope(event.target.value as "ALL" | AnnouncementScope)}
-                  className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 >
                   <option value="ALL">전체 범위</option>
                   <option value="DIVISION">지점 공지</option>
@@ -405,7 +405,7 @@ export function AnnouncementManager({
                 <select
                   value={visibilityFilter}
                   onChange={(event) => setVisibilityFilter(event.target.value as VisibilityFilter)}
-                  className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 >
                   <option value="ALL">전체 상태</option>
                   <option value="PUBLISHED">공개 중</option>
@@ -662,7 +662,7 @@ export function AnnouncementManager({
         <form onSubmit={handleSubmit} className="space-y-6">
           <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-50 text-slate-600">
                 <Megaphone className="h-5 w-5" />
               </div>
               <div>
@@ -677,7 +677,7 @@ export function AnnouncementManager({
                 <input
                   value={form.title}
                   onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   placeholder="공지 제목을 입력해 주세요."
                   required
                 />
@@ -688,7 +688,7 @@ export function AnnouncementManager({
                 <textarea
                   value={form.content}
                   onChange={(event) => setForm((current) => ({ ...current, content: event.target.value }))}
-                  className="min-h-[220px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="min-h-[220px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   placeholder="학생과 관리자 화면에 노출될 공지 내용을 입력해 주세요."
                   required
                 />
@@ -698,7 +698,7 @@ export function AnnouncementManager({
 
           <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-amber-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-white text-amber-700">
                 <Pin className="h-5 w-5" />
               </div>
               <div>
@@ -715,7 +715,7 @@ export function AnnouncementManager({
                   onChange={(event) =>
                     setForm((current) => ({ ...current, scope: event.target.value as AnnouncementScope }))
                   }
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 >
                   <option value="DIVISION">현재 지점 공지</option>
                   {canManageGlobal ? <option value="GLOBAL">전체 공지</option> : null}
@@ -728,7 +728,7 @@ export function AnnouncementManager({
                   type="datetime-local"
                   value={form.publishedAt}
                   onChange={(event) => setForm((current) => ({ ...current, publishedAt: event.target.value }))}
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 />
               </label>
             </div>

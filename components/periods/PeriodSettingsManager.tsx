@@ -63,14 +63,14 @@ function SortablePeriodRow({
         transform: CSS.Transform.toString(transform),
         transition,
       }}
-      className={`rounded-3xl border px-4 py-4 transition ${
+      className={`rounded-[10px] border px-4 py-4 transition ${
         isDragging ? "border-slate-400 bg-slate-100 shadow-lg" : "border-slate-200 bg-white"
       }`}
     >
       <div className="flex flex-wrap items-start gap-3">
         <button
           type="button"
-          className="mt-1 inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200-slate-200 text-slate-500 touch-none"
+          className="mt-1 inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-slate-200-slate-200 text-slate-500 touch-none"
           aria-label="교시 순서 이동"
           {...attributes}
           {...listeners}
@@ -116,7 +116,7 @@ function SortablePeriodRow({
           <button
             type="button"
             onClick={() => onEdit(period)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200-slate-200 text-slate-600 transition hover:bg-slate-50"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-slate-200-slate-200 text-slate-600 transition hover:bg-slate-50"
             aria-label="교시 수정"
           >
             <Pencil className="h-4 w-4" />
@@ -125,7 +125,7 @@ function SortablePeriodRow({
             type="button"
             onClick={() => onDelete(period.id)}
             disabled={isDeleting}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200-slate-200 text-red-600 transition hover:bg-slate-50 disabled:opacity-60"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-slate-200-slate-200 text-red-600 transition hover:bg-slate-50 disabled:opacity-60"
             aria-label="교시 삭제"
           >
             {isDeleting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
@@ -363,7 +363,7 @@ export function PeriodSettingsManager({
             <input
               value={form.name}
               onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               placeholder="예: 1교시"
               required
             />
@@ -374,7 +374,7 @@ export function PeriodSettingsManager({
             <input
               value={form.label}
               onChange={(event) => setForm((current) => ({ ...current, label: event.target.value }))}
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               placeholder="예: 아침 모의고사"
             />
           </label>
@@ -386,7 +386,7 @@ export function PeriodSettingsManager({
                 type="time"
                 value={form.startTime}
                 onChange={(event) => setForm((current) => ({ ...current, startTime: event.target.value }))}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 required
               />
             </label>
@@ -397,13 +397,13 @@ export function PeriodSettingsManager({
                 type="time"
                 value={form.endTime}
                 onChange={(event) => setForm((current) => ({ ...current, endTime: event.target.value }))}
-                className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 required
               />
             </label>
           </div>
 
-          <label className="flex items-center justify-between rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3">
+          <label className="flex items-center justify-between rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
             <span>
               <span className="block text-sm font-medium text-slate-800">필수 교시</span>
               <span className="block text-xs text-slate-500">출석률 계산 대상 교시로 포함합니다.</span>
@@ -418,7 +418,7 @@ export function PeriodSettingsManager({
             />
           </label>
 
-          <label className="flex items-center justify-between rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3">
+          <label className="flex items-center justify-between rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3">
             <span>
               <span className="block text-sm font-medium text-slate-800">활성 상태</span>
               <span className="block text-xs text-slate-500">비활성 교시는 출석 체크 대상에서 제외됩니다.</span>

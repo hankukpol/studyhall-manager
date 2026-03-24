@@ -49,11 +49,11 @@ export default async function HomePage() {
             <div className="rounded-[10px] border border-slate-200-slate-200 bg-slate-950 p-6 text-white">
               <p className="text-sm uppercase tracking-[0.24em] text-white/55">시스템 개요</p>
               <div className="mt-5 space-y-4">
-                <div className="rounded-2xl border border-slate-200-white/10 bg-white/5 p-4">
+                <div className="rounded-[10px] border border-slate-200-white/10 bg-white/5 p-4">
                   <p className="text-sm text-white/70">핵심 원칙</p>
                   <p className="mt-2 text-lg font-bold">직렬 완전 분리 · 설정 하드코딩 금지</p>
                 </div>
-                <div className="rounded-2xl border border-slate-200-white/10 bg-white/5 p-4">
+                <div className="rounded-[10px] border border-slate-200-white/10 bg-white/5 p-4">
                   <p className="text-sm text-white/70">운영 환경</p>
                   <p className="mt-2 text-lg font-bold">Vercel + Supabase 배포</p>
                 </div>
@@ -80,7 +80,7 @@ export default async function HomePage() {
                   }}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
+                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-[10px] bg-white/15">
                       <Icon className="h-6 w-6" />
                     </div>
                     <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />

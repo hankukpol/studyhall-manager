@@ -329,7 +329,7 @@ export function StudentForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {!showSeatSectionOnly && (<><section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">
+          <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-50 text-slate-600">
             <UserRound className="h-5 w-5" />
           </div>
           <div>
@@ -344,7 +344,7 @@ export function StudentForm({
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               placeholder="예: 김지훈"
               autoComplete="name"
               disabled={!canEdit || isSaving}
@@ -357,7 +357,7 @@ export function StudentForm({
             <input
               value={studentNumber}
               onChange={(event) => setStudentNumber(event.target.value)}
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               placeholder="예: P-2026-001"
               autoComplete="off"
               disabled={!canEdit || isSaving}
@@ -371,7 +371,7 @@ export function StudentForm({
               list={studyTrackListId}
               value={studyTrack}
               onChange={(event) => setStudyTrack(event.target.value)}
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               placeholder="예: 경찰"
               disabled={!canEdit || isSaving}
             />
@@ -390,7 +390,7 @@ export function StudentForm({
             <input
               value={phone}
               onChange={(event) => setPhone(event.target.value)}
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               placeholder="예: 010-1234-5678"
               autoComplete="tel"
               disabled={!canEdit || isSaving}
@@ -401,7 +401,7 @@ export function StudentForm({
 
       <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-amber-600">
+          <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-white text-amber-600">
             <CreditCard className="h-5 w-5" />
           </div>
           <div>
@@ -459,7 +459,7 @@ export function StudentForm({
             <select
               value={tuitionPlanId}
               onChange={(event) => applyTuitionPlan(event.target.value)}
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               disabled={!canEdit || isSaving}
             >
               <option value="">직접 입력</option>
@@ -478,7 +478,7 @@ export function StudentForm({
               min={0}
               value={tuitionAmount}
               onChange={(event) => setTuitionAmount(event.target.value)}
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               placeholder="예: 320000"
               disabled={!canEdit || isSaving}
             />
@@ -508,7 +508,7 @@ export function StudentForm({
                   setCourseEndDate(calculateCourseEndDate(nextStartDate, plan.durationDays) ?? "");
                 }
               }}
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               disabled={!canEdit || isSaving}
             />
           </label>
@@ -519,7 +519,7 @@ export function StudentForm({
               type="date"
               value={courseEndDate}
               onChange={(event) => setCourseEndDate(event.target.value)}
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               disabled={!canEdit || isSaving}
             />
           </label>
@@ -532,7 +532,7 @@ export function StudentForm({
 
       {!hideSeatSection && <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-sky-600">
+          <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-white text-sky-600">
             <MapPinned className="h-5 w-5" />
           </div>
           <div>
@@ -557,7 +557,7 @@ export function StudentForm({
                   setSelectedRoomId(nextSeat.studyRoomId);
                 }
               }}
-              className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               disabled={!canEdit || isSaving}
             >
               <option value="">미배정</option>
@@ -669,7 +669,7 @@ export function StudentForm({
           {showAdvancedFields ? (
             <>
               {isWithdrawn ? (
-                <div className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm leading-6 text-rose-700">
+                <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm leading-6 text-rose-700">
                   퇴실 처리된 학생은 상태를 다시 변경할 수 없습니다. 퇴실 사유와 이력은 상단 상세 정보에서 확인할 수 있습니다.
                 </div>
               ) : (
@@ -680,7 +680,7 @@ export function StudentForm({
                     onChange={(event) =>
                       setStatus(event.target.value as (typeof editableStatusOptions)[number]["value"])
                     }
-                    className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                     disabled={!canEdit || isSaving}
                   >
                     {editableStatusOptions.map((option) => (
@@ -697,14 +697,14 @@ export function StudentForm({
                 <textarea
                   value={memo}
                   onChange={(event) => setMemo(event.target.value)}
-                  className="min-h-[120px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="min-h-[120px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   placeholder="상담 메모나 특이사항을 기록합니다."
                   disabled={!canEdit || isSaving}
                 />
               </label>
             </>
           ) : (
-            <div className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-600">
+            <div className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-600">
               등록 후 상세 페이지에서 상태 변경, 메모 추가, 좌석 이동까지 이어서 관리할 수 있습니다.
             </div>
           )}

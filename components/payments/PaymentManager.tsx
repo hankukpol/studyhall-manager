@@ -331,7 +331,7 @@ export function PaymentManager({
                 <p className="mt-3 text-3xl font-extrabold tracking-tight text-emerald-950">{paidCount}</p>
                 <p className="mt-2 text-xs text-emerald-700/80">{formatPaymentMonth(summaryMonth)} 기준 납부 완료 학생</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-white text-emerald-700">
                 <WalletCards className="h-5 w-5" />
               </div>
             </div>
@@ -344,7 +344,7 @@ export function PaymentManager({
                 <p className="mt-3 text-3xl font-extrabold tracking-tight text-amber-950">{unpaidCount}</p>
                 <p className="mt-2 text-xs text-amber-700/80">아직 납부 이력이 없는 학생</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-amber-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-white text-amber-700">
                 <CreditCard className="h-5 w-5" />
               </div>
             </div>
@@ -357,7 +357,7 @@ export function PaymentManager({
                 <p className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950">{formatCurrency(monthlyCollectedAmount)}</p>
                 <p className="mt-2 text-xs text-slate-500">{selectedCategoryName} 기준 누적 금액</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-50 text-slate-600">
                 <CircleDollarSign className="h-5 w-5" />
               </div>
             </div>
@@ -370,7 +370,7 @@ export function PaymentManager({
                 <p className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950">{historyRows.length}</p>
                 <p className="mt-2 text-xs text-slate-500">현재 필터 기준 조회 결과</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-100 text-slate-700">
                 <Search className="h-5 w-5" />
               </div>
             </div>
@@ -434,7 +434,7 @@ export function PaymentManager({
                   <select
                     value={summaryPaymentTypeId}
                     onChange={(event) => setSummaryPaymentTypeId(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   >
                     {paymentCategories.map((category) => (
                       <option key={category.id} value={category.id}>
@@ -450,7 +450,7 @@ export function PaymentManager({
                     type="month"
                     value={summaryMonth}
                     onChange={(event) => setSummaryMonth(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   />
                 </label>
 
@@ -459,7 +459,7 @@ export function PaymentManager({
                   <select
                     value={summaryStatusFilter}
                     onChange={(event) => setSummaryStatusFilter(event.target.value as StatusFilter)}
-                    className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   >
                     <option value="ALL">전체</option>
                     <option value="PAID">완납</option>
@@ -527,7 +527,7 @@ export function PaymentManager({
                   <input
                     value={historySearch}
                     onChange={(event) => setHistorySearch(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                     placeholder="학생명, 수험번호, 수납 유형 검색"
                   />
                 </label>
@@ -547,7 +547,7 @@ export function PaymentManager({
                   <select
                     value={historyPaymentTypeId}
                     onChange={(event) => setHistoryPaymentTypeId(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   >
                     <option value="">전체 유형</option>
                     {paymentCategories.map((category) => (
@@ -564,7 +564,7 @@ export function PaymentManager({
                     type="date"
                     value={historyDateFrom}
                     onChange={(event) => setHistoryDateFrom(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   />
                 </label>
 
@@ -574,7 +574,7 @@ export function PaymentManager({
                     type="date"
                     value={historyDateTo}
                     onChange={(event) => setHistoryDateTo(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   />
                 </label>
               </div>
@@ -623,7 +623,7 @@ export function PaymentManager({
                           <button
                             type="button"
                             onClick={() => startEdit(payment)}
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200-slate-200 text-slate-600 transition hover:bg-white"
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-slate-200-slate-200 text-slate-600 transition hover:bg-white"
                             aria-label="수납 수정"
                           >
                             <Pencil className="h-4 w-4" />
@@ -632,7 +632,7 @@ export function PaymentManager({
                             type="button"
                             onClick={() => void handleDelete(payment.id)}
                             disabled={deletingId === payment.id}
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200-slate-200 text-rose-600 transition hover:bg-white disabled:opacity-60"
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-slate-200-slate-200 text-rose-600 transition hover:bg-white disabled:opacity-60"
                             aria-label="수납 삭제"
                           >
                             {deletingId === payment.id ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
@@ -663,7 +663,7 @@ export function PaymentManager({
         <form onSubmit={handleSubmit} className="space-y-6">
           <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-50 text-slate-600">
                 <WalletCards className="h-5 w-5" />
               </div>
               <div>
@@ -689,7 +689,7 @@ export function PaymentManager({
                   <select
                     value={form.paymentTypeId}
                     onChange={(event) => setForm((current) => ({ ...current, paymentTypeId: event.target.value }))}
-                    className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                     required
                   >
                     {paymentCategories.map((category) => (
@@ -706,7 +706,7 @@ export function PaymentManager({
                     type="date"
                     value={form.paymentDate}
                     onChange={(event) => setForm((current) => ({ ...current, paymentDate: event.target.value }))}
-                    className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                     required
                   />
                 </label>
@@ -729,7 +729,7 @@ export function PaymentManager({
           {tuitionPlans.length > 0 && (
             <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+                <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-amber-50 text-amber-700">
                   <CreditCard className="h-5 w-5" />
                 </div>
                 <div>
@@ -750,7 +750,7 @@ export function PaymentManager({
                         notes: plan.name,
                       }));
                     }}
-                    className={`rounded-2xl border p-4 text-left transition ${
+                    className={`rounded-[10px] border p-4 text-left transition ${
                       selectedPlanId === plan.id
                         ? "border-slate-900 bg-slate-900 text-white"
                         : "border-slate-200 bg-white hover:border-slate-400"
@@ -778,7 +778,7 @@ export function PaymentManager({
 
           <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-white text-emerald-700">
                 <CircleDollarSign className="h-5 w-5" />
               </div>
               <div>
@@ -793,7 +793,7 @@ export function PaymentManager({
                 <input
                   value={form.amount}
                   onChange={(event) => setForm((current) => ({ ...current, amount: event.target.value }))}
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   inputMode="numeric"
                   placeholder="예: 250000"
                   required
@@ -805,7 +805,7 @@ export function PaymentManager({
                 <input
                   value={form.method}
                   onChange={(event) => setForm((current) => ({ ...current, method: event.target.value }))}
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   placeholder="예: 현금, 카드, 계좌이체"
                 />
               </label>
@@ -816,7 +816,7 @@ export function PaymentManager({
               <textarea
                 value={form.notes}
                 onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))}
-                className="min-h-[140px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="min-h-[140px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 placeholder="수납 관련 메모를 기록합니다."
               />
             </label>

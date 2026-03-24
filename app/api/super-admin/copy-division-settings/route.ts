@@ -162,6 +162,8 @@ export async function POST(request: NextRequest) {
             healthLimit: sourceSettings.healthLimit,
             holidayUnusedPts: sourceSettings.holidayUnusedPts,
             halfDayUnusedPts: sourceSettings.halfDayUnusedPts,
+            perfectAttendancePtsEnabled: sourceSettings.perfectAttendancePtsEnabled,
+            perfectAttendancePts: sourceSettings.perfectAttendancePts,
             operatingDays: sourceSettings.operatingDays as never,
           },
           create: {
@@ -176,6 +178,8 @@ export async function POST(request: NextRequest) {
             healthLimit: sourceSettings.healthLimit,
             holidayUnusedPts: sourceSettings.holidayUnusedPts,
             halfDayUnusedPts: sourceSettings.halfDayUnusedPts,
+            perfectAttendancePtsEnabled: sourceSettings.perfectAttendancePtsEnabled,
+            perfectAttendancePts: sourceSettings.perfectAttendancePts,
             operatingDays: sourceSettings.operatingDays as never,
           },
         });

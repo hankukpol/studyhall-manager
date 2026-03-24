@@ -52,6 +52,8 @@ export type MockDivisionSettings = {
   healthLimit: number;
   holidayUnusedPts: number;
   halfDayUnusedPts: number;
+  perfectAttendancePtsEnabled: boolean;
+  perfectAttendancePts: number;
   operatingDays: Record<string, boolean>;
   studyTracks: string[];
   updatedAt: Date;
@@ -99,6 +101,8 @@ function createDefaultSettings(divisionId: string, divisionSlug: string): MockDi
     healthLimit: 1,
     holidayUnusedPts: 5,
     halfDayUnusedPts: 2,
+    perfectAttendancePtsEnabled: false,
+    perfectAttendancePts: 0,
     operatingDays: {
       mon: true,
       tue: true,

@@ -439,7 +439,7 @@ export const LeaveManager = memo(function LeaveManager({
                     type="month"
                     value={summaryMonth}
                     onChange={(event) => setSummaryMonth(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                    className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                   />
                 </label>
               </div>
@@ -478,7 +478,7 @@ export const LeaveManager = memo(function LeaveManager({
                       setSettlementMonth(event.target.value);
                       setSettlementPreview(null);
                     }}
-                    className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                    className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   />
                   <button
                     type="button"
@@ -556,7 +556,7 @@ export const LeaveManager = memo(function LeaveManager({
                 type="month"
                 value={historyMonth}
                 onChange={(event) => setHistoryMonth(event.target.value)}
-                className="rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               />
             </div>
           </div>
@@ -613,7 +613,7 @@ export const LeaveManager = memo(function LeaveManager({
         <form onSubmit={handleSubmit} className="space-y-6">
           <section className="rounded-[10px] border border-slate-200-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-slate-50 text-slate-600">
                 <CalendarClock className="h-5 w-5" />
               </div>
               <div>
@@ -642,7 +642,7 @@ export const LeaveManager = memo(function LeaveManager({
                 <select
                   value={form.type}
                   onChange={(event) => setForm((current) => ({ ...current, type: event.target.value as LeaveTypeValue }))}
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 >
                   {LEAVE_TYPE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -658,7 +658,7 @@ export const LeaveManager = memo(function LeaveManager({
                   type="date"
                   value={form.date}
                   onChange={(event) => setForm((current) => ({ ...current, date: event.target.value }))}
-                  className="w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   required
                 />
               </label>
@@ -669,7 +669,7 @@ export const LeaveManager = memo(function LeaveManager({
               <textarea
                 value={form.reason}
                 onChange={(event) => setForm((current) => ({ ...current, reason: event.target.value }))}
-                className="min-h-[140px] w-full rounded-2xl border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="min-h-[140px] w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                 placeholder="사유를 입력해 주세요."
               />
             </label>

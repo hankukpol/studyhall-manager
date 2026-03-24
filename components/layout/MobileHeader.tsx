@@ -24,7 +24,7 @@ export function MobileHeader({
           <button
             type="button"
             onClick={onMenuClick}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200-black/10 text-slate-700 transition hover:bg-slate-50"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-slate-200-black/10 text-slate-700 transition hover:bg-slate-50"
             aria-label="메뉴 열기"
           >
             <Menu className="h-5 w-5" />
@@ -41,7 +41,7 @@ export function MobileHeader({
           type="button"
           onClick={onLogout}
           disabled={isLoggingOut}
-          className="inline-flex h-10 items-center gap-2 rounded-2xl border border-slate-200-black/10 px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+          className="inline-flex h-10 items-center gap-2 rounded-[10px] border border-slate-200-black/10 px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
         >
           <LogOut className="h-4 w-4" />
           로그아웃
