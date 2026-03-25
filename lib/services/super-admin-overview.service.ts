@@ -194,7 +194,7 @@ async function getDivisionSummary(
   const expiringCount = allActiveStudents.filter((s) => {
     const diff = getDayDiff(todayDate, s.courseEndDate);
     if (diff === null) return false;
-    return diff >= -3 && diff <= 14;
+    return diff >= -3 && diff <= settings.expirationWarningDays;
   }).length;
 
   const urgentExpiringCount = allActiveStudents.filter((s) => {

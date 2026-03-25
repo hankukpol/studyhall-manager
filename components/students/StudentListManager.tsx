@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
+  CalendarX,
   MapPin,
   Plus,
   RefreshCcw,
@@ -44,6 +45,7 @@ const sortOptions = [
   { value: "name", label: "이름순" },
   { value: "netPoints", label: "벌점순" },
   { value: "createdAt", label: "최근 등록순" },
+  { value: "courseEndDate", label: "만료임박순" },
 ] as const;
 
 type StatusFilterValue = "ALL" | (typeof STUDENT_STATUS_OPTIONS)[number]["value"];
@@ -106,6 +108,7 @@ export function StudentListManager({
     getValidQueryValue(searchParams.get("warning"), warningFilterValues, "ALL"),
   );
   const [trackFilter, setTrackFilter] = useState(() => searchParams.get("track") ?? "ALL");
+  const [expiringFilter, setExpiringFilter] = useState(() => searchParams.get("expiring") === "true");
   const [sortBy, setSortBy] = useState<(typeof sortOptions)[number]["value"]>(() =>
     getValidQueryValue(searchParams.get("sort"), sortFilterValues, "studentNumber"),
   );
@@ -129,8 +132,15 @@ export function StudentListManager({
       const matchesStatus = statusFilter === "ALL" || student.status === statusFilter;
       const matchesWarning = warningFilter === "ALL" || student.warningStage === warningFilter;
       const matchesTrack = trackFilter === "ALL" || student.studyTrack === trackFilter;
+      const matchesExpiring = !expiringFilter || (() => {
+        if (!student.courseEndDate) return false;
+        const endMs = new Date(student.courseEndDate + "T00:00:00Z").getTime();
+        const nowMs = new Date(new Date().toISOString().slice(0, 10) + "T00:00:00Z").getTime();
+        const days = Math.round((endMs - nowMs) / 86400000);
+        return days >= -3 && days <= 30;
+      })();
 
-      return matchesSearch && matchesStatus && matchesWarning && matchesTrack;
+      return matchesSearch && matchesStatus && matchesWarning && matchesTrack && matchesExpiring;
     });
 
     const sorted = [...matched];
@@ -142,13 +152,18 @@ export function StudentListManager({
           return right.netPoints - left.netPoints || left.name.localeCompare(right.name, "ko");
         case "createdAt":
           return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+        case "courseEndDate": {
+          const leftEnd = left.courseEndDate ?? "9999-12-31";
+          const rightEnd = right.courseEndDate ?? "9999-12-31";
+          return leftEnd.localeCompare(rightEnd) || left.name.localeCompare(right.name, "ko");
+        }
         default:
           return left.studentNumber.localeCompare(right.studentNumber, "ko");
       }
     });
 
     return sorted;
-  }, [deferredSearch, initialStudents, sortBy, statusFilter, warningFilter, trackFilter]);
+  }, [deferredSearch, initialStudents, sortBy, statusFilter, warningFilter, trackFilter, expiringFilter]);
 
   const summary = useMemo(
     () =>
@@ -180,6 +195,7 @@ export function StudentListManager({
     statusFilter !== "ALL",
     warningFilter !== "ALL",
     trackFilter !== "ALL",
+    expiringFilter,
   ].filter(Boolean).length;
 
   const updateListQuery = useCallback(
@@ -190,6 +206,7 @@ export function StudentListManager({
       track?: string | null;
       sort?: string | null;
       panel?: string | null;
+      expiring?: string | null;
     }) => {
       const nextParams = new URLSearchParams(searchParams.toString());
 
@@ -219,6 +236,7 @@ export function StudentListManager({
     const nextWarning = getValidQueryValue(searchParams.get("warning"), warningFilterValues, "ALL");
     const nextTrack = searchParams.get("track") ?? "ALL";
     const nextSort = getValidQueryValue(searchParams.get("sort"), sortFilterValues, "studentNumber");
+    const nextExpiring = searchParams.get("expiring") === "true";
 
     if (search !== nextSearch) {
       setSearch(nextSearch);
@@ -235,7 +253,10 @@ export function StudentListManager({
     if (sortBy !== nextSort) {
       setSortBy(nextSort);
     }
-  }, [searchParams, search, sortBy, statusFilter, trackFilter, warningFilter]);
+    if (expiringFilter !== nextExpiring) {
+      setExpiringFilter(nextExpiring);
+    }
+  }, [searchParams, search, sortBy, statusFilter, trackFilter, warningFilter, expiringFilter]);
 
   useEffect(() => {
     const currentQuery = searchParams.get("q") ?? "";
@@ -271,6 +292,7 @@ export function StudentListManager({
     setStatusFilter("ALL");
     setWarningFilter("ALL");
     setTrackFilter("ALL");
+    setExpiringFilter(false);
     setSortBy("studentNumber");
     updateListQuery({
       q: null,
@@ -278,6 +300,7 @@ export function StudentListManager({
       warning: null,
       track: null,
       sort: null,
+      expiring: null,
     });
   }
 
@@ -457,7 +480,26 @@ export function StudentListManager({
           </div>
 
           <div className="mt-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">직렬 빠른 필터</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">빠른 필터</p>
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const next = !expiringFilter;
+                  setExpiringFilter(next);
+                  updateListQuery({ expiring: next ? "true" : null });
+                }}
+                className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition ${
+                  expiringFilter
+                    ? "bg-rose-600 text-white"
+                    : "border border-slate-200-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                <CalendarX className="h-3.5 w-3.5" />
+                수강 만료 임박
+              </button>
+            </div>
+            <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">직렬 필터</p>
             <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
               <button
                 type="button"
@@ -510,6 +552,11 @@ export function StudentListManager({
               {trackFilter !== "ALL" ? (
                 <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
                   {trackFilter}
+                </span>
+              ) : null}
+              {expiringFilter ? (
+                <span className="rounded-full bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700">
+                  만료 임박
                 </span>
               ) : null}
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
 import Link from "next/link";
 import {
@@ -21,6 +21,7 @@ import type { AttendanceSnapshot } from "@/lib/services/attendance.service";
 import type { PaymentCategoryItem, PaymentItem } from "@/lib/services/payment.service";
 import type { PointRuleItem } from "@/lib/services/point.service";
 import type { SeatLayout, SeatMapSeat, StudyRoomItem } from "@/lib/services/seat.service";
+import type { StudentListItem } from "@/lib/services/student.service";
 import type { TuitionPlanItem } from "@/lib/services/tuition-plan.service";
 import {
   formatStudyTrackLabel,
@@ -46,6 +47,7 @@ type SeatStatusBoardProps = {
   divisionSlug: string;
   initialRooms: StudyRoomItem[];
   initialLayout: SeatLayout;
+  initialStudents: StudentListItem[];
   todaySnapshot: AttendanceSnapshot;
 };
 
@@ -101,20 +103,33 @@ function getSeatToneClasses(
   if (!hasStudent) return "border-slate-200 bg-white text-slate-500";
   switch (status) {
     case "PRESENT":
-      return "border-slate-200 bg-white text-emerald-600 font-medium";
+      return "border-slate-200 text-white font-medium";
     case "TARDY":
-      return "border-slate-200 bg-white text-amber-600 font-medium";
+      return "border-slate-200 text-white font-medium";
     case "ABSENT":
-      return "border-slate-200 bg-white text-rose-600 font-medium";
+      return "border-slate-200 text-white font-medium";
     case "EXCUSED":
     case "HOLIDAY":
     case "HALF_HOLIDAY":
-      return "border-slate-200 bg-white text-blue-600 font-medium";
+      return "border-slate-200 text-white font-medium";
     case "UNPROCESSED":
-      return "border-slate-200 bg-slate-50 text-slate-500";
+      return "border-slate-200 text-white font-medium";
     default:
-      return "border-slate-200 bg-slate-50 text-slate-500";
+      return "border-slate-200 text-white font-medium";
   }
+}
+
+function getAssignedSeatStyle(
+  seat: Pick<SeatMapSeat, "isActive" | "assignedStudent">,
+): CSSProperties | undefined {
+  if (!seat.isActive || !seat.assignedStudent) {
+    return undefined;
+  }
+
+  return {
+    backgroundColor: "rgb(var(--division-color-rgb) / 0.8)",
+    borderColor: "rgb(var(--division-color-rgb) / 0.95)",
+  };
 }
 
 function computeDayStatusFromStudentRecords(
@@ -148,15 +163,20 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
   divisionSlug,
   initialRooms,
   initialLayout,
+  initialStudents,
   todaySnapshot,
 }: SeatStatusBoardProps) {
   const [rooms] = useState<StudyRoomItem[]>(initialRooms);
   const [layout, setLayout] = useState<SeatLayout>(initialLayout);
+  const [students, setStudents] = useState<StudentListItem[]>(initialStudents);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(
     initialLayout.room?.id ?? null,
   );
   const [loadingRoomId, setLoadingRoomId] = useState<string | null>(null);
   const [panelInfo, setPanelInfo] = useState<SelectedSeatInfo | null>(null);
+  const [assignSeat, setAssignSeat] = useState<SeatMapSeat | null>(null);
+  const [assignSearchQuery, setAssignSearchQuery] = useState("");
+  const [assigningStudentId, setAssigningStudentId] = useState<string | null>(null);
   const [panelTab, setPanelTab] = useState<PanelTab>("info");
 
   // 검색
@@ -169,6 +189,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
     fromSeat: SeatMapSeat;
     toSeat: SeatMapSeat;
   } | null>(null);
+  const suppressSeatClickUntilRef = useRef(0);
 
   // 자습실 간 이동
   const [targetRoomId, setTargetRoomId] = useState<string | null>(null);
@@ -192,7 +213,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
     new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" }).slice(0, 10),
   );
   const [paymentAmount, setPaymentAmount] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("계좌이체");
+  const [paymentMethod, setPaymentMethod] = useState("카드");
   const [paymentNotes, setPaymentNotes] = useState("");
   const [isSavingPayment, setIsSavingPayment] = useState(false);
   const [fetchedPayments, setFetchedPayments] = useState<PaymentItem[]>([]);
@@ -207,6 +228,40 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
   const [isSavingPoints, setIsSavingPoints] = useState(false);
 
   const selectedRule = pointRules.find((r) => r.id === pointRuleId) ?? null;
+  const assignableStudents = useMemo(
+    () => students.filter((student) => student.status === "ACTIVE" || student.status === "ON_LEAVE"),
+    [students],
+  );
+  const filteredAssignableStudents = useMemo(() => {
+    const query = assignSearchQuery.trim().toLowerCase();
+
+    return [...assignableStudents]
+      .filter((student) => {
+        if (!query) {
+          return true;
+        }
+
+        return [
+          student.name,
+          student.studentNumber,
+          student.seatDisplay ?? "",
+          formatStudyTrackLabel(student.studyTrack),
+        ].some((value) => value.toLowerCase().includes(query));
+      })
+      .sort((left, right) => {
+        const leftAssigned = Boolean(left.seatLabel);
+        const rightAssigned = Boolean(right.seatLabel);
+
+        if (leftAssigned !== rightAssigned) {
+          return leftAssigned ? 1 : -1;
+        }
+
+        return (
+          left.name.localeCompare(right.name, "ko") ||
+          left.studentNumber.localeCompare(right.studentNumber, "ko")
+        );
+      });
+  }, [assignSearchQuery, assignableStudents]);
 
   const today = todaySnapshot.date;
   const activePeriods = useMemo(
@@ -264,6 +319,17 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
         assignedSeats.length > 0 ? Math.round((presentCount / assignedSeats.length) * 100) : 0,
     };
   }, [dayStatusByStudentId, layout.seats]);
+
+  async function refreshStudents() {
+    const response = await fetch(`/api/${divisionSlug}/students`, { cache: "no-store" });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error ?? "학생 목록을 불러오지 못했습니다.");
+    }
+
+    setStudents((data.students as StudentListItem[]) ?? []);
+  }
 
   useEffect(() => {
     if (panelTab !== "payment" || (paymentCategories.length > 0 && tuitionPlans.length > 0)) {
@@ -369,6 +435,8 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
           setLayout(data.layout as SeatLayout);
           setSelectedRoomId(roomId);
           setPanelInfo(null);
+          setAssignSeat(null);
+          setAssignSearchQuery("");
         }
       } finally {
         setLoadingRoomId(null);
@@ -435,6 +503,37 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
       toast.error(error instanceof Error ? error.message : "좌석 이동에 실패했습니다.");
     } finally {
       setIsMovingToRoom(false);
+    }
+  }
+
+  async function handleAssignStudentToSeat(student: StudentListItem) {
+    if (!assignSeat) {
+      return;
+    }
+
+    setAssigningStudentId(student.id);
+
+    try {
+      const res = await fetch(`/api/${divisionSlug}/seats/${assignSeat.id}/assign`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ studentId: student.id }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error ?? "좌석 배정에 실패했습니다.");
+      }
+
+      setLayout(data.layout as SeatLayout);
+      await refreshStudents().catch(() => undefined);
+      toast.success(`${student.name} 학생을 ${assignSeat.label}에 배정했습니다.`);
+      setAssignSeat(null);
+      setAssignSearchQuery("");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "좌석 배정에 실패했습니다.");
+    } finally {
+      setAssigningStudentId(null);
     }
   }
 
@@ -535,12 +634,17 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
   // 패널 닫기 시 초기화
   function closePanel() {
     setPanelInfo(null);
+    setAssignSeat(null);
+    setAssignSearchQuery("");
+    setAssigningStudentId(null);
+    setDraggingFromSeatId(null);
     setPanelTab("info");
     setTargetRoomId(null);
     setTargetLayout(null);
     setSelectedPlanId("");
     setPaymentTypeId("");
     setPaymentAmount("");
+    setPaymentMethod("카드");
     setPaymentNotes("");
     setFetchedPayments([]);
     setPointRuleId("");
@@ -551,10 +655,19 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
   // 좌석 클릭 → 패널 열기
   const handleSeatClick = useCallback(
     (seat: SeatMapSeat) => {
-      if (!seat.assignedStudent) {
-        setPanelInfo(null);
+      if (!seat.isActive) {
         return;
       }
+
+      if (!seat.assignedStudent) {
+        setPanelInfo(null);
+        setAssignSeat(seat);
+        setAssignSearchQuery("");
+        return;
+      }
+
+      setAssignSeat(null);
+      setAssignSearchQuery("");
       const studentId = seat.assignedStudent.id;
       const dayStatus = dayStatusByStudentId.get(studentId) ?? null;
       const studentRecords = recordsByStudentId.get(studentId) ?? [];
@@ -575,6 +688,10 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
     },
     [activePeriods, dayStatusByStudentId, recordsByStudentId],
   );
+
+  const suppressSeatClick = useCallback((durationMs = 250) => {
+    suppressSeatClickUntilRef.current = Date.now() + durationMs;
+  }, []);
 
   // 좌석 그리드 렌더링
   const { columns, rows, aisleColumns } = layout;
@@ -626,7 +743,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                 className={`relative rounded-t-xl px-4 py-2 text-sm font-medium transition ${
                   selectedRoomId === room.id
                     ? "bg-[var(--division-color)] text-white"
-                    : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-700"
                 }`}
               >
                 {room.name}
@@ -722,7 +839,8 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                   const student = seat.assignedStudent;
                   const dayStatus = student ? dayStatusByStudentId.get(student.id) ?? null : null;
                   const tone = getSeatToneClasses(dayStatus, !!student, seat.isActive);
-                  const isSelected = panelInfo?.seat.id === seat.id;
+                  const assignedSeatStyle = getAssignedSeatStyle(seat);
+                  const isSelected = panelInfo?.seat.id === seat.id || assignSeat?.id === seat.id;
                   const canDrag =
                     seat.isActive &&
                     (student?.status === "ACTIVE" || student?.status === "ON_LEAVE");
@@ -748,14 +866,28 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                       type="button"
                       draggable={canDrag}
                       onClick={() => {
-                        if (!draggingFromSeatId) handleSeatClick(seat);
+                        const shouldSuppressClick = Date.now() < suppressSeatClickUntilRef.current;
+
+                        if (draggingFromSeatId) {
+                          setDraggingFromSeatId(null);
+                        }
+
+                        if (shouldSuppressClick) {
+                          return;
+                        }
+
+                        handleSeatClick(seat);
                       }}
                       onDragStart={(e) => {
                         e.dataTransfer.setData("text/plain", seat.id);
                         e.dataTransfer.effectAllowed = "move";
                         setDraggingFromSeatId(seat.id);
+                        suppressSeatClick();
                       }}
-                      onDragEnd={() => setDraggingFromSeatId(null)}
+                      onDragEnd={() => {
+                        setDraggingFromSeatId(null);
+                        suppressSeatClick();
+                      }}
                       onDragOver={(e) => {
                         if (seat.isActive && !student) e.preventDefault();
                       }}
@@ -768,6 +900,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                         if (!fromSeat) return;
                         setPendingMove({ fromSeat, toSeat: seat });
                         setDraggingFromSeatId(null);
+                        suppressSeatClick();
                       }}
                       className={`relative flex min-h-[108px] w-full flex-col justify-between rounded-[10px] border p-3 text-left transition hover:opacity-80 ${tone} ${
                         isSelected ? "ring-2 ring-slate-900 ring-offset-1" : ""
@@ -776,6 +909,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                           ? "border-slate-200 bg-white ring-2 ring-blue-400 ring-offset-1"
                           : ""
                       } ${isDimmed ? "opacity-25" : ""}`}
+                      style={assignedSeatStyle}
                     >
                       {/* 이동 중 로딩 오버레이 */}
                       {isMoving && (
@@ -787,7 +921,7 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
                       {/* 상단: 좌석번호 + 상태 */}
                       <div className="flex items-start justify-between gap-1">
                         <span className="text-xs font-semibold tracking-widest">
-                          {seat.label}
+                          {seat.isActive ? seat.label : ""}
                         </span>
                         {student && dayStatus && (
                           <span
@@ -837,6 +971,75 @@ export const SeatStatusBoard = memo(function SeatStatusBoard({
         onConfirm={() => void handleConfirmMove()}
         onCancel={() => setPendingMove(null)}
       />
+
+      <Modal
+        open={assignSeat !== null}
+        title="공석 좌석 배정"
+        badge="좌석 배정"
+        description={`좌석 ${assignSeat?.label ?? ""}에 현재 수강 명단의 학생을 배정합니다.`}
+        onClose={closePanel}
+        widthClassName="max-w-2xl"
+      >
+        {assignSeat && (
+          <div className="space-y-4">
+            <div className="rounded-[10px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              검색 후 학생을 선택하면 바로 배정됩니다. 이미 다른 좌석이 있는 학생을 선택하면 현재 좌석에서 이 좌석으로 이동합니다.
+            </div>
+
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={assignSearchQuery}
+                onChange={(event) => setAssignSearchQuery(event.target.value)}
+                placeholder="이름, 수험번호, 현재 좌석으로 검색"
+                className="w-full rounded-[10px] border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-slate-400"
+              />
+            </div>
+
+            {filteredAssignableStudents.length === 0 ? (
+              <div className="rounded-[10px] border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-sm text-slate-500">
+                배정 가능한 학생을 찾지 못했습니다.
+              </div>
+            ) : (
+              <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
+                {filteredAssignableStudents.map((student) => (
+                  <button
+                    key={student.id}
+                    type="button"
+                    disabled={assigningStudentId !== null}
+                    onClick={() => void handleAssignStudentToSeat(student)}
+                    className="flex w-full items-center justify-between rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-left transition hover:bg-slate-50 disabled:opacity-60"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-semibold text-slate-900">{student.name}</p>
+                        <span
+                          className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${getStudyTrackBadgeClasses(student.studyTrack)}`}
+                        >
+                          {getStudyTrackShortLabel(student.studyTrack)}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">{student.studentNumber}</p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {student.seatDisplay ? `현재 좌석 ${student.seatDisplay}` : "현재 좌석 미배정"}
+                      </p>
+                    </div>
+                    <span className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1.5 text-xs font-medium text-white">
+                      {assigningStudentId === student.id ? (
+                        <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Plus className="h-3.5 w-3.5" />
+                      )}
+                      {student.seatDisplay ? "이 좌석으로 이동" : "배정"}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
 
       {/* 좌석 클릭 시 모달 */}
       <Modal

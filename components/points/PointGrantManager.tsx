@@ -334,14 +334,14 @@ export const PointGrantManager = memo(function PointGrantManager({
               <button
                 type="button"
                 onClick={() => setRankingOrder("top")}
-                className={`rounded-[10px] px-3 py-1.5 text-xs font-medium transition ${rankingOrder === "top" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                className={`rounded-[10px] px-3 py-1.5 text-xs font-medium transition ${rankingOrder === "top" ? "bg-[var(--division-color)] text-white shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
               >
                 상위
               </button>
               <button
                 type="button"
                 onClick={() => setRankingOrder("bottom")}
-                className={`rounded-[10px] px-3 py-1.5 text-xs font-medium transition ${rankingOrder === "bottom" ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                className={`rounded-[10px] px-3 py-1.5 text-xs font-medium transition ${rankingOrder === "bottom" ? "bg-[var(--division-color)] text-white shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
               >
                 하위
               </button>

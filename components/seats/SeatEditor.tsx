@@ -5,6 +5,7 @@ import { LoaderCircle, Plus, RefreshCcw, Save, Sparkles, Trash2 } from "lucide-r
 import { toast } from "sonner";
 
 import { Modal } from "@/components/ui/Modal";
+import { UnsavedChangesGuard } from "@/components/ui/UnsavedChangesGuard";
 import { SeatMap } from "@/components/seats/SeatMap";
 import {
   buildSeatLabel,
@@ -25,6 +26,7 @@ type SeatEditorProps = {
   initialRooms: StudyRoomItem[];
   initialLayout: SeatLayout;
   students: StudentListItem[];
+  expirationWarningDays?: number;
 };
 
 type DraftSeat = {
@@ -45,16 +47,94 @@ type RoomFormState = {
   isActive: boolean;
 };
 
+type DraftSeatSource = {
+  localId?: string;
+  id?: string;
+  label: string;
+  positionX: number;
+  positionY: number;
+  isActive?: boolean;
+  assignedStudentId?: string | null;
+};
+
+function buildAutoDraftSeats(
+  columns: number,
+  rows: number,
+  aisleColumns: number[],
+  existingSeats: DraftSeatSource[],
+  preferredAssignmentsByLabel?: Map<string, string>,
+) {
+  const seatMap = new Map(
+    existingSeats.map((seat) => [getSeatPositionKey(seat.positionX, seat.positionY), seat]),
+  );
+  const usedLabels = new Set<string>();
+
+  return createDefaultSeatDraftLayout({ columns, rows, aisleColumns }).map((seat) => {
+    const positionKey = getSeatPositionKey(seat.positionX, seat.positionY);
+    const existingSeat = seatMap.get(positionKey);
+    const fallbackLabel = buildSeatLabel(seat.positionX, seat.positionY, usedLabels);
+    const existingLabel = existingSeat?.label.trim() ?? "";
+    const normalizedLabel = existingLabel || fallbackLabel;
+    const label = usedLabels.has(normalizedLabel)
+      ? buildSeatLabel(seat.positionX, seat.positionY, usedLabels)
+      : normalizedLabel;
+    const shouldAutoReactivate = Boolean(
+      existingSeat && !existingSeat.isActive && !existingLabel && !existingSeat.assignedStudentId,
+    );
+
+    usedLabels.add(label);
+
+    return {
+      localId: existingSeat?.localId ?? existingSeat?.id ?? `draft-seat-${positionKey}`,
+      id: existingSeat?.id,
+      label,
+      positionX: seat.positionX,
+      positionY: seat.positionY,
+      isActive: shouldAutoReactivate ? true : existingSeat?.isActive ?? true,
+      assignedStudentId:
+        existingSeat?.assignedStudentId ??
+        preferredAssignmentsByLabel?.get(existingLabel) ??
+        preferredAssignmentsByLabel?.get(label) ??
+        null,
+    } satisfies DraftSeat;
+  });
+}
+
+function areDraftSeatsEqual(left: DraftSeat[], right: DraftSeat[]) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((seat, index) => {
+    const target = right[index];
+
+    return (
+      seat.localId === target.localId &&
+      seat.id === target.id &&
+      seat.label === target.label &&
+      seat.positionX === target.positionX &&
+      seat.positionY === target.positionY &&
+      seat.isActive === target.isActive &&
+      seat.assignedStudentId === target.assignedStudentId
+    );
+  });
+}
+
 function buildDraftSeats(layout: SeatLayout) {
-  return layout.seats.map((seat) => ({
-    localId: seat.id,
-    id: seat.id,
-    label: seat.label,
-    positionX: seat.positionX,
-    positionY: seat.positionY,
-    isActive: seat.isActive,
-    assignedStudentId: seat.assignedStudent?.id ?? null,
-  }));
+  return buildAutoDraftSeats(
+    layout.columns,
+    layout.rows,
+    layout.aisleColumns,
+    layout.seats.map((seat) => ({
+      localId: seat.id,
+      id: seat.id,
+      label: seat.label,
+      positionX: seat.positionX,
+      positionY: seat.positionY,
+      isActive: seat.isActive,
+      assignedStudentId: seat.assignedStudent?.id ?? null,
+    })),
+  );
 }
 
 function buildRoomFormState(room: StudyRoomItem | null): RoomFormState {
@@ -131,6 +211,7 @@ export function SeatEditor({
   initialRooms,
   initialLayout,
   students: initialStudents,
+  expirationWarningDays = 14,
 }: SeatEditorProps) {
   const initialRoomId = initialLayout.room?.id ?? initialRooms[0]?.id ?? null;
   const [rooms, setRooms] = useState(initialRooms);
@@ -139,9 +220,9 @@ export function SeatEditor({
   const [roomForm, setRoomForm] = useState<RoomFormState>(() => buildRoomFormState(initialLayout.room));
   const [draftSeats, setDraftSeats] = useState<DraftSeat[]>(() => buildDraftSeats(initialLayout));
   const [students, setStudents] = useState(initialStudents);
-  const [selectedLocalId, setSelectedLocalId] = useState<string | null>(
-    buildDraftSeats(initialLayout)[0]?.localId ?? null,
-  );
+  const [selectedLocalId, setSelectedLocalId] = useState<string | null>(null);
+  const [editingLocalId, setEditingLocalId] = useState<string | null>(null);
+  const [isSeatEditModalOpen, setIsSeatEditModalOpen] = useState(false);
   const [hasSkippedInitialLayoutLoad, setHasSkippedInitialLayoutLoad] = useState(false);
   const [newRoomForm, setNewRoomForm] = useState<RoomFormState>({
     name: "",
@@ -158,10 +239,20 @@ export function SeatEditor({
   const [isDeletingRoom, setIsDeletingRoom] = useState(false);
   const [movingSeatId, setMovingSeatId] = useState<string | null>(null);
   const [extraSelectedLocalIds, setExtraSelectedLocalIds] = useState<Set<string>>(new Set());
+  const [isDirty, setIsDirty] = useState(false);
 
   const assignableStudents = useMemo(
     () => students.filter((student) => student.status === "ACTIVE" || student.status === "ON_LEAVE"),
     [students],
+  );
+  const roomAssignmentMap = useMemo(
+    () =>
+      new Map(
+        assignableStudents
+          .filter((student) => student.studyRoomId === selectedRoomId && student.seatLabel)
+          .map((student) => [student.seatLabel as string, student.id]),
+      ),
+    [assignableStudents, selectedRoomId],
   );
   const currentRoom = rooms.find((room) => room.id === selectedRoomId) ?? layout.room ?? null;
   const previewAisleColumns = useMemo(
@@ -173,6 +264,7 @@ export function SeatEditor({
     [currentRoom?.name, draftSeats, students],
   );
   const selectedSeat = draftSeats.find((seat) => seat.localId === selectedLocalId) ?? null;
+  const editingSeat = draftSeats.find((seat) => seat.localId === editingLocalId) ?? null;
   const allSelectedLocalIds = useMemo(() => {
     const ids = new Set(extraSelectedLocalIds);
     if (selectedLocalId) ids.add(selectedLocalId);
@@ -192,10 +284,10 @@ export function SeatEditor({
   }, [allSelectedSeats]);
   const selectedAssignedStudent = useMemo(
     () =>
-      selectedSeat?.assignedStudentId
-        ? students.find((student) => student.id === selectedSeat.assignedStudentId) ?? null
+      editingSeat?.assignedStudentId
+        ? students.find((student) => student.id === editingSeat.assignedStudentId) ?? null
         : null,
-    [selectedSeat?.assignedStudentId, students],
+    [editingSeat?.assignedStudentId, students],
   );
   const activeSeatCount = useMemo(() => draftSeats.filter((seat) => seat.isActive).length, [draftSeats]);
   const assignedSeatCount = useMemo(
@@ -257,7 +349,11 @@ export function SeatEditor({
         setLayout(nextLayout);
         setRoomForm(buildRoomFormState(nextLayout.room));
         setDraftSeats(nextDraftSeats);
-        setSelectedLocalId(nextDraftSeats[0]?.localId ?? null);
+        setSelectedLocalId(null);
+        setEditingLocalId(null);
+        setIsSeatEditModalOpen(false);
+        setExtraSelectedLocalIds(new Set());
+        setIsDirty(false);
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "좌석 배치를 불러오지 못했습니다.");
       } finally {
@@ -295,47 +391,92 @@ export function SeatEditor({
     });
     setDraftSeats([]);
     setSelectedLocalId(null);
+    setEditingLocalId(null);
+    setIsSeatEditModalOpen(false);
+    setExtraSelectedLocalIds(new Set());
+    setIsDirty(false);
   }, [previewAisleColumns, roomForm.columns, roomForm.rows, selectedRoomId]);
 
-  function selectSeatByCell(positionX: number, positionY: number, seatId: string | null, shiftKey: boolean) {
-    if (seatId) {
-      const target = draftSeats.find((seat) => (seat.id ?? seat.localId) === seatId);
-      if (!target) return;
-
-      if (shiftKey) {
-        setExtraSelectedLocalIds((prev) => {
-          const next = new Set(prev);
-          if (selectedLocalId) next.add(selectedLocalId);
-          if (next.has(target.localId)) {
-            next.delete(target.localId);
-          } else {
-            next.add(target.localId);
-          }
-          return next;
-        });
-        if (!selectedLocalId) setSelectedLocalId(target.localId);
-        return;
-      }
-
-      setSelectedLocalId(target.localId);
-      setExtraSelectedLocalIds(new Set());
+  useEffect(() => {
+    if (!selectedRoomId || isLoadingLayout || layout.room?.id !== selectedRoomId) {
       return;
     }
 
-    const usedLabels = new Set(draftSeats.map((seat) => seat.label));
-    const localId = `draft-seat-${positionX}-${positionY}-${Date.now()}`;
-    setDraftSeats((current) => [
-      ...current,
-      {
-        localId,
-        label: buildSeatLabel(positionX, positionY, usedLabels),
-        positionX,
-        positionY,
-        isActive: true,
-        assignedStudentId: null,
-      },
-    ]);
-    setSelectedLocalId(localId);
+    setDraftSeats((current) => {
+      const next = buildAutoDraftSeats(
+        roomForm.columns,
+        roomForm.rows,
+        previewAisleColumns,
+        current,
+        roomAssignmentMap,
+      );
+
+      return areDraftSeatsEqual(current, next) ? current : next;
+    });
+  }, [
+    isLoadingLayout,
+    layout.room?.id,
+    previewAisleColumns,
+    roomAssignmentMap,
+    roomForm.columns,
+    roomForm.rows,
+    selectedRoomId,
+  ]);
+
+  useEffect(() => {
+    const availableIds = new Set(draftSeats.map((seat) => seat.localId));
+
+    setSelectedLocalId((current) => (current && availableIds.has(current) ? current : null));
+    setEditingLocalId((current) => (current && availableIds.has(current) ? current : null));
+    setExtraSelectedLocalIds((current) => {
+      if (current.size === 0) {
+        return current;
+      }
+
+      const next = new Set(Array.from(current).filter((id) => availableIds.has(id)));
+      return next.size === current.size ? current : next;
+    });
+  }, [draftSeats]);
+
+  useEffect(() => {
+    if (editingLocalId !== null) {
+      return;
+    }
+
+    setIsSeatEditModalOpen(false);
+  }, [editingLocalId]);
+
+  function selectSeatByCell(positionX: number, positionY: number, seatId: string | null, shiftKey: boolean) {
+    void positionX;
+    void positionY;
+
+    if (!seatId) {
+      return;
+    }
+
+    const target = draftSeats.find((seat) => (seat.id ?? seat.localId) === seatId);
+    if (!target) return;
+
+    if (shiftKey) {
+      setEditingLocalId(null);
+      setIsSeatEditModalOpen(false);
+      setExtraSelectedLocalIds((prev) => {
+        const next = new Set(prev);
+        if (selectedLocalId) next.add(selectedLocalId);
+        if (next.has(target.localId)) {
+          next.delete(target.localId);
+        } else {
+          next.add(target.localId);
+        }
+        return next;
+      });
+      if (!selectedLocalId) setSelectedLocalId(target.localId);
+      return;
+    }
+
+    setSelectedLocalId(target.localId);
+    setEditingLocalId(target.localId);
+    setIsSeatEditModalOpen(true);
     setExtraSelectedLocalIds(new Set());
   }
 
@@ -345,6 +486,8 @@ export function SeatEditor({
     if (!selectedSeat) {
       return;
     }
+
+    setIsDirty(true);
 
     if (isMultiSelect) {
       setDraftSeats((current) =>
@@ -366,44 +509,26 @@ export function SeatEditor({
     );
   }
 
-  function deleteSelectedSeat() {
-    if (isMultiSelect) {
-      setDraftSeats((current) => current.filter((seat) => !allSelectedLocalIds.has(seat.localId)));
-      setSelectedLocalId(null);
-      setExtraSelectedLocalIds(new Set());
-      return;
-    }
-
-    if (!selectedSeat) {
-      return;
-    }
-
-    setDraftSeats((current) => current.filter((seat) => seat.localId !== selectedSeat.localId));
-    setSelectedLocalId(null);
+  function updateRoomForm(value: Partial<RoomFormState>) {
+    setRoomForm((current) => ({ ...current, ...value }));
+    setIsDirty(true);
   }
 
   function applyDefaultLayout() {
-    const assignedByLabel = new Map(
-      assignableStudents
-        .filter((student) => student.studyRoomId === selectedRoomId && student.seatLabel)
-        .map((student) => [student.seatLabel as string, student.id]),
+    const defaults = buildAutoDraftSeats(
+      roomForm.columns,
+      roomForm.rows,
+      previewAisleColumns,
+      [],
+      roomAssignmentMap,
     );
 
-    const defaults = createDefaultSeatDraftLayout({
-      columns: roomForm.columns,
-      rows: roomForm.rows,
-      aisleColumns: previewAisleColumns,
-    }).map((seat) => ({
-      localId: `default-${getSeatPositionKey(seat.positionX, seat.positionY)}`,
-      label: seat.label,
-      positionX: seat.positionX,
-      positionY: seat.positionY,
-      isActive: seat.isActive,
-      assignedStudentId: assignedByLabel.get(seat.label) ?? null,
-    }));
-
     setDraftSeats(defaults);
-    setSelectedLocalId(defaults[0]?.localId ?? null);
+    setSelectedLocalId(null);
+    setEditingLocalId(null);
+    setIsSeatEditModalOpen(false);
+    setExtraSelectedLocalIds(new Set());
+    setIsDirty(true);
   }
 
   async function handleCreateRoom() {
@@ -505,6 +630,10 @@ export function SeatEditor({
         setRoomForm(buildRoomFormState(null));
         setDraftSeats([]);
         setSelectedLocalId(null);
+        setEditingLocalId(null);
+        setIsSeatEditModalOpen(false);
+        setExtraSelectedLocalIds(new Set());
+        setIsDirty(false);
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "자습실 삭제에 실패했습니다.");
@@ -618,6 +747,9 @@ export function SeatEditor({
       setLayout(nextLayout);
       setDraftSeats(nextDraftSeats);
       setSelectedLocalId(nextDraftSeats.find((seat) => seat.id === toSeatId)?.localId ?? null);
+      setEditingLocalId(null);
+      setIsSeatEditModalOpen(false);
+      setExtraSelectedLocalIds(new Set());
       await Promise.all([refreshStudents(), refreshRooms(selectedRoomId)]);
       toast.success("좌석 이동이 반영되었습니다.");
     } catch (error) {
@@ -629,6 +761,11 @@ export function SeatEditor({
 
   return (
     <div className="space-y-6">
+      <UnsavedChangesGuard
+        isDirty={isDirty}
+        message="저장하지 않은 좌석 변경사항이 있습니다. 페이지를 이동하면 현재 좌석 배치 수정 내용이 사라집니다."
+      />
+
       <section className="grid gap-3 md:grid-cols-4">
         <article className="rounded-[10px] border border-slate-200-slate-200 bg-white px-5 py-4 shadow-[0_12px_28px_rgba(18,32,56,0.05)]">
           <p className="text-sm font-medium text-slate-500">자습실 수</p>
@@ -744,7 +881,7 @@ export function SeatEditor({
                   <span className="mb-2 block text-sm font-medium text-slate-700">자습실 이름</span>
                   <input
                     value={roomForm.name}
-                    onChange={(event) => setRoomForm((current) => ({ ...current, name: event.target.value }))}
+                    onChange={(event) => updateRoomForm({ name: event.target.value })}
                     className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   />
                 </label>
@@ -752,9 +889,7 @@ export function SeatEditor({
                   <span className="mb-2 block text-sm font-medium text-slate-700">복도 열 번호</span>
                   <input
                     value={roomForm.aisleColumnsText}
-                    onChange={(event) =>
-                      setRoomForm((current) => ({ ...current, aisleColumnsText: event.target.value }))
-                    }
+                    onChange={(event) => updateRoomForm({ aisleColumnsText: event.target.value })}
                     className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                     placeholder="예: 5, 10"
                   />
@@ -769,12 +904,7 @@ export function SeatEditor({
                     min={3}
                     max={20}
                     value={roomForm.columns}
-                    onChange={(event) =>
-                      setRoomForm((current) => ({
-                        ...current,
-                        columns: Number(event.target.value) || 9,
-                      }))
-                    }
+                    onChange={(event) => updateRoomForm({ columns: Number(event.target.value) || 9 })}
                     className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   />
                 </label>
@@ -785,12 +915,7 @@ export function SeatEditor({
                     min={2}
                     max={20}
                     value={roomForm.rows}
-                    onChange={(event) =>
-                      setRoomForm((current) => ({
-                        ...current,
-                        rows: Number(event.target.value) || 6,
-                      }))
-                    }
+                    onChange={(event) => updateRoomForm({ rows: Number(event.target.value) || 6 })}
                     className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   />
                 </label>
@@ -806,9 +931,7 @@ export function SeatEditor({
                 <input
                   type="checkbox"
                   checked={roomForm.isActive}
-                  onChange={(event) =>
-                    setRoomForm((current) => ({ ...current, isActive: event.target.checked }))
-                  }
+                  onChange={(event) => updateRoomForm({ isActive: event.target.checked })}
                   className="h-5 w-5 rounded border-slate-300"
                 />
               </label>
@@ -921,7 +1044,7 @@ export function SeatEditor({
               {currentRoom?.name ?? "자습실"} 좌석 배치
             </h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              빈 칸을 눌러 좌석을 만들고, 학생 배정과 직렬 분포를 한 화면에서 확인할 수 있습니다.
+              통로를 제외한 모든 칸이 좌석으로 기본 생성되며, 좌석 번호와 학생 배정, 활성 상태를 바로 수정할 수 있습니다.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -982,7 +1105,7 @@ export function SeatEditor({
                     checked={allSelectedSeats.every((s) => s.isActive)}
                     onChange={(event) => {
                       const active = event.target.checked;
-                      updateSelectedSeat(active ? { isActive: true } : { isActive: false, label: "" });
+                      updateSelectedSeat(active ? { isActive: true } : { isActive: false });
                     }}
                     className="h-4 w-4 rounded border-slate-300"
                   />
@@ -990,11 +1113,11 @@ export function SeatEditor({
                 </label>
                 <button
                   type="button"
-                  onClick={deleteSelectedSeat}
+                  onClick={() => setExtraSelectedLocalIds(new Set())}
                   className="inline-flex items-center gap-2 rounded-full border border-slate-200-slate-200 px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-white"
                 >
                   <Trash2 className="h-4 w-4" />
-                  선택 좌석 삭제
+                  선택 좌석 해제
                 </button>
                 <button
                   type="button"
@@ -1026,6 +1149,7 @@ export function SeatEditor({
                   columns={roomForm.columns}
                   rows={roomForm.rows}
                   aisleColumns={previewAisleColumns}
+                  expirationWarningDays={expirationWarningDays}
                   selectedSeatId={selectedSeat?.id ?? selectedSeat?.localId ?? null}
                   selectedSeatIds={selectedSeatIds}
                   onCellClick={selectSeatByCell}
@@ -1041,18 +1165,21 @@ export function SeatEditor({
         )}
 
         <Modal
-          open={selectedSeat !== null && !isMultiSelect}
-          onClose={() => setSelectedLocalId(null)}
+          open={editingSeat !== null && isSeatEditModalOpen && !isMultiSelect}
+          onClose={() => {
+            setIsSeatEditModalOpen(false);
+            setEditingLocalId(null);
+          }}
           title="좌석 편집"
-          badge={selectedSeat ? `${selectedSeat.positionX}열 ${selectedSeat.positionY}행` : ""}
+          badge={editingSeat ? `${editingSeat.positionX}열 ${editingSeat.positionY}행` : ""}
           widthClassName="max-w-md"
         >
-          {selectedSeat ? (
+          {editingSeat ? (
             <div className="space-y-5">
               <label className="block">
                 <span className="mb-1.5 block text-sm font-medium text-slate-700">좌석 번호</span>
                 <input
-                  value={selectedSeat.label}
+                  value={editingSeat.label}
                   onChange={(event) => updateSelectedSeat({ label: event.target.value })}
                   className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
                   placeholder="예: A-01"
@@ -1062,12 +1189,12 @@ export function SeatEditor({
               <label className="block">
                 <span className="mb-1.5 block text-sm font-medium text-slate-700">학생 배정</span>
                 <select
-                  value={selectedSeat.assignedStudentId ?? ""}
+                  value={editingSeat.assignedStudentId ?? ""}
                   onChange={(event) =>
                     updateSelectedSeat({ assignedStudentId: event.target.value || null })
                   }
                   className="w-full rounded-[10px] border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-slate-400"
-                  disabled={!selectedSeat.isActive}
+                  disabled={!editingSeat.isActive}
                 >
                   <option value="">배정 안 함</option>
                   {assignableStudents.map((student) => (
@@ -1081,10 +1208,10 @@ export function SeatEditor({
               <label className="flex items-center gap-3 rounded-[10px] border border-slate-200 bg-slate-50 px-4 py-3">
                 <input
                   type="checkbox"
-                  checked={selectedSeat.isActive}
+                  checked={editingSeat.isActive}
                   onChange={(event) => {
                     const active = event.target.checked;
-                    updateSelectedSeat(active ? { isActive: true } : { isActive: false, label: "" });
+                    updateSelectedSeat(active ? { isActive: true } : { isActive: false });
                   }}
                   className="h-5 w-5 rounded border-slate-300"
                 />
@@ -1108,21 +1235,13 @@ export function SeatEditor({
                 </div>
               ) : null}
 
-              <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+              <div className="flex items-center justify-end border-t border-slate-100 pt-4">
                 <button
                   type="button"
                   onClick={() => {
-                    deleteSelectedSeat();
-                    setSelectedLocalId(null);
+                    setIsSeatEditModalOpen(false);
+                    setEditingLocalId(null);
                   }}
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  좌석 삭제
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedLocalId(null)}
                   className="rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
                 >
                   닫기

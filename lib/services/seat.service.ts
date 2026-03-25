@@ -16,6 +16,8 @@ import {
   logSchemaCompatibilityFallback,
 } from "@/lib/service-helpers";
 import {
+  buildSeatLabel,
+  createDefaultSeatDraftLayout,
   DEFAULT_SEAT_AISLE_COLUMNS,
   DEFAULT_SEAT_LAYOUT_COLUMNS,
   DEFAULT_SEAT_LAYOUT_ROWS,
@@ -32,6 +34,7 @@ export type SeatMapStudent = {
   status: "ACTIVE" | "ON_LEAVE" | "WITHDRAWN" | "GRADUATED";
   studyTrack: string | null;
   studyRoomName: string | null;
+  courseEndDate: string | null;
 };
 
 export type SeatMapSeat = {
@@ -95,6 +98,11 @@ type LegacySeatRow = {
   studentName: string | null;
   studentNumber: string | null;
   studentStatus: SeatMapStudent["status"] | null;
+};
+
+type SeatNormalizationSource = SeatDraftLayoutItem & {
+  id?: string;
+  assignedStudentId?: string | null;
 };
 
 async function getPrismaClient() {
@@ -302,6 +310,7 @@ function buildLegacySeatLayout(room: StudyRoomItem, seatRows: LegacySeatRow[]): 
               status: seat.studentStatus ?? "ACTIVE",
               studyTrack: null,
               studyRoomName: room.name,
+              courseEndDate: seat.courseEndDate ?? null,
             }
           : null,
       })),
@@ -369,6 +378,185 @@ function validateSeatDrafts(seats: SeatDraftLayoutItem[], room: Pick<StudyRoomIt
   }
 }
 
+function buildNormalizedGridSeatDrafts(
+  room: Pick<StudyRoomItem, "columns" | "rows" | "aisleColumns">,
+  seats: SeatNormalizationSource[],
+) {
+  const seatMap = new Map<string, SeatNormalizationSource>();
+
+  for (const seat of sortSeats(seats)) {
+    if (
+      seat.positionX < 1 ||
+      seat.positionX > room.columns ||
+      seat.positionY < 1 ||
+      seat.positionY > room.rows ||
+      isAisleColumn(seat.positionX, room.aisleColumns)
+    ) {
+      continue;
+    }
+
+    const positionKey = getSeatPositionKey(seat.positionX, seat.positionY);
+    if (!seatMap.has(positionKey)) {
+      seatMap.set(positionKey, seat);
+    }
+  }
+
+  const usedLabels = new Set<string>();
+
+  return createDefaultSeatDraftLayout({
+    columns: room.columns,
+    rows: room.rows,
+    aisleColumns: room.aisleColumns,
+  }).map((seat) => {
+    const positionKey = getSeatPositionKey(seat.positionX, seat.positionY);
+    const existingSeat = seatMap.get(positionKey);
+    const fallbackLabel = buildSeatLabel(seat.positionX, seat.positionY, usedLabels);
+    const existingLabel = existingSeat?.label.trim() ?? "";
+    const normalizedLabel = existingLabel || fallbackLabel;
+    const label = usedLabels.has(normalizedLabel)
+      ? buildSeatLabel(seat.positionX, seat.positionY, usedLabels)
+      : normalizedLabel;
+    const shouldAutoReactivate = Boolean(
+      existingSeat && !existingSeat.isActive && !existingLabel && !existingSeat.assignedStudentId,
+    );
+
+    usedLabels.add(label);
+
+    return {
+      id: existingSeat?.id,
+      label,
+      positionX: seat.positionX,
+      positionY: seat.positionY,
+      isActive: shouldAutoReactivate ? true : existingSeat?.isActive ?? true,
+    } satisfies SeatDraftLayoutItem & { id?: string };
+  });
+}
+
+function hasNormalizedGridDifferences(
+  room: Pick<StudyRoomItem, "columns" | "rows" | "aisleColumns">,
+  seats: SeatNormalizationSource[],
+  normalizedSeats: Array<SeatDraftLayoutItem & { id?: string }>,
+) {
+  const currentSeatMap = new Map<string, SeatNormalizationSource>();
+
+  for (const seat of seats) {
+    if (
+      seat.positionX < 1 ||
+      seat.positionX > room.columns ||
+      seat.positionY < 1 ||
+      seat.positionY > room.rows ||
+      isAisleColumn(seat.positionX, room.aisleColumns)
+    ) {
+      continue;
+    }
+
+    currentSeatMap.set(getSeatPositionKey(seat.positionX, seat.positionY), seat);
+  }
+
+  if (currentSeatMap.size !== normalizedSeats.length) {
+    return true;
+  }
+
+  return normalizedSeats.some((seat) => {
+    const currentSeat = currentSeatMap.get(getSeatPositionKey(seat.positionX, seat.positionY));
+
+    return (
+      !currentSeat ||
+      currentSeat.label.trim() !== seat.label.trim() ||
+      currentSeat.isActive !== seat.isActive
+    );
+  });
+}
+
+async function normalizePersistedRoomSeatsIfNeeded(
+  prisma: Awaited<ReturnType<typeof getPrismaClient>>,
+  divisionId: string,
+  divisionSlug: string,
+  room: {
+    id: string;
+    columns: number;
+    rows: number;
+    aisleColumns: unknown;
+    seats: Array<{
+      id: string;
+      label: string;
+      positionX: number;
+      positionY: number;
+      isActive: boolean;
+      student: { id: string } | null;
+    }>;
+  },
+) {
+  const roomLayout = {
+    columns: room.columns,
+    rows: room.rows,
+    aisleColumns: normalizeAisleColumns(room.aisleColumns, room.columns),
+  };
+  const currentSeats = room.seats.map((seat) => ({
+    id: seat.id,
+    label: seat.label,
+    positionX: seat.positionX,
+    positionY: seat.positionY,
+    isActive: seat.isActive,
+    assignedStudentId: seat.student?.id ?? null,
+  }));
+  const normalizedSeats = buildNormalizedGridSeatDrafts(roomLayout, currentSeats);
+
+  if (!hasNormalizedGridDifferences(roomLayout, currentSeats, normalizedSeats)) {
+    return false;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const existingDrafts = normalizedSeats.filter(
+      (seat): seat is SeatDraftLayoutItem & { id: string } => Boolean(seat.id),
+    );
+
+    for (const seat of existingDrafts) {
+      await tx.seat.update({
+        where: {
+          id: seat.id,
+        },
+        data: {
+          label: `temp-${seat.id}`,
+          positionX: seat.positionX,
+          positionY: seat.positionY,
+          isActive: seat.isActive,
+        },
+      });
+    }
+
+    for (const seat of normalizedSeats.filter((item) => !item.id)) {
+      await tx.seat.create({
+        data: {
+          divisionId,
+          studyRoomId: room.id,
+          label: seat.label.trim(),
+          positionX: seat.positionX,
+          positionY: seat.positionY,
+          isActive: seat.isActive,
+        },
+      });
+    }
+
+    for (const seat of existingDrafts) {
+      await tx.seat.update({
+        where: {
+          id: seat.id,
+        },
+        data: {
+          label: seat.label.trim(),
+          positionX: seat.positionX,
+          positionY: seat.positionY,
+          isActive: seat.isActive,
+        },
+      });
+    }
+  });
+
+  revalidateSeatData(divisionSlug, room.id);
+  return true;
+}
+
 function buildMockAssignedStudent(
   seat: MockSeatRecord,
   students: MockStudentRecord[],
@@ -391,6 +579,7 @@ function buildMockAssignedStudent(
     status: student.status,
     studyTrack: student.studyTrack,
     studyRoomName: room?.name ?? null,
+    courseEndDate: student.courseEndDate ?? null,
   } satisfies SeatMapStudent;
 }
 
@@ -489,6 +678,10 @@ export async function listStudyRooms(divisionSlug: string): Promise<StudyRoomIte
     );
   }
 
+  if (process.env.NODE_ENV !== "production") {
+    return listStudyRoomsUncached(divisionSlug);
+  }
+
   try {
     return await getListStudyRoomsCached(divisionSlug)();
   } catch (error) {
@@ -534,6 +727,10 @@ export async function listSeatOptions(
   }
 
   const activeOnly = options?.activeOnly ?? false;
+
+  if (process.env.NODE_ENV !== "production") {
+    return listSeatOptionsUncached(divisionSlug, activeOnly);
+  }
 
   try {
     return await getListSeatOptionsCached(divisionSlug, activeOnly)();
@@ -587,6 +784,10 @@ export async function getSeatLayout(
         })),
       ),
     };
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    return getSeatLayoutUncached(divisionSlug, roomId);
   }
 
   try {
@@ -735,6 +936,7 @@ async function getSeatLayoutUncached(divisionSlug: string, roomId?: string): Pro
               studentNumber: true,
               status: true,
               studyTrack: true,
+              courseEndDate: true,
             },
           },
         },
@@ -765,10 +967,52 @@ async function getSeatLayoutUncached(divisionSlug: string, roomId?: string): Pro
     return createEmptyLayout(defaultLayout);
   }
 
-  const serializedRoom = serializeRoom(
+  const didNormalizeSeats = await normalizePersistedRoomSeatsIfNeeded(
+    prisma,
+    division.id,
+    divisionSlug,
     room,
-    room.seats.length,
-    room.seats.reduce((sum, seat) => sum + (seat.student ? 1 : 0), 0),
+  );
+  const effectiveRoom = didNormalizeSeats
+    ? await prisma.studyRoom.findUnique({
+        where: {
+          id: room.id,
+        },
+        include: {
+          seats: {
+            include: {
+              student: {
+                select: {
+                  id: true,
+                  name: true,
+                  studentNumber: true,
+                  status: true,
+                  studyTrack: true,
+                },
+              },
+            },
+            orderBy: [
+              {
+                positionY: "asc",
+              },
+              {
+                positionX: "asc",
+              },
+            ],
+          },
+        },
+      })
+    : room;
+
+  if (!effectiveRoom) {
+    const defaultLayout = serializeRoom(targetRoom, 0, 0);
+    return createEmptyLayout(defaultLayout);
+  }
+
+  const serializedRoom = serializeRoom(
+    effectiveRoom,
+    effectiveRoom.seats.length,
+    effectiveRoom.seats.reduce((sum, seat) => sum + (seat.student ? 1 : 0), 0),
   );
 
   return {
@@ -777,7 +1021,7 @@ async function getSeatLayoutUncached(divisionSlug: string, roomId?: string): Pro
     rows: serializedRoom.rows,
     aisleColumns: serializedRoom.aisleColumns,
     seats: sortSeats(
-      room.seats.map((seat) => ({
+      effectiveRoom.seats.map((seat) => ({
         id: seat.id,
         studyRoomId: seat.studyRoomId,
         label: seat.label,
@@ -791,7 +1035,12 @@ async function getSeatLayoutUncached(divisionSlug: string, roomId?: string): Pro
               studentNumber: seat.student.studentNumber,
               status: seat.student.status,
               studyTrack: seat.student.studyTrack,
-              studyRoomName: room.name,
+              studyRoomName: effectiveRoom.name,
+              courseEndDate: seat.student.courseEndDate
+                ? (typeof seat.student.courseEndDate === "string"
+                    ? seat.student.courseEndDate.slice(0, 10)
+                    : (seat.student.courseEndDate as Date).toISOString().slice(0, 10))
+                : null,
             }
           : null,
       })),

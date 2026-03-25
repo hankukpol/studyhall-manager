@@ -1,5 +1,6 @@
 import { SeatEditor } from "@/components/seats/SeatEditor";
 import { getSeatLayout, listStudyRooms } from "@/lib/services/seat.service";
+import { getDivisionSettings } from "@/lib/services/settings.service";
 import { listStudents } from "@/lib/services/student.service";
 
 type SeatSettingsPageProps = {
@@ -10,9 +11,10 @@ type SeatSettingsPageProps = {
 
 export default async function SeatSettingsPage({ params }: SeatSettingsPageProps) {
 
-  const [rooms, students] = await Promise.all([
+  const [rooms, students, settings] = await Promise.all([
     listStudyRooms(params.division),
     listStudents(params.division),
+    getDivisionSettings(params.division),
   ]);
   const layout = await getSeatLayout(params.division, rooms[0]?.id);
 
@@ -33,6 +35,7 @@ export default async function SeatSettingsPage({ params }: SeatSettingsPageProps
         initialRooms={rooms}
         initialLayout={layout}
         students={students}
+        expirationWarningDays={settings.expirationWarningDays}
       />
     </div>
   );

@@ -74,6 +74,12 @@ export type StudentDashboardData = {
   upcomingExamSchedule: ExamScheduleItem | null;
   pinnedAnnouncements: AnnouncementItem[];
   recentAnnouncements: AnnouncementItem[];
+  enrollment: {
+    courseStartDate: string | null;
+    courseEndDate: string;
+    daysRemaining: number;
+    expirationWarningDays: number;
+  } | null;
 };
 
 type StudentAttendanceRecord = {
@@ -447,5 +453,20 @@ export async function getStudentDashboardData(
     upcomingExamSchedule,
     pinnedAnnouncements: announcements.filter((announcement) => announcement.isPinned),
     recentAnnouncements: announcements.slice(0, 4),
+    enrollment: (() => {
+      const endDate = student.courseEndDate;
+      if (!endDate) return null;
+
+      const endMs = new Date(endDate + "T00:00:00+09:00").getTime();
+      const todayMs = new Date(today + "T00:00:00+09:00").getTime();
+      const daysRemaining = Math.round((endMs - todayMs) / 86400000);
+
+      return {
+        courseStartDate: student.courseStartDate,
+        courseEndDate: endDate,
+        daysRemaining,
+        expirationWarningDays: settings.expirationWarningDays,
+      };
+    })(),
   };
 }

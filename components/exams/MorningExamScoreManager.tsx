@@ -368,7 +368,7 @@ export function MorningExamScoreManager({
         </div>
 
         <div className="mt-4">
-          <details className="group">
+          <details open className="group">
             <summary className="cursor-pointer text-sm font-medium text-slate-600 hover:text-slate-900">
               엑셀에서 붙여넣기 / CSV 업로드
             </summary>

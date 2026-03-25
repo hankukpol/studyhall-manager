@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo } from "react";
+import { memo, useMemo, type CSSProperties } from "react";
 import { getSeatPositionKey } from "@/lib/seat-layout";
 import type { SeatMapSeat } from "@/lib/services/seat.service";
 import {
@@ -13,6 +13,7 @@ type SeatMapProps = {
   columns: number;
   rows: number;
   aisleColumns: number[];
+  expirationWarningDays?: number;
   selectedSeatId?: string | null;
   selectedSeatIds?: ReadonlySet<string>;
   highlightStudentId?: string | null;
@@ -45,6 +46,61 @@ function getSeatTone(seat: SeatMapSeat | null) {
   }
 }
 
+type ExpirationTier = "critical" | "warning" | null;
+
+function getExpirationTier(
+  courseEndDate: string | null,
+  expirationWarningDays: number,
+): ExpirationTier {
+  if (!courseEndDate) return null;
+
+  const todayMs = new Date(
+    new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" }) +
+      "T00:00:00+09:00",
+  ).getTime();
+  const endMs = new Date(courseEndDate + "T00:00:00+09:00").getTime();
+  const daysRemaining = Math.round((endMs - todayMs) / 86400000);
+
+  if (daysRemaining <= 7) return "critical";
+  if (daysRemaining <= expirationWarningDays) return "warning";
+  return null;
+}
+
+const EXPIRATION_COLORS: Record<
+  "critical" | "warning",
+  { bg: string; border: string }
+> = {
+  critical: { bg: "rgba(239, 68, 68, 0.50)", border: "rgba(239, 68, 68, 0.70)" },
+  warning: { bg: "rgba(245, 158, 11, 0.45)", border: "rgba(245, 158, 11, 0.65)" },
+};
+
+function getAssignedSeatStyle(
+  seat: Pick<SeatMapSeat, "isActive" | "assignedStudent"> | null,
+  isSelected: boolean,
+  expirationWarningDays: number,
+): CSSProperties | undefined {
+  if (!seat?.isActive || !seat.assignedStudent || isSelected) {
+    return undefined;
+  }
+
+  const tier = getExpirationTier(
+    seat.assignedStudent.courseEndDate,
+    expirationWarningDays,
+  );
+
+  if (tier) {
+    return {
+      backgroundColor: EXPIRATION_COLORS[tier].bg,
+      borderColor: EXPIRATION_COLORS[tier].border,
+    };
+  }
+
+  return {
+    backgroundColor: "rgb(var(--division-color-rgb) / 0.5)",
+    borderColor: "rgb(var(--division-color-rgb) / 0.7)",
+  };
+}
+
 const EMPTY_SET = new Set<string>();
 
 export const SeatMap = memo(function SeatMap({
@@ -52,6 +108,7 @@ export const SeatMap = memo(function SeatMap({
   columns,
   rows,
   aisleColumns,
+  expirationWarningDays = 14,
   selectedSeatId,
   selectedSeatIds = EMPTY_SET,
   highlightStudentId,
@@ -98,6 +155,8 @@ export const SeatMap = memo(function SeatMap({
                 const canDragSeat = Boolean(onSeatDrop && seatId && seat?.assignedStudent && seat.isActive);
                 const canDropSeat = Boolean(onSeatDrop && seatId && seat?.isActive);
                 const classes = getSeatTone(seat);
+                const assignedSeatStyle = getAssignedSeatStyle(seat, isSelected, expirationWarningDays);
+                const shouldShowSeatLabel = Boolean(seat?.isActive);
                 const displayLabel = seat ? seat.label : "빈 칸";
 
                 const content = (
@@ -107,10 +166,11 @@ export const SeatMap = memo(function SeatMap({
                         ? "border-slate-950 bg-slate-950 text-white shadow-[0_8px_24px_rgba(15,23,42,0.2)]"
                         : classes
                     } ${isHighlighted && !isSelected ? "ring-2 ring-offset-1 ring-sky-500" : ""}`}
+                    style={assignedSeatStyle}
                   >
                     <div className="flex items-start justify-between gap-1">
                       <span className="text-[11px] font-bold leading-tight">
-                        {!seat?.isActive && !seat?.label ? "" : displayLabel}
+                        {shouldShowSeatLabel ? displayLabel : ""}
                       </span>
                       {seat?.assignedStudent ? (
                         <span
@@ -185,6 +245,39 @@ export const SeatMap = memo(function SeatMap({
                 );
               }),
             )}
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-slate-100 pt-3 text-[11px] text-slate-500">
+            <span className="flex items-center gap-1.5">
+              <span
+                className="inline-block h-3 w-3 rounded-[3px]"
+                style={{
+                  backgroundColor: "rgb(var(--division-color-rgb) / 0.5)",
+                  border: "1px solid rgb(var(--division-color-rgb) / 0.7)",
+                }}
+              />
+              배정 학생
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span
+                className="inline-block h-3 w-3 rounded-[3px]"
+                style={{
+                  backgroundColor: EXPIRATION_COLORS.warning.bg,
+                  border: `1px solid ${EXPIRATION_COLORS.warning.border}`,
+                }}
+              />
+              만료 임박
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span
+                className="inline-block h-3 w-3 rounded-[3px]"
+                style={{
+                  backgroundColor: EXPIRATION_COLORS.critical.bg,
+                  border: `1px solid ${EXPIRATION_COLORS.critical.border}`,
+                }}
+              />
+              만료 긴급 (7일 이내)
+            </span>
           </div>
         </div>
       </div>

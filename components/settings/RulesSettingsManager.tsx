@@ -30,6 +30,7 @@ type FormState = {
   halfDayUnusedPts: string;
   perfectAttendancePtsEnabled: boolean;
   perfectAttendancePts: string;
+  expirationWarningDays: string;
 };
 
 function toFormState(settings: DivisionRuleSettings): FormState {
@@ -52,6 +53,7 @@ function toFormState(settings: DivisionRuleSettings): FormState {
     halfDayUnusedPts: String(settings.halfDayUnusedPts),
     perfectAttendancePtsEnabled: settings.perfectAttendancePtsEnabled,
     perfectAttendancePts: String(settings.perfectAttendancePts),
+    expirationWarningDays: String(settings.expirationWarningDays),
   };
 }
 
@@ -123,6 +125,7 @@ export function RulesSettingsManager({
           halfDayUnusedPts: form.halfDayUnusedPts,
           perfectAttendancePtsEnabled: form.perfectAttendancePtsEnabled,
           perfectAttendancePts: form.perfectAttendancePtsEnabled ? form.perfectAttendancePts : "0",
+          expirationWarningDays: form.expirationWarningDays,
         }),
       });
       const data = await response.json();
@@ -190,6 +193,13 @@ export function RulesSettingsManager({
                 {form.perfectAttendancePtsEnabled
                   ? `활성 — 매일 개근 시 +${form.perfectAttendancePts}점 자동 부여`
                   : "비활성"}
+              </p>
+            </article>
+
+            <article className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
+              <p className="text-sm font-semibold text-slate-900">수강 만료 알림</p>
+              <p className="mt-2 text-sm text-slate-600">
+                수강 종료 {form.expirationWarningDays}일 전부터 만료 임박 표시
               </p>
             </article>
 
@@ -477,6 +487,32 @@ export function RulesSettingsManager({
                   className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-100"
                   required
                 />
+              </label>
+            </div>
+          </div>
+
+          <div className="rounded-[10px] border border-slate-200-slate-200 bg-white p-4">
+            <h3 className="text-sm font-semibold text-slate-900">수강 만료 알림</h3>
+            <p className="mt-2 text-sm text-slate-600">
+              수강 종료일이 지정된 학생에 대해, 종료일로부터 며칠 전부터 만료 임박 알림을 표시할지 설정합니다.
+            </p>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <label className="block">
+                <span className="mb-2 block text-sm font-medium text-slate-700">만료 알림 시작 일수</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={90}
+                  value={form.expirationWarningDays}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, expirationWarningDays: event.target.value }))
+                  }
+                  className="w-full rounded-[10px] border border-slate-200-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                  required
+                />
+                <span className="mt-1.5 block text-xs text-slate-500">
+                  예: 14일로 설정하면, 수강 종료 14일 전부터 대시보드에 만료 임박으로 표시됩니다.
+                </span>
               </label>
             </div>
           </div>

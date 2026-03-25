@@ -138,6 +138,7 @@ export type AdminDashboardData = {
     warningStage: string;
     lastInterviewDate: string | null;
   }>;
+  expirationWarningDays: number;
 };
 
 function getKstDate(offsetDays = 0) {
@@ -426,7 +427,7 @@ async function getAdminDashboardDataUncached(divisionSlug: string): Promise<Admi
       const daysRemaining = Math.round((endMs - todayMs) / 86400000);
       return { ...s, daysRemaining };
     })
-    .filter((s) => s.daysRemaining >= -3 && s.daysRemaining <= 14)
+    .filter((s) => s.daysRemaining >= -3 && s.daysRemaining <= settings.expirationWarningDays)
     .sort((a, b) => a.daysRemaining - b.daysRemaining)
     .map((s) => ({
       id: s.id,
@@ -545,6 +546,7 @@ async function getAdminDashboardDataUncached(divisionSlug: string): Promise<Admi
     upcomingExamSchedules: examSchedules ?? [],
     todayLeaveStudents,
     interviewNeededStudents,
+    expirationWarningDays: settings.expirationWarningDays,
   };
 }
 

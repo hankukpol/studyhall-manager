@@ -317,7 +317,7 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
                   onClick={() => setViewMode("table")}
                   className={`rounded-[10px] px-3 py-1.5 text-xs font-medium transition ${
                     viewMode === "table"
-                      ? "bg-white text-slate-900 shadow-sm"
+                      ? "bg-[var(--division-color)] text-white shadow-sm"
                       : "text-slate-500 hover:text-slate-700"
                   }`}
                 >
@@ -329,7 +329,7 @@ export const AdminAttendanceBoard = memo(function AdminAttendanceBoard({
                   onClick={() => setViewMode("seat")}
                   className={`rounded-[10px] px-3 py-1.5 text-xs font-medium transition ${
                     viewMode === "seat"
-                      ? "bg-white text-slate-900 shadow-sm"
+                      ? "bg-[var(--division-color)] text-white shadow-sm"
                       : "text-slate-500 hover:text-slate-700"
                   }`}
                 >

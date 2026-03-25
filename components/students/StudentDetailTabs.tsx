@@ -114,7 +114,7 @@ export function StudentDetailTabs({
   const [paymentTypeId, setPaymentTypeId] = useState("");
   const [paymentDate, setPaymentDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [paymentAmount, setPaymentAmount] = useState(defaultPaymentAmount != null ? String(defaultPaymentAmount) : "");
-  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("카드");
   const [paymentNotes, setPaymentNotes] = useState(defaultPaymentNotes ?? "");
   const [selectedPlanId, setSelectedPlanId] = useState("");
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
@@ -139,7 +139,7 @@ export function StudentDetailTabs({
     setPaymentTypeId("");
     setPaymentDate(new Date().toISOString().slice(0, 10));
     setPaymentAmount(defaultPaymentAmount != null ? String(defaultPaymentAmount) : "");
-    setPaymentMethod("");
+    setPaymentMethod("카드");
     setPaymentNotes(defaultPaymentNotes ?? "");
     setSelectedPlanId("");
   }

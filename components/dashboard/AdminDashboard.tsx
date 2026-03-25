@@ -76,9 +76,11 @@ function timeToSec(timeStr: string): number {
 
 type PeriodInfo =
   | { type: "STUDYING"; periodName: string; remainingMin: number; remainingSec: number; progressPercent: number; startTime: string; endTime: string }
-  | { type: "BREAK"; nextPeriodName: string; remainingMin: number; remainingSec: number; progressPercent: number }
+  | { type: "BREAK"; nextPeriodName: string; remainingMin: number; remainingSec: number; progressPercent: number; totalBreakMin: number }
   | { type: "END" }
   | { type: "BEFORE"; nextPeriodName: string; remainingMin: number; remainingSec: number };
+
+type NotificationPermissionState = NotificationPermission | "unsupported";
 
 function getCurrentPeriodInfo(
   schedules: AdminDashboardData["periodSchedules"],
@@ -120,6 +122,7 @@ function getCurrentPeriodInfo(
         remainingMin: Math.floor(remaining / 60),
         remainingSec: remaining % 60,
         progressPercent: breakTotal > 0 ? Math.min(100, (breakElapsed / breakTotal) * 100) : 0,
+        totalBreakMin: Math.round(breakTotal / 60),
       };
     }
     return {
@@ -158,13 +161,45 @@ function playBeep() {
 }
 
 function showBrowserNotification(message: string) {
-  if (!("Notification" in window)) return;
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  new Notification("시간통제 자습반", { body: message });
+}
+
+async function requestBrowserNotificationPermission(): Promise<NotificationPermissionState> {
+  if (!("Notification" in window)) {
+    return "unsupported";
+  }
+
   if (Notification.permission === "granted") {
-    new Notification("시간통제 자습반", { body: message });
-  } else if (Notification.permission !== "denied") {
-    void Notification.requestPermission().then((perm) => {
-      if (perm === "granted") new Notification("시간통제 자습반", { body: message });
-    });
+    return "granted";
+  }
+
+  return Notification.requestPermission();
+}
+
+function getPeriodStateKey(info: PeriodInfo) {
+  switch (info.type) {
+    case "STUDYING":
+      return `STUDYING:${info.periodName}:${info.startTime}:${info.endTime}`;
+    case "BREAK":
+      return `BREAK:${info.nextPeriodName}`;
+    case "BEFORE":
+      return `BEFORE:${info.nextPeriodName}`;
+    default:
+      return info.type;
+  }
+}
+
+function getPeriodTransitionMessage(info: PeriodInfo) {
+  switch (info.type) {
+    case "STUDYING":
+      return `${info.periodName} 자습이 시작되었습니다.`;
+    case "BREAK":
+      return info.totalBreakMin >= 30 ? "식사 시간이 시작되었습니다." : "쉬는 시간이 시작되었습니다.";
+    case "END":
+      return "오늘 자습이 모두 종료되었습니다.";
+    default:
+      return null;
   }
 }
 
@@ -203,34 +238,62 @@ function PeriodTimerWidget({
   schedules: AdminDashboardData["periodSchedules"];
 }) {
   const [now, setNow] = useState<Date | null>(null);
-  const prevTypeRef = useRef<PeriodInfo["type"] | null>(null);
+  const [notificationPermission, setNotificationPermission] =
+    useState<NotificationPermissionState>("unsupported");
+  const prevStateKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!("Notification" in window)) {
+      setNotificationPermission("unsupported");
+      return;
+    }
+
+    setNotificationPermission(Notification.permission);
+  }, []);
 
   useEffect(() => {
     const updateNow = () => setNow(new Date());
     updateNow();
-    const timer = window.setInterval(updateNow, 60_000);
+    const timer = window.setInterval(updateNow, 1_000);
     return () => window.clearInterval(timer);
   }, []);
 
   useEffect(() => {
     if (!now || schedules.length === 0) return;
     const info = getCurrentPeriodInfo(schedules, now);
-    const prev = prevTypeRef.current;
-    if (prev !== null && prev !== info.type) {
-      if (info.type === "BREAK") {
+    const nextStateKey = getPeriodStateKey(info);
+    const prevStateKey = prevStateKeyRef.current;
+
+    if (prevStateKey !== null && prevStateKey !== nextStateKey) {
+      const message = getPeriodTransitionMessage(info);
+
+      if (message) {
         playBeep();
-        showBrowserNotification("쉬는 시간입니다.");
-      } else if (info.type === "STUDYING") {
-        playBeep();
-        showBrowserNotification(`${info.periodName} 자습 시작`);
-      } else if (info.type === "END") {
-        playBeep();
-        showBrowserNotification("오늘 자습이 모두 종료되었습니다.");
+        showBrowserNotification(message);
       }
     }
-    prevTypeRef.current = info.type;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [now]);
+
+    prevStateKeyRef.current = nextStateKey;
+  }, [now, schedules]);
+
+  async function handleEnableNotifications() {
+    const permission = await requestBrowserNotificationPermission();
+    setNotificationPermission(permission);
+
+    if (permission === "granted") {
+      toast.success("브라우저 알림이 허용되었습니다.");
+      return;
+    }
+
+    if (permission === "denied") {
+      toast.error("브라우저 알림이 차단되어 있습니다. 브라우저 설정에서 허용해 주세요.");
+      return;
+    }
+
+    if (permission === "unsupported") {
+      toast.error("이 브라우저에서는 알림을 지원하지 않습니다.");
+    }
+  }
 
   if (!now || schedules.length === 0) return null;
 
@@ -245,11 +308,13 @@ function PeriodTimerWidget({
         ? { from: "#d97706", to: "#78350f" }
         : { from: "#0284c7", to: "#0c4a6e" };
 
+  const isMealBreak = info.type === "BREAK" && info.totalBreakMin >= 30;
+
   const statusLabel =
     info.type === "STUDYING"
       ? `${info.periodName} 자습 중`
       : info.type === "BREAK"
-        ? "쉬는 시간"
+        ? isMealBreak ? "식사 시간" : "쉬는 시간"
         : "자습 시작 전";
 
   const subLabel =
@@ -289,6 +354,26 @@ function PeriodTimerWidget({
           </div>
         </div>
 
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {notificationPermission === "default" ? (
+            <button
+              type="button"
+              onClick={() => void handleEnableNotifications()}
+              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/15"
+            >
+              브라우저 알림 허용
+            </button>
+          ) : notificationPermission === "granted" ? (
+            <span className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/85">
+              브라우저 알림 사용 중
+            </span>
+          ) : notificationPermission === "denied" ? (
+            <span className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/80">
+              브라우저 알림 차단됨
+            </span>
+          ) : null}
+        </div>
+
         {(info.type === "STUDYING" || info.type === "BREAK") && (
           <div className="mt-5">
             <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/20">
@@ -308,7 +393,7 @@ function PeriodTimerWidget({
                 </>
               ) : (
                 <>
-                  <span>쉬는 시간 중</span>
+                  <span>{isMealBreak ? "식사 시간 중" : "쉬는 시간 중"}</span>
                   <span className="font-semibold text-white/80">
                     {Math.round(progressPercent)}% 경과
                   </span>
@@ -488,7 +573,7 @@ export function AdminDashboard({ divisionSlug, initialData }: AdminDashboardProp
           data.expiringStudents.length > 0
             ? `${expiringLead?.name}${data.expiringStudents.length > 1 ? ` 외 ${data.expiringStudents.length - 1}명` : ""}의 수강 종료 일정을 확인해야 합니다.`
             : "만료 임박 학생이 없습니다.",
-        note: expiringSoonCount > 0 ? `7일 이내 ${expiringSoonCount}명` : "14일 이내 기준",
+        note: expiringSoonCount > 0 ? `7일 이내 ${expiringSoonCount}명` : `${data.expirationWarningDays}일 이내 기준`,
         href: `/${divisionSlug}/admin/students`,
         cta: "학생 관리로 이동",
         icon: CalendarX,

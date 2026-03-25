@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   ArrowRight,
   BellRing,
+  CalendarClock,
   CalendarDays,
   ClipboardList,
   ShieldAlert,
@@ -132,6 +133,52 @@ export function StudentDashboard({ data }: StudentDashboardProps) {
           </div>
         </section>
       ) : null}
+
+      {data.enrollment ? (() => {
+        const { daysRemaining, expirationWarningDays } = data.enrollment;
+        const isExpired = daysRemaining <= 0;
+        const isCritical = daysRemaining <= 7;
+        const isWarning = daysRemaining <= expirationWarningDays;
+
+        const bgColor = isCritical ? "#fef2f2" : isWarning ? "#fffbeb" : "#f0fdf4";
+        const fgColor = isCritical ? "#b91c1c" : isWarning ? "#b45309" : "#15803d";
+        const borderColor = isCritical ? "#fecaca" : isWarning ? "#fde68a" : "#bbf7d0";
+
+        const dDayLabel = isExpired
+          ? daysRemaining === 0 ? "오늘 만료" : `${Math.abs(daysRemaining)}일 초과`
+          : `D-${daysRemaining}`;
+
+        return (
+          <section className={`${portalSectionClass} py-3.5`}>
+            <div className="flex items-center gap-3">
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]"
+                style={{ backgroundColor: bgColor, color: fgColor }}
+              >
+                <CalendarClock className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[12px] font-bold" style={{ color: fgColor }}>
+                  수강 기간
+                </p>
+                <h2 className="mt-0.5 truncate text-[16px] font-bold text-[var(--foreground)]">
+                  {formatDate(data.enrollment.courseStartDate)} ~ {formatDate(data.enrollment.courseEndDate)}
+                </h2>
+              </div>
+              <div
+                className="rounded-[10px] px-3 py-1.5 text-[13px] font-bold"
+                style={{
+                  backgroundColor: bgColor,
+                  color: fgColor,
+                  border: `1px solid ${borderColor}`,
+                }}
+              >
+                {dDayLabel}
+              </div>
+            </div>
+          </section>
+        );
+      })() : null}
 
       <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <PortalMetricCard

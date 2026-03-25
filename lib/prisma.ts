@@ -4,11 +4,25 @@ const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
+function isLocalRuntime() {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+
+  return (
+    process.env.NODE_ENV !== "production" ||
+    appUrl.includes("localhost") ||
+    appUrl.includes("127.0.0.1")
+  );
+}
+
 function getRuntimeDatabaseUrl() {
   const value = process.env.DATABASE_URL;
 
   if (!value) {
     return undefined;
+  }
+
+  if (isLocalRuntime()) {
+    return value;
   }
 
   try {
@@ -27,7 +41,7 @@ function getRuntimeDatabaseUrl() {
     }
 
     if (!url.searchParams.has("connection_limit")) {
-      url.searchParams.set("connection_limit", "10");
+      url.searchParams.set("connection_limit", "1");
     }
 
     return url.toString();

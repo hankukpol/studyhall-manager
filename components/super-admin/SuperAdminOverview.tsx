@@ -200,7 +200,7 @@ function DivisionCard({ d }: { d: DivisionOverviewSummary }) {
               >
                 {d.expiringCount}
               </p>
-              <p className="mt-2 text-sm text-slate-400">14일 이내 종료 예정</p>
+              <p className="mt-2 text-sm text-slate-400">만료 임박 학생</p>
             </div>
 
             {/* 직원 현황 */}
@@ -513,7 +513,7 @@ export function SuperAdminOverview({ initialDivisions }: SuperAdminOverviewProps
         <AggCard label="전체 학생 수" value={totalStudents} unit="명" sub={`${activeCount}개 지점 합산`} icon={Users} />
         <AggCard label="미처리 교시" value={totalUnchecked} unit="교시" sub="오늘 필수 교시 누락" icon={BookOpenCheck} isAlert />
         <AggCard label="경고 위험 학생" value={totalRisk} unit="명" sub="warnLevel1 이상 학생" icon={AlertTriangle} isAlert />
-        <AggCard label="수강 만료 임박" value={totalExpiring} unit="명" sub="14일 이내 수강 종료" icon={CalendarX} isAlert />
+        <AggCard label="수강 만료 임박" value={totalExpiring} unit="명" sub="만료 임박 학생 합산" icon={CalendarX} isAlert />
       </section>
 
       {/* 수납 현황 집계 */}
