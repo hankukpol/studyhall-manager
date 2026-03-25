@@ -98,6 +98,7 @@ type LegacySeatRow = {
   studentName: string | null;
   studentNumber: string | null;
   studentStatus: SeatMapStudent["status"] | null;
+  courseEndDate: string | null;
 };
 
 type SeatNormalizationSource = SeatDraftLayoutItem & {
@@ -233,7 +234,8 @@ async function readLegacySeatRows(
       student.id AS "studentId",
       student.name AS "studentName",
       student.student_number AS "studentNumber",
-      student.status::text AS "studentStatus"
+      student.status::text AS "studentStatus",
+      to_char(student.course_end_date, 'YYYY-MM-DD') AS "courseEndDate"
     FROM seats seat
     LEFT JOIN students student
       ON student.seat_id = seat.id
@@ -988,6 +990,7 @@ async function getSeatLayoutUncached(divisionSlug: string, roomId?: string): Pro
                   studentNumber: true,
                   status: true,
                   studyTrack: true,
+                  courseEndDate: true,
                 },
               },
             },
@@ -1037,9 +1040,7 @@ async function getSeatLayoutUncached(divisionSlug: string, roomId?: string): Pro
               studyTrack: seat.student.studyTrack,
               studyRoomName: effectiveRoom.name,
               courseEndDate: seat.student.courseEndDate
-                ? (typeof seat.student.courseEndDate === "string"
-                    ? seat.student.courseEndDate.slice(0, 10)
-                    : (seat.student.courseEndDate as Date).toISOString().slice(0, 10))
+                ? seat.student.courseEndDate.toISOString().slice(0, 10)
                 : null,
             }
           : null,

@@ -450,6 +450,7 @@ function createDefaultDivisionSettingsRecord(division: MockDivisionRecord): Mock
     halfDayUnusedPts: 2,
     perfectAttendancePtsEnabled: false,
     perfectAttendancePts: 0,
+    expirationWarningDays: 14,
     operatingDays: {
       mon: true,
       tue: true,

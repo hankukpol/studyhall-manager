@@ -183,6 +183,7 @@ function buildSeatMapSeats(
             status: assignedStudent.status,
             studyTrack: assignedStudent.studyTrack,
             studyRoomName: roomName,
+            courseEndDate: assignedStudent.courseEndDate,
           }
         : null,
     } satisfies SeatMapSeat;

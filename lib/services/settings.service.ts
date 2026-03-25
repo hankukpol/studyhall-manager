@@ -274,6 +274,7 @@ function serializeLegacySettingsRecord(record: LegacyDivisionSettingsRow): Divis
     halfDayUnusedPts: record.halfDayUnusedPts ?? DEFAULT_RULE_VALUES.halfDayUnusedPts,
     perfectAttendancePtsEnabled: DEFAULT_RULE_VALUES.perfectAttendancePtsEnabled,
     perfectAttendancePts: DEFAULT_RULE_VALUES.perfectAttendancePts,
+    expirationWarningDays: DEFAULT_RULE_VALUES.expirationWarningDays,
     operatingDays: record.operatingDays ?? normalizeOperatingDays(undefined),
     studyTracks: normalizeStudyTracks(undefined),
     updatedAt: record.updatedAt ?? new Date(),
