@@ -185,9 +185,15 @@ type AttendanceContext = {
   periods: Awaited<ReturnType<typeof getPeriods>>;
 };
 
+/** 좌석이 배정된(ACTIVE/ON_LEAVE) 학생만 반환 — 출석 체크 대상 */
+async function getSeatedStudents(divisionSlug: string) {
+  const all = await getDivisionStudents(divisionSlug);
+  return all.filter((student) => student.seatId !== null);
+}
+
 async function getAttendanceContext(divisionSlug: string): Promise<AttendanceContext> {
   const [students, periods] = await Promise.all([
-    getDivisionStudents(divisionSlug),
+    getSeatedStudents(divisionSlug),
     getPeriods(divisionSlug),
   ]);
 
@@ -465,7 +471,7 @@ async function checkAndGrantPerfectAttendancePoints(
   }
 
   const mandatoryPeriodIds = new Set(mandatoryActivePeriods.map((period) => period.id));
-  const students = await getDivisionStudents(divisionSlug);
+  const students = await getSeatedStudents(divisionSlug);
   const dupCheckNotes = `[자동] 개근 상점 (${date})`;
 
   if (isMockMode()) {
@@ -609,7 +615,7 @@ export async function upsertAttendanceBatch(
   await ensureAssistantAllowed(divisionSlug, actor, normalizedDate);
 
   const [students, periods] = await Promise.all([
-    getDivisionStudents(divisionSlug),
+    getSeatedStudents(divisionSlug),
     getPeriods(divisionSlug),
   ]);
 

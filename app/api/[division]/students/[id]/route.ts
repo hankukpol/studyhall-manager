@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getZodErrorMessage, toApiErrorResponse } from "@/lib/api-error-response";
 import { requireApiAuth } from "@/lib/api-auth";
 import { studentUpsertSchema } from "@/lib/student-schemas";
-import { getStudentDetail, updateStudent } from "@/lib/services/student.service";
+import { deleteStudent, getStudentDetail, updateStudent } from "@/lib/services/student.service";
 
 export async function GET(
   _request: NextRequest,
@@ -48,5 +48,23 @@ export async function PATCH(
     return NextResponse.json({ student });
   } catch (error) {
     return toApiErrorResponse(error, "학생 처리 중 오류가 발생했습니다.");
+  }
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: { division: string; id: string } },
+) {
+  const auth = await requireApiAuth(params.division, ["ADMIN", "SUPER_ADMIN"]);
+
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
+  try {
+    await deleteStudent(params.division, params.id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return toApiErrorResponse(error, "학생 삭제 중 오류가 발생했습니다.");
   }
 }

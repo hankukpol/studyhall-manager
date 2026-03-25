@@ -2,28 +2,33 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   CalendarX,
+  CircleAlert,
+  LoaderCircle,
   MapPin,
   Plus,
   RefreshCcw,
   RotateCcw,
   Search,
   ShieldAlert,
+  Trash2,
   UserCheck,
   UserMinus,
   Users,
   X,
 } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Modal } from "@/components/ui/Modal";
 import { StudentStatusBadge, WarningStageBadge } from "@/components/students/StudentBadges";
 import {
   STUDENT_STATUS_OPTIONS,
   WARNING_STAGE_OPTIONS,
+  getStudentStatusLabel,
   getWarningStageLabel,
 } from "@/lib/student-meta";
 import type { SeatOptionItem } from "@/lib/services/seat.service";
@@ -38,6 +43,10 @@ type StudentListManagerProps = {
   seatOptions?: SeatOptionItem[];
   tuitionPlans?: TuitionPlanItem[];
   initialCreateOpen?: boolean;
+  /** 서버에서 전달된 오늘 날짜 (KST, yyyy-MM-dd). Hydration 안정성을 위해 사용 */
+  today?: string;
+  /** 서버 컴포넌트에서 전달된 URL 쿼리 파라미터. useSearchParams 대신 사용하여 hydration 안정성 보장 */
+  initialSearchParams?: Record<string, string | undefined>;
 };
 
 const sortOptions = [
@@ -96,32 +105,38 @@ export function StudentListManager({
   seatOptions = [],
   tuitionPlans = [],
   initialCreateOpen = false,
+  today,
+  initialSearchParams = {},
 }: StudentListManagerProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [search, setSearch] = useState(() => searchParams.get("q") ?? "");
+  const [search, setSearch] = useState(() => initialSearchParams.q ?? "");
   const [statusFilter, setStatusFilter] = useState<StatusFilterValue>(() =>
-    getValidQueryValue(searchParams.get("status"), statusFilterValues, "ALL"),
+    getValidQueryValue(initialSearchParams.status ?? null, statusFilterValues, "ALL"),
   );
   const [warningFilter, setWarningFilter] = useState<WarningFilterValue>(() =>
-    getValidQueryValue(searchParams.get("warning"), warningFilterValues, "ALL"),
+    getValidQueryValue(initialSearchParams.warning ?? null, warningFilterValues, "ALL"),
   );
-  const [trackFilter, setTrackFilter] = useState(() => searchParams.get("track") ?? "ALL");
-  const [expiringFilter, setExpiringFilter] = useState(() => searchParams.get("expiring") === "true");
+  const [trackFilter, setTrackFilter] = useState(() => initialSearchParams.track ?? "ALL");
+  const [expiringFilter, setExpiringFilter] = useState(() => initialSearchParams.expiring === "true");
   const [sortBy, setSortBy] = useState<(typeof sortOptions)[number]["value"]>(() =>
-    getValidQueryValue(searchParams.get("sort"), sortFilterValues, "studentNumber"),
+    getValidQueryValue(initialSearchParams.sort ?? null, sortFilterValues, "studentNumber"),
   );
   const [isCreateOpen, setIsCreateOpen] = useState(initialCreateOpen);
+  const [deleteTarget, setDeleteTarget] = useState<StudentListItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const deferredSearch = useDeferredValue(search.trim().toLowerCase());
-  const createFromQuery = searchParams.get("panel") === "create";
 
   const allTrackOptions = useMemo(
     () => getTrackOptions(initialStudents, studyTrackOptions),
     [initialStudents, studyTrackOptions],
   );
 
+  // 서버에서 전달된 today가 없으면 클라이언트에서 한 번만 계산 (hydration 이후)
+  const [stableToday] = useState(() => today ?? new Date().toISOString().slice(0, 10));
+
   const filteredStudents = useMemo(() => {
+    const todayMs = new Date(stableToday + "T00:00:00Z").getTime();
     const matched = initialStudents.filter((student) => {
       const trackValue = student.studyTrack?.toLowerCase() ?? "";
       const matchesSearch =
@@ -135,8 +150,7 @@ export function StudentListManager({
       const matchesExpiring = !expiringFilter || (() => {
         if (!student.courseEndDate) return false;
         const endMs = new Date(student.courseEndDate + "T00:00:00Z").getTime();
-        const nowMs = new Date(new Date().toISOString().slice(0, 10) + "T00:00:00Z").getTime();
-        const days = Math.round((endMs - nowMs) / 86400000);
+        const days = Math.round((endMs - todayMs) / 86400000);
         return days >= -3 && days <= 30;
       })();
 
@@ -163,7 +177,7 @@ export function StudentListManager({
     });
 
     return sorted;
-  }, [deferredSearch, initialStudents, sortBy, statusFilter, warningFilter, trackFilter, expiringFilter]);
+  }, [deferredSearch, initialStudents, sortBy, statusFilter, warningFilter, trackFilter, expiringFilter, stableToday]);
 
   const summary = useMemo(
     () =>
@@ -208,70 +222,39 @@ export function StudentListManager({
       panel?: string | null;
       expiring?: string | null;
     }) => {
-      const nextParams = new URLSearchParams(searchParams.toString());
+      const nextParams = new URLSearchParams();
 
-      const entries = Object.entries(updates) as Array<[string, string | null | undefined]>;
+      // 현재 state 값을 기본으로 사용하되, updates 에 명시된 키는 오버라이드
+      const q = updates.q !== undefined ? updates.q : search.trim() || null;
+      const status = updates.status !== undefined ? updates.status : statusFilter;
+      const warning = updates.warning !== undefined ? updates.warning : warningFilter;
+      const track = updates.track !== undefined ? updates.track : trackFilter;
+      const sort = updates.sort !== undefined ? updates.sort : sortBy;
+      const expiring = updates.expiring !== undefined ? updates.expiring : (expiringFilter ? "true" : null);
+      const panel = updates.panel !== undefined ? updates.panel : null;
 
-      entries.forEach(([key, value]) => {
-        if (!value || value === "ALL" || (key === "sort" && value === "studentNumber")) {
-          nextParams.delete(key);
-        } else {
-          nextParams.set(key, value);
-        }
-      });
+      if (q) nextParams.set("q", q);
+      if (status && status !== "ALL") nextParams.set("status", status);
+      if (warning && warning !== "ALL") nextParams.set("warning", warning);
+      if (track && track !== "ALL") nextParams.set("track", track);
+      if (sort && sort !== "studentNumber") nextParams.set("sort", sort);
+      if (expiring === "true") nextParams.set("expiring", "true");
+      if (panel) nextParams.set("panel", panel);
 
       const nextQuery = nextParams.toString();
       router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
     },
-    [pathname, router, searchParams],
+    [pathname, router, search, statusFilter, warningFilter, trackFilter, sortBy, expiringFilter],
   );
 
+  /** 검색어 입력 디바운스 → URL 동기화 */
   useEffect(() => {
-    setIsCreateOpen(initialCreateOpen || createFromQuery);
-  }, [createFromQuery, initialCreateOpen]);
-
-  useEffect(() => {
-    const nextSearch = searchParams.get("q") ?? "";
-    const nextStatus = getValidQueryValue(searchParams.get("status"), statusFilterValues, "ALL");
-    const nextWarning = getValidQueryValue(searchParams.get("warning"), warningFilterValues, "ALL");
-    const nextTrack = searchParams.get("track") ?? "ALL";
-    const nextSort = getValidQueryValue(searchParams.get("sort"), sortFilterValues, "studentNumber");
-    const nextExpiring = searchParams.get("expiring") === "true";
-
-    if (search !== nextSearch) {
-      setSearch(nextSearch);
-    }
-    if (statusFilter !== nextStatus) {
-      setStatusFilter(nextStatus);
-    }
-    if (warningFilter !== nextWarning) {
-      setWarningFilter(nextWarning);
-    }
-    if (trackFilter !== nextTrack) {
-      setTrackFilter(nextTrack);
-    }
-    if (sortBy !== nextSort) {
-      setSortBy(nextSort);
-    }
-    if (expiringFilter !== nextExpiring) {
-      setExpiringFilter(nextExpiring);
-    }
-  }, [searchParams, search, sortBy, statusFilter, trackFilter, warningFilter, expiringFilter]);
-
-  useEffect(() => {
-    const currentQuery = searchParams.get("q") ?? "";
-    const nextQuery = search.trim();
-
-    if (currentQuery === nextQuery) {
-      return undefined;
-    }
-
     const timeoutId = window.setTimeout(() => {
-      updateListQuery({ q: nextQuery ? nextQuery : null });
+      updateListQuery({ q: search.trim() || null });
     }, 250);
 
     return () => window.clearTimeout(timeoutId);
-  }, [search, searchParams, updateListQuery]);
+  }, [search, updateListQuery]);
 
   function updatePanelQuery(open: boolean) {
     updateListQuery({ panel: open ? "create" : null });
@@ -285,6 +268,29 @@ export function StudentListManager({
   function closeCreatePanel() {
     setIsCreateOpen(false);
     updatePanelQuery(false);
+  }
+
+  async function handleDeleteStudent(event: FormEvent) {
+    event.preventDefault();
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      const response = await fetch(
+        `/api/${divisionSlug}/students/${deleteTarget.id}`,
+        { method: "DELETE" },
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error ?? "학생 삭제에 실패했습니다.");
+      }
+      toast.success(`${deleteTarget.name} 학생을 삭제했습니다.`);
+      setDeleteTarget(null);
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "학생 삭제에 실패했습니다.");
+    } finally {
+      setIsDeleting(false);
+    }
   }
 
   function resetFilters() {
@@ -480,7 +486,41 @@ export function StudentListManager({
           </div>
 
           <div className="mt-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">빠른 필터</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">상태 필터</p>
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setStatusFilter("ALL");
+                  updateListQuery({ status: null });
+                }}
+                className={`whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition ${
+                  statusFilter === "ALL"
+                    ? "bg-[var(--division-color)] text-white"
+                    : "border border-slate-200-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                전체
+              </button>
+              {STUDENT_STATUS_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    setStatusFilter(option.value);
+                    updateListQuery({ status: option.value });
+                  }}
+                  className={`whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition ${
+                    statusFilter === option.value
+                      ? "bg-[var(--division-color)] text-white"
+                      : "border border-slate-200-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">빠른 필터</p>
             <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
               <button
                 type="button"
@@ -542,6 +582,11 @@ export function StudentListManager({
               {search.trim() ? (
                 <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
                   검색어 {search.trim()}
+                </span>
+              ) : null}
+              {statusFilter !== "ALL" ? (
+                <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
+                  {getStudentStatusLabel(statusFilter)}
                 </span>
               ) : null}
               {warningFilter !== "ALL" ? (
@@ -613,14 +658,26 @@ export function StudentListManager({
                     </td>
                     <td className="px-4 py-4 text-slate-600">{formatDate(student.createdAt)}</td>
                     <td className="px-4 py-4 text-right">
-                      <Link
-                        href={`/${divisionSlug}/admin/students/${student.id}`}
-                        prefetch={false}
-                        className="inline-flex items-center gap-1 rounded-full border border-slate-200-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
-                      >
-                        상세 보기
-                        <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
-                      </Link>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Link
+                          href={`/${divisionSlug}/admin/students/${student.id}`}
+                          prefetch={false}
+                          className="inline-flex items-center gap-1 rounded-full border border-slate-200-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
+                        >
+                          상세 보기
+                          <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
+                        </Link>
+                        {canManage && (
+                          <button
+                            type="button"
+                            onClick={() => setDeleteTarget(student)}
+                            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-400 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600"
+                            title="학생 삭제"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -655,14 +712,26 @@ export function StudentListManager({
                 <p className="mt-3 text-sm text-slate-500">{student.phone || "연락처 미등록"}</p>
                 <p className="mt-1 text-xs text-slate-400">등록일 {formatDate(student.createdAt)}</p>
 
-                <Link
-                  href={`/${divisionSlug}/admin/students/${student.id}`}
-                  prefetch={false}
-                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-[var(--division-color)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-                >
-                  상세 보기
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
+                <div className="mt-4 flex items-center gap-2">
+                  <Link
+                    href={`/${divisionSlug}/admin/students/${student.id}`}
+                    prefetch={false}
+                    className="inline-flex items-center gap-2 rounded-full bg-[var(--division-color)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+                  >
+                    상세 보기
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  {canManage && (
+                    <button
+                      type="button"
+                      onClick={() => setDeleteTarget(student)}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-rose-600 transition hover:bg-rose-50"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      삭제
+                    </button>
+                  )}
+                </div>
               </article>
             ))}
           </div>
@@ -700,6 +769,70 @@ export function StudentListManager({
           />
         </Modal>
       ) : null}
+
+      {/* 학생 삭제 확인 모달 */}
+      <Modal
+        open={deleteTarget !== null}
+        onClose={() => !isDeleting && setDeleteTarget(null)}
+        badge="학생 삭제"
+        title="학생을 삭제하시겠습니까?"
+        description="삭제된 학생 데이터는 복구할 수 없습니다."
+      >
+        {deleteTarget && (
+          <form onSubmit={handleDeleteStudent} className="space-y-5">
+            <div className="rounded-[10px] border border-rose-200 bg-rose-50 px-4 py-4 text-sm leading-6 text-rose-800">
+              <div className="flex items-start gap-3">
+                <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" />
+                <div>
+                  <p className="font-semibold">이 작업은 되돌릴 수 없습니다.</p>
+                  <p className="mt-1">
+                    학생의 출결 기록, 상벌점, 성적, 수납 내역, 면담 기록 등 모든 관련 데이터가 영구적으로 삭제됩니다.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-4 text-sm text-slate-700">
+              <p className="font-semibold text-slate-950">
+                {deleteTarget.name}
+                <span className="ml-2 text-xs font-medium text-slate-500">
+                  {deleteTarget.studentNumber}
+                </span>
+              </p>
+              <p className="mt-2">
+                직렬 {deleteTarget.studyTrack || "미지정"} · 좌석 {deleteTarget.seatDisplay || "미배정"}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <StudentStatusBadge status={deleteTarget.status} />
+                <WarningStageBadge stage={deleteTarget.warningStage} />
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={isDeleting}
+                className="flex-1 rounded-full border border-slate-200 bg-white py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+              >
+                취소
+              </button>
+              <button
+                type="submit"
+                disabled={isDeleting}
+                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-rose-600 py-3 text-sm font-medium text-white transition hover:bg-rose-700 disabled:opacity-60"
+              >
+                {isDeleting ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+                삭제 확정
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
     </>
   );
 }

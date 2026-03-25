@@ -1182,6 +1182,105 @@ export async function withdrawStudent(
   return getStudentDetail(divisionSlug, studentId);
 }
 
+export async function deleteStudent(divisionSlug: string, studentId: string) {
+  if (isMockMode()) {
+    await updateMockState(async (state) => {
+      const current = state.studentsByDivision[divisionSlug] ?? [];
+      const target = current.find((student) => student.id === studentId);
+      if (!target) {
+        throw notFound("학생 정보를 찾을 수 없습니다.");
+      }
+      state.studentsByDivision[divisionSlug] = current.filter(
+        (student) => student.id !== studentId,
+      );
+      if (state.attendanceByDivision[divisionSlug]) {
+        state.attendanceByDivision[divisionSlug] = state.attendanceByDivision[divisionSlug].filter(
+          (record) => record.studentId !== studentId,
+        );
+      }
+      if (state.pointRecordsByDivision[divisionSlug]) {
+        state.pointRecordsByDivision[divisionSlug] = state.pointRecordsByDivision[divisionSlug].filter(
+          (record) => record.studentId !== studentId,
+        );
+      }
+    });
+    return;
+  }
+
+  const division = await getDivisionOrThrow(divisionSlug);
+  const prisma = await getPrismaClient();
+  const student = await prisma.student.findFirst({
+    where: {
+      id: studentId,
+      divisionId: division.id,
+    },
+    select: { id: true },
+  });
+
+  if (!student) {
+    throw notFound("학생 정보를 찾을 수 없습니다.");
+  }
+
+  // Student 관련 레코드는 onDelete: Cascade로 자동 삭제
+  await prisma.student.delete({ where: { id: studentId } });
+}
+
+export async function reactivateStudent(divisionSlug: string, studentId: string) {
+  if (isMockMode()) {
+    await updateMockState(async (state) => {
+      const current = state.studentsByDivision[divisionSlug] ?? [];
+      const target = current.find((student) => student.id === studentId);
+      if (!target) {
+        throw notFound("학생 정보를 찾을 수 없습니다.");
+      }
+      if (target.status !== "WITHDRAWN") {
+        throw badRequest("퇴실 상태인 학생만 재입실할 수 있습니다.");
+      }
+      state.studentsByDivision[divisionSlug] = current.map((student) =>
+        student.id === studentId
+          ? {
+              ...student,
+              status: "ACTIVE",
+              withdrawnAt: null,
+              withdrawnNote: null,
+              updatedAt: new Date().toISOString(),
+            }
+          : student,
+      );
+    });
+    return getStudentDetail(divisionSlug, studentId);
+  }
+
+  const division = await getDivisionOrThrow(divisionSlug);
+  const prisma = await getPrismaClient();
+  const student = await prisma.student.findFirst({
+    where: {
+      id: studentId,
+      divisionId: division.id,
+    },
+    select: { id: true, status: true },
+  });
+
+  if (!student) {
+    throw notFound("학생 정보를 찾을 수 없습니다.");
+  }
+
+  if (student.status !== "WITHDRAWN") {
+    throw badRequest("퇴실 상태인 학생만 재입실할 수 있습니다.");
+  }
+
+  await prisma.student.update({
+    where: { id: studentId },
+    data: {
+      status: "ACTIVE",
+      withdrawnAt: null,
+      withdrawnNote: null,
+    },
+  });
+
+  return getStudentDetail(divisionSlug, studentId);
+}
+
 export async function findStudentSessionByCredentials(
   divisionSlug: string,
   studentNumber: string,

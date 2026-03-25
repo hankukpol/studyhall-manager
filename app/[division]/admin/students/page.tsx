@@ -1,18 +1,53 @@
-import { StudentListManager } from "@/components/students/StudentListManager";
+import dynamic from "next/dynamic";
+import { Users } from "lucide-react";
+
 import { requireDivisionAdminAccess } from "@/lib/auth";
 import { listSeatOptions } from "@/lib/services/seat.service";
 import { getDivisionGeneralSettings } from "@/lib/services/settings.service";
 import { listStudents } from "@/lib/services/student.service";
 import { listTuitionPlans } from "@/lib/services/tuition-plan.service";
 
+const StudentListManager = dynamic(
+  () => import("@/components/students/StudentListManager").then((mod) => mod.StudentListManager),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="space-y-4">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <article key={i} className="rounded-[10px] border border-slate-200 bg-white p-5">
+              <div className="h-4 w-20 animate-pulse rounded bg-slate-100" />
+              <div className="mt-4 h-8 w-14 animate-pulse rounded bg-slate-100" />
+              <div className="mt-3 h-3 w-32 animate-pulse rounded bg-slate-100" />
+            </article>
+          ))}
+        </section>
+        <section className="flex items-center justify-center rounded-[10px] border border-slate-200 bg-white p-10">
+          <div className="flex items-center gap-3 text-sm text-slate-400">
+            <Users className="h-5 w-5 animate-pulse" />
+            학생 명단을 불러오는 중입니다…
+          </div>
+        </section>
+      </div>
+    ),
+  },
+);
+
 type StudentsPageProps = {
   params: {
     division: string;
   };
-  searchParams?: {
-    panel?: string;
-  };
+  searchParams?: Record<string, string | undefined>;
 };
+
+function getKstToday() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
 
 export default async function StudentsPage({ params, searchParams }: StudentsPageProps) {
   const session = await requireDivisionAdminAccess(params.division, ["ADMIN", "SUPER_ADMIN"]);
@@ -42,6 +77,8 @@ export default async function StudentsPage({ params, searchParams }: StudentsPag
         seatOptions={seatOptions}
         tuitionPlans={tuitionPlans}
         initialCreateOpen={searchParams?.panel === "create"}
+        today={getKstToday()}
+        initialSearchParams={searchParams}
       />
     </div>
   );

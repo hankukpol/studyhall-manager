@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
-import { Ban, CircleAlert, LoaderCircle, SlidersHorizontal } from "lucide-react";
+import { Ban, CircleAlert, LoaderCircle, RotateCcw, SlidersHorizontal, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { StudentStatusBadge, WarningStageBadge } from "@/components/students/StudentBadges";
@@ -117,6 +117,9 @@ export function StudentDetailView({
   const [memoDraft, setMemoDraft] = useState(initialStudent.memo ?? "");
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [isSavingMemo, setIsSavingMemo] = useState(false);
+  const [isReactivating, setIsReactivating] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
 
   // 경고 단계 조정
   const [isWarnAdjustOpen, setIsWarnAdjustOpen] = useState(false);
@@ -161,6 +164,47 @@ export function StudentDetailView({
       toast.error(error instanceof Error ? error.message : "조정에 실패했습니다.");
     } finally {
       setIsAdjusting(false);
+    }
+  }
+
+  async function handleReactivate() {
+    setIsReactivating(true);
+    try {
+      const response = await fetch(
+        `/api/${divisionSlug}/students/${initialStudent.id}/reactivate`,
+        { method: "POST" },
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error ?? "재입실 처리에 실패했습니다.");
+      }
+      toast.success("재입실 처리되었습니다. 좌석 배정 등 추가 설정을 진행해주세요.");
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "재입실 처리에 실패했습니다.");
+    } finally {
+      setIsReactivating(false);
+    }
+  }
+
+  async function handleDelete(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsDeleteConfirming(true);
+    try {
+      const response = await fetch(
+        `/api/${divisionSlug}/students/${initialStudent.id}`,
+        { method: "DELETE" },
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error ?? "학생 삭제에 실패했습니다.");
+      }
+      toast.success("학생을 삭제했습니다.");
+      router.push(`/${divisionSlug}/admin/students`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "학생 삭제에 실패했습니다.");
+    } finally {
+      setIsDeleteConfirming(false);
     }
   }
 
@@ -384,11 +428,36 @@ export function StudentDetailView({
         <section className="rounded-[10px] border border-slate-200-slate-200 bg-white px-5 py-4 text-sm leading-6 text-rose-800">
           <div className="flex items-start gap-3">
             <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" />
-            <div>
+            <div className="flex-1">
               <p className="font-semibold">퇴실 처리된 학생입니다.</p>
               <p className="mt-1">
                 {initialStudent.withdrawnNote || "퇴실 사유가 아직 기록되지 않았습니다."}
               </p>
+              {canEdit && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void handleReactivate()}
+                    disabled={isReactivating}
+                    className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                  >
+                    {isReactivating ? (
+                      <LoaderCircle className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <RotateCcw className="h-4 w-4" />
+                    )}
+                    재입실 처리
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsDeleteOpen(true)}
+                    className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    학생 삭제
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -404,16 +473,28 @@ export function StudentDetailView({
               <h2 className="mt-2 text-2xl font-bold text-slate-950">기본 정보 편집</h2>
             </div>
 
-            {canEdit && initialStudent.status !== "WITHDRAWN" ? (
-              <button
-                type="button"
-                onClick={() => setIsWithdrawOpen(true)}
-                className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
-              >
-                <Ban className="h-4 w-4" />
-                퇴실 처리
-              </button>
-            ) : null}
+            <div className="flex flex-wrap gap-2">
+              {canEdit && initialStudent.status !== "WITHDRAWN" ? (
+                <button
+                  type="button"
+                  onClick={() => setIsWithdrawOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
+                >
+                  <Ban className="h-4 w-4" />
+                  퇴실 처리
+                </button>
+              ) : null}
+              {canEdit && initialStudent.status !== "WITHDRAWN" ? (
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-500 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  삭제
+                </button>
+              ) : null}
+            </div>
           </div>
 
           <div className="mt-6">
@@ -748,6 +829,61 @@ export function StudentDetailView({
             </button>
           </div>
         </div>
+      </Modal>
+
+      {/* 학생 삭제 확인 모달 */}
+      <Modal
+        open={isDeleteOpen}
+        onClose={() => !isDeleteConfirming && setIsDeleteOpen(false)}
+        badge="학생 삭제"
+        title="학생을 삭제하시겠습니까?"
+        description="삭제된 학생 데이터는 복구할 수 없습니다."
+      >
+        <form onSubmit={handleDelete} className="space-y-5">
+          <div className="rounded-[10px] border border-rose-200 bg-rose-50 px-4 py-4 text-sm leading-6 text-rose-800">
+            <div className="flex items-start gap-3">
+              <CircleAlert className="mt-0.5 h-5 w-5 shrink-0" />
+              <div>
+                <p className="font-semibold">이 작업은 되돌릴 수 없습니다.</p>
+                <p className="mt-1">
+                  학생의 출결 기록, 상벌점, 성적, 수납 내역, 면담 기록 등 모든 관련 데이터가 영구적으로 삭제됩니다.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-[10px] border border-slate-200 bg-white px-4 py-4 text-sm text-slate-700">
+            <p className="font-semibold text-slate-950">
+              {initialStudent.name}
+              <span className="ml-2 text-xs font-medium text-slate-500">
+                {initialStudent.studentNumber}
+              </span>
+            </p>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setIsDeleteOpen(false)}
+              disabled={isDeleteConfirming}
+              className="flex-1 rounded-full border border-slate-200 bg-white py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+            >
+              취소
+            </button>
+            <button
+              type="submit"
+              disabled={isDeleteConfirming}
+              className="flex flex-1 items-center justify-center gap-2 rounded-full bg-rose-600 py-3 text-sm font-medium text-white transition hover:bg-rose-700 disabled:opacity-60"
+            >
+              {isDeleteConfirming ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+              삭제 확정
+            </button>
+          </div>
+        </form>
       </Modal>
     </div>
   );
